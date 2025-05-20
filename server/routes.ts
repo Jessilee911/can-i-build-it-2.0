@@ -2,6 +2,13 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { scraper } from "./scraper";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import {
+  createCheckoutSession,
+  ONE_TIME_PLANS,
+  SUBSCRIPTION_PLANS,
+  handleStripeWebhook
+} from "./stripe";
 import {
   insertDataSourceSchema,
   insertScrapingJobSchema,
@@ -12,8 +19,95 @@ import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  await setupAuth(app);
+  
   // Create router for API routes
   const apiRouter = app;
+  
+  // ==================== Authentication Routes ====================
+  // User info route - returns the current authenticated user
+  apiRouter.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+  
+  // ==================== Subscription/Payment Routes ====================
+  // Get available pricing plans
+  apiRouter.get("/api/pricing", (req: Request, res: Response) => {
+    res.json({
+      onetime: ONE_TIME_PLANS,
+      subscription: SUBSCRIPTION_PLANS
+    });
+  });
+  
+  // Create checkout session for payment
+  apiRouter.post("/api/checkout", isAuthenticated, async (req: any, res: Response) => {
+    const { planId, isSubscription = false } = req.body;
+    
+    if (!planId) {
+      return res.status(400).json({ message: "Plan ID is required" });
+    }
+    
+    try {
+      const userId = req.user.claims.sub;
+      const email = req.user.claims.email;
+      
+      // Host URLs for success and cancel
+      const host = `${req.protocol}://${req.get('host')}`;
+      const successUrl = `${host}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${host}/pricing`;
+      
+      const session = await createCheckoutSession(
+        planId,
+        isSubscription,
+        userId,
+        email,
+        successUrl,
+        cancelUrl
+      );
+      
+      // For free plan, no payment needed
+      if (session.freeAccess) {
+        // Update user subscription status for free tier
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: planId,
+          subscriptionStatus: 'active',
+          subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        });
+        
+        return res.json({ success: true, free: true });
+      }
+      
+      res.json({ success: true, sessionId: session.sessionId, url: session.url });
+    } catch (error) {
+      console.error("Checkout error:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+  
+  // Stripe webhook handler
+  apiRouter.post("/api/webhook", async (req: Request, res: Response) => {
+    const signature = req.headers['stripe-signature'] as string;
+    
+    if (!signature) {
+      return res.status(400).json({ message: "Missing Stripe signature" });
+    }
+    
+    try {
+      await handleStripeWebhook(signature, req.body);
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ message: "Webhook error" });
+    }
+  });
 
   // ==================== Data Sources Routes ====================
   apiRouter.get("/api/data-sources", async (req: Request, res: Response) => {
