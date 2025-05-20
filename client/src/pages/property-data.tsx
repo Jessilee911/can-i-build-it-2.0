@@ -67,75 +67,156 @@ const PropertyData = () => {
         />
       </div>
 
-      {/* Property Data Management */}
+      {/* Property Development Assessment */}
       <div className="bg-white shadow rounded-lg mb-6">
         <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Property Data Management</h3>
+          <h3 className="text-lg font-medium text-gray-900">Property Development Assessment</h3>
         </div>
         <div className="p-6">
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <Button 
-              variant="outline" 
-              className="inline-flex items-center"
-              onClick={() => handleExport('json')}
-              disabled={isExporting || isLoading || !properties?.length}
-            >
-              <span className="material-icons text-sm mr-1">description</span>
-              Export JSON
-            </Button>
-            <Button 
-              variant="outline" 
-              className="inline-flex items-center"
-              onClick={() => handleExport('csv')}
-              disabled={isExporting || isLoading || !properties?.length}
-            >
-              <span className="material-icons text-sm mr-1">table_view</span>
-              Export CSV
-            </Button>
-            <Button 
-              variant="outline" 
-              className="inline-flex items-center"
-              onClick={() => handleExport('geojson')}
-              disabled={isExporting || isLoading || !properties?.length}
-            >
-              <span className="material-icons text-sm mr-1">public</span>
-              Export GeoJSON
-            </Button>
+          <div className="bg-blue-50 p-4 rounded-lg mb-6">
+            <h4 className="font-medium text-blue-800 mb-2">What would you like to build?</h4>
+            <div className="flex flex-col md:flex-row gap-4">
+              <Button 
+                variant="outline" 
+                className="inline-flex items-center"
+              >
+                <span className="material-icons text-sm mr-1">home</span>
+                New Home
+              </Button>
+              <Button 
+                variant="outline" 
+                className="inline-flex items-center"
+              >
+                <span className="material-icons text-sm mr-1">add_business</span>
+                Extension
+              </Button>
+              <Button 
+                variant="outline" 
+                className="inline-flex items-center"
+              >
+                <span className="material-icons text-sm mr-1">call_split</span>
+                Subdivision
+              </Button>
+              <Button 
+                variant="outline" 
+                className="inline-flex items-center"
+              >
+                <span className="material-icons text-sm mr-1">apartment</span>
+                Commercial
+              </Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <DataFilters 
-              onFiltersApplied={setDataFilters} 
-            />
-            <DataTable 
-              searchParams={{
-                propertyType: dataFilters.dataType !== 'All Types' ? dataFilters.dataType : undefined,
-                source: dataFilters.dataSource !== 'All Sources' ? dataFilters.dataSource : undefined,
-                dateRange: dataFilters.dateRange,
-              }} 
-            />
+            <div className="lg:col-span-1">
+              <div className="bg-white p-4 border rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-4">Property Information</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Property Address
+                    </label>
+                    <input 
+                      type="text" 
+                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter full property address"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Council
+                    </label>
+                    <select className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      <option>Auckland Council</option>
+                      <option>Wellington City Council</option>
+                      <option>Christchurch City Council</option>
+                      <option>Hamilton City Council</option>
+                    </select>
+                  </div>
+                  <Button className="w-full">
+                    <span className="material-icons mr-2 text-sm">search</span>
+                    Analyze Property
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-3">
+              <div className="bg-white p-4 border rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-4">Development Assessment Results</h4>
+                <div className="text-center py-12 text-gray-500">
+                  <span className="material-icons text-4xl mb-2">search</span>
+                  <p>Enter a property address to analyze development potential</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Property Data Stats */}
+      {/* Development Guides */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white shadow rounded-lg p-4">
-          <h4 className="text-sm font-medium text-gray-500 mb-2">Property Type Distribution</h4>
-          <div className="h-60 bg-gray-100 rounded flex items-center justify-center">
-            <div className="text-center">
-              <span className="material-icons text-gray-400 text-4xl mb-2">pie_chart</span>
-              <p className="text-gray-400 text-sm">Chart visualization would display here</p>
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Common Building Types</h4>
+          <div className="space-y-3 my-4">
+            <div className="flex items-center border-b pb-3">
+              <div className="bg-blue-100 p-2 rounded-full mr-3">
+                <span className="material-icons text-blue-600">home</span>
+              </div>
+              <div>
+                <h5 className="font-medium">Single Family Home</h5>
+                <p className="text-sm text-gray-500">Detached dwelling for one family</p>
+              </div>
+            </div>
+            <div className="flex items-center border-b pb-3">
+              <div className="bg-green-100 p-2 rounded-full mr-3">
+                <span className="material-icons text-green-600">domain</span>
+              </div>
+              <div>
+                <h5 className="font-medium">Minor Dwelling</h5>
+                <p className="text-sm text-gray-500">Secondary smaller dwelling on same lot</p>
+              </div>
+            </div>
+            <div className="flex items-center border-b pb-3">
+              <div className="bg-purple-100 p-2 rounded-full mr-3">
+                <span className="material-icons text-purple-600">apartment</span>
+              </div>
+              <div>
+                <h5 className="font-medium">Multi-Unit Development</h5>
+                <p className="text-sm text-gray-500">Multiple dwellings on a single property</p>
+              </div>
             </div>
           </div>
         </div>
         
         <div className="bg-white shadow rounded-lg p-4">
-          <h4 className="text-sm font-medium text-gray-500 mb-2">Data Source Distribution</h4>
-          <div className="h-60 bg-gray-100 rounded flex items-center justify-center">
-            <div className="text-center">
-              <span className="material-icons text-gray-400 text-4xl mb-2">bar_chart</span>
-              <p className="text-gray-400 text-sm">Chart visualization would display here</p>
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Building Consent Requirements</h4>
+          <div className="space-y-3 my-4">
+            <div className="flex items-center border-b pb-3">
+              <div className="bg-yellow-100 p-2 rounded-full mr-3">
+                <span className="material-icons text-yellow-600">description</span>
+              </div>
+              <div>
+                <h5 className="font-medium">Resource Consent</h5>
+                <p className="text-sm text-gray-500">Permission related to environmental effects</p>
+              </div>
+            </div>
+            <div className="flex items-center border-b pb-3">
+              <div className="bg-red-100 p-2 rounded-full mr-3">
+                <span className="material-icons text-red-600">construction</span>
+              </div>
+              <div>
+                <h5 className="font-medium">Building Consent</h5>
+                <p className="text-sm text-gray-500">Permission to carry out building work</p>
+              </div>
+            </div>
+            <div className="flex items-center border-b pb-3">
+              <div className="bg-indigo-100 p-2 rounded-full mr-3">
+                <span className="material-icons text-indigo-600">account_balance</span>
+              </div>
+              <div>
+                <h5 className="font-medium">Code Compliance</h5>
+                <p className="text-sm text-gray-500">Verification that work meets building code</p>
+              </div>
             </div>
           </div>
         </div>

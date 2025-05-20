@@ -64,28 +64,36 @@ export class MemStorage implements IStorage {
     this.propertyId = 1;
     this.activityId = 1;
     
-    // Add some initial data sources
+    // Add data sources related to building regulations and zoning
     this.createDataSource({
-      name: "County Property Records",
-      url: "https://county.gov/property-records",
-      type: "Property",
-      description: "Official county property records database",
-      isActive: true,
-    });
-    
-    this.createDataSource({
-      name: "City GIS Database",
-      url: "https://city.gov/gis",
+      name: "Auckland Council GeoMaps",
+      url: "https://geomapspublic.aucklandcouncil.govt.nz",
       type: "GIS",
-      description: "City Geographic Information System portal",
+      description: "Official Auckland Council mapping for zoning and property information",
       isActive: true,
     });
     
     this.createDataSource({
-      name: "Real Estate Listings",
-      url: "https://realestate.com/listings",
-      type: "Property",
-      description: "Commercial real estate listing service",
+      name: "LINZ Data Service",
+      url: "https://data.linz.govt.nz",
+      type: "GIS",
+      description: "Land Information New Zealand geospatial data",
+      isActive: true,
+    });
+    
+    this.createDataSource({
+      name: "Building Code NZ",
+      url: "https://www.building.govt.nz/building-code-compliance",
+      type: "Building Code",
+      description: "New Zealand Building Code regulations and compliance documents",
+      isActive: true,
+    });
+    
+    this.createDataSource({
+      name: "District Plan",
+      url: "https://unitaryplan.aucklandcouncil.govt.nz",
+      type: "Planning",
+      description: "Auckland Unitary Plan zoning and district regulations",
       isActive: true,
     });
   }

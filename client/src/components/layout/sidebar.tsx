@@ -38,7 +38,7 @@ const Sidebar = () => {
       } md:translate-x-0 transition-transform duration-300 ease-in-out`}
     >
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
-        <h1 className="text-xl font-bold">AI Agent 1</h1>
+        <h1 className="text-xl font-bold">Can I Build It?</h1>
         <button 
           className="md:hidden text-white" 
           onClick={() => setIsOpen(false)}
@@ -70,7 +70,7 @@ const Sidebar = () => {
             }`}
           >
             <span className="material-icons mr-3 text-lg">map</span>
-            GIS Data
+            Zoning & Planning
           </Link>
           
           <Link 
@@ -82,7 +82,7 @@ const Sidebar = () => {
             }`}
           >
             <span className="material-icons mr-3 text-lg">home</span>
-            Property Data
+            Property Search
           </Link>
           
           <Link 
@@ -93,8 +93,8 @@ const Sidebar = () => {
                 : 'text-gray-300 hover:bg-gray-700 hover:text-white'
             }`}
           >
-            <span className="material-icons mr-3 text-lg">history</span>
-            Scan History
+            <span className="material-icons mr-3 text-lg">construction</span>
+            Building Code
           </Link>
           
           <Link 
@@ -119,14 +119,14 @@ const Sidebar = () => {
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-white">AI Agent 1</p>
+            <p className="text-sm font-medium text-white">Building Assistant</p>
             <div className="flex items-center">
               <div 
                 id="status-indicator" 
                 className={`h-2 w-2 rounded-full ${agentStatus ? 'bg-status-success' : 'bg-gray-300'} mr-1`}
               />
               <p className="text-xs text-gray-400" id="status-text">
-                {agentStatus ? 'Active' : 'Inactive'}
+                {agentStatus ? 'Ready to Analyze' : 'Inactive'}
               </p>
             </div>
           </div>
