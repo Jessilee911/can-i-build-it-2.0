@@ -118,17 +118,7 @@ const PropertyData = () => {
               </div>
             </div>
             
-            {/* Personalized report button */}
-            <div className="flex justify-center mt-6 mb-2">
-              <Button 
-                size="lg"
-                className="gap-2"
-                onClick={() => setShowPricing(true)}
-              >
-                <FileTextIcon className="h-5 w-5" />
-                Create a Personalized Property Report
-              </Button>
-            </div>
+
           </div>
           
           <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
