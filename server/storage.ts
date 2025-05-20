@@ -7,7 +7,13 @@ import {
   InsertProperty,
   Activity,
   InsertActivity,
+  dataSources,
+  scrapingJobs,
+  properties,
+  activities
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, like, and, or, SQL } from "drizzle-orm";
 
 export interface IStorage {
   // Data Sources
@@ -42,222 +48,245 @@ export interface IStorage {
   getTotalDataSources(): Promise<number>;
 }
 
-export class MemStorage implements IStorage {
-  private dataSources: Map<number, DataSource>;
-  private scrapingJobs: Map<number, ScrapingJob>;
-  private properties: Map<number, Property>;
-  private activities: Map<number, Activity>;
+export class DatabaseStorage implements IStorage {
   
-  private dataSourceId: number;
-  private jobId: number;
-  private propertyId: number;
-  private activityId: number;
-
   constructor() {
-    this.dataSources = new Map();
-    this.scrapingJobs = new Map();
-    this.properties = new Map();
-    this.activities = new Map();
+    // We'll initialize the database with seed data if needed
+    this.seedInitialData();
+  }
+
+  private async seedInitialData() {
+    // Check if we have data sources
+    const existingDataSources = await db.select().from(dataSources);
     
-    this.dataSourceId = 1;
-    this.jobId = 1;
-    this.propertyId = 1;
-    this.activityId = 1;
-    
-    // Add data sources related to building regulations and zoning
-    this.createDataSource({
-      name: "Auckland Council GeoMaps",
-      url: "https://geomapspublic.aucklandcouncil.govt.nz",
-      type: "GIS",
-      description: "Official Auckland Council mapping for zoning and property information",
-      isActive: true,
-    });
-    
-    this.createDataSource({
-      name: "LINZ Data Service",
-      url: "https://data.linz.govt.nz",
-      type: "GIS",
-      description: "Land Information New Zealand geospatial data",
-      isActive: true,
-    });
-    
-    this.createDataSource({
-      name: "Building Code NZ",
-      url: "https://www.building.govt.nz/building-code-compliance",
-      type: "Building Code",
-      description: "New Zealand Building Code regulations and compliance documents",
-      isActive: true,
-    });
-    
-    this.createDataSource({
-      name: "District Plan",
-      url: "https://unitaryplan.aucklandcouncil.govt.nz",
-      type: "Planning",
-      description: "Auckland Unitary Plan zoning and district regulations",
-      isActive: true,
-    });
+    if (existingDataSources.length === 0) {
+      // Add data sources related to building regulations and zoning
+      await this.createDataSource({
+        name: "Auckland Council GeoMaps",
+        url: "https://geomapspublic.aucklandcouncil.govt.nz",
+        type: "GIS",
+        description: "Official Auckland Council mapping for zoning and property information",
+        isActive: true,
+      });
+      
+      await this.createDataSource({
+        name: "LINZ Data Service",
+        url: "https://data.linz.govt.nz",
+        type: "GIS",
+        description: "Land Information New Zealand geospatial data",
+        isActive: true,
+      });
+      
+      await this.createDataSource({
+        name: "Building Code NZ",
+        url: "https://www.building.govt.nz/building-code-compliance",
+        type: "Building Code",
+        description: "New Zealand Building Code regulations and compliance documents",
+        isActive: true,
+      });
+      
+      await this.createDataSource({
+        name: "District Plan",
+        url: "https://unitaryplan.aucklandcouncil.govt.nz",
+        type: "Planning",
+        description: "Auckland Unitary Plan zoning and district regulations",
+        isActive: true,
+      });
+    }
   }
 
   // Data Sources
   async getDataSources(): Promise<DataSource[]> {
-    return Array.from(this.dataSources.values());
+    return await db.select().from(dataSources);
   }
 
   async getDataSource(id: number): Promise<DataSource | undefined> {
-    return this.dataSources.get(id);
+    const results = await db.select().from(dataSources).where(eq(dataSources.id, id));
+    return results.length > 0 ? results[0] : undefined;
   }
 
   async createDataSource(dataSource: InsertDataSource): Promise<DataSource> {
-    const id = this.dataSourceId++;
-    const newDataSource: DataSource = { ...dataSource, id };
-    this.dataSources.set(id, newDataSource);
-    return newDataSource;
+    const newDataSource = await db.insert(dataSources).values(dataSource).returning();
+    return newDataSource[0];
   }
 
   async updateDataSource(id: number, dataSource: Partial<InsertDataSource>): Promise<DataSource | undefined> {
-    const existing = this.dataSources.get(id);
-    if (!existing) return undefined;
+    const updated = await db.update(dataSources)
+      .set(dataSource)
+      .where(eq(dataSources.id, id))
+      .returning();
     
-    const updated = { ...existing, ...dataSource };
-    this.dataSources.set(id, updated);
-    return updated;
+    return updated.length > 0 ? updated[0] : undefined;
   }
 
   async deleteDataSource(id: number): Promise<boolean> {
-    return this.dataSources.delete(id);
+    const deleted = await db.delete(dataSources)
+      .where(eq(dataSources.id, id))
+      .returning();
+    
+    return deleted.length > 0;
   }
 
   // Scraping Jobs
   async getScrapingJobs(): Promise<ScrapingJob[]> {
-    return Array.from(this.scrapingJobs.values());
+    return await db.select().from(scrapingJobs);
   }
 
   async getScrapingJob(id: number): Promise<ScrapingJob | undefined> {
-    return this.scrapingJobs.get(id);
+    const results = await db.select().from(scrapingJobs).where(eq(scrapingJobs.id, id));
+    return results.length > 0 ? results[0] : undefined;
   }
 
   async getScrapingJobsByStatus(status: string): Promise<ScrapingJob[]> {
-    return Array.from(this.scrapingJobs.values()).filter(job => job.status === status);
+    return await db.select().from(scrapingJobs).where(eq(scrapingJobs.status, status));
   }
 
   async createScrapingJob(job: InsertScrapingJob): Promise<ScrapingJob> {
-    const id = this.jobId++;
     const now = new Date();
-    const newJob: ScrapingJob = {
+    
+    const newJob = await db.insert(scrapingJobs).values({
       ...job,
-      id,
       status: "pending",
       startedAt: now,
+      completedAt: null,
       totalRecords: 0,
       errorCount: 0,
-    };
-    this.scrapingJobs.set(id, newJob);
+      dataSelectors: job.dataSelectors || null,
+      maxPages: job.maxPages || null,
+      config: job.config || {},
+      requestHeaders: job.requestHeaders || {}
+    }).returning();
     
     // Create activity for job creation
     await this.createActivity({
       type: "scraping",
       message: `Started scraping job for ${job.targetUrl}`,
       timestamp: now,
-      jobId: id,
+      jobId: newJob[0].id,
       metadata: { targetUrl: job.targetUrl },
     });
     
-    return newJob;
+    return newJob[0];
   }
 
   async updateScrapingJob(id: number, job: Partial<ScrapingJob>): Promise<ScrapingJob | undefined> {
-    const existing = this.scrapingJobs.get(id);
-    if (!existing) return undefined;
+    const updated = await db.update(scrapingJobs)
+      .set(job)
+      .where(eq(scrapingJobs.id, id))
+      .returning();
     
-    const updated = { ...existing, ...job };
-    this.scrapingJobs.set(id, updated);
-    return updated;
+    return updated.length > 0 ? updated[0] : undefined;
   }
 
   // Properties
   async getProperties(limit: number = 100, offset: number = 0): Promise<Property[]> {
-    const properties = Array.from(this.properties.values());
-    return properties.slice(offset, offset + limit);
+    return await db.select().from(properties).limit(limit).offset(offset);
   }
 
   async getProperty(id: number): Promise<Property | undefined> {
-    return this.properties.get(id);
+    const results = await db.select().from(properties).where(eq(properties.id, id));
+    return results.length > 0 ? results[0] : undefined;
   }
 
   async getPropertiesByJobId(jobId: number): Promise<Property[]> {
-    return Array.from(this.properties.values()).filter(property => property.jobId === jobId);
+    return await db.select().from(properties).where(eq(properties.jobId, jobId));
   }
 
   async createProperty(property: InsertProperty): Promise<Property> {
-    const id = this.propertyId++;
-    const newProperty: Property = { ...property, id };
-    this.properties.set(id, newProperty);
+    // Ensure all required fields are properly set
+    const propertyToInsert = {
+      ...property,
+      address: property.address || null,
+      location: property.location || null,
+      propertyType: property.propertyType || null,
+      jobId: property.jobId || null,
+      data: property.data || {}
+    };
     
-    // Update job total records count
+    const newProperty = await db.insert(properties).values(propertyToInsert).returning();
+    
+    // Update job total records count if there's a job ID
     if (property.jobId) {
       const job = await this.getScrapingJob(property.jobId);
       if (job) {
         await this.updateScrapingJob(property.jobId, {
-          totalRecords: job.totalRecords + 1,
+          totalRecords: (job.totalRecords || 0) + 1,
         });
       }
     }
     
-    return newProperty;
+    return newProperty[0];
   }
 
   async searchProperties(query: Partial<Property>): Promise<Property[]> {
-    return Array.from(this.properties.values()).filter(property => {
-      for (const [key, value] of Object.entries(query)) {
-        // Skip undefined values in the query
-        if (value === undefined) continue;
-        
-        // Simple string matching for text fields
-        if (typeof property[key as keyof Property] === 'string') {
-          const propValue = property[key as keyof Property] as string;
-          if (!propValue.toLowerCase().includes((value as string).toLowerCase())) {
-            return false;
-          }
-        } else if (property[key as keyof Property] !== value) {
-          return false;
-        }
-      }
-      return true;
-    });
+    // Build a dynamic where clause based on the query
+    const whereClauses: SQL[] = [];
+    
+    if (query.propertyType) {
+      whereClauses.push(like(properties.propertyType, `%${query.propertyType}%`));
+    }
+    
+    if (query.address) {
+      whereClauses.push(like(properties.address, `%${query.address}%`));
+    }
+    
+    if (query.source) {
+      whereClauses.push(like(properties.source, `%${query.source}%`));
+    }
+    
+    if (query.jobId) {
+      whereClauses.push(eq(properties.jobId, query.jobId));
+    }
+    
+    // If no conditions, return all properties
+    if (whereClauses.length === 0) {
+      return this.getProperties();
+    }
+    
+    // Combine all conditions with OR for flexible searching
+    return await db.select().from(properties).where(or(...whereClauses));
   }
 
   // Activities
   async getActivities(limit: number = 20): Promise<Activity[]> {
-    const activities = Array.from(this.activities.values())
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    return activities.slice(0, limit);
+    return await db.select().from(activities)
+      .orderBy(desc(activities.timestamp))
+      .limit(limit);
   }
 
   async getActivitiesByJobId(jobId: number): Promise<Activity[]> {
-    return Array.from(this.activities.values())
-      .filter(activity => activity.jobId === jobId)
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return await db.select().from(activities)
+      .where(eq(activities.jobId, jobId))
+      .orderBy(desc(activities.timestamp));
   }
 
   async createActivity(activity: InsertActivity): Promise<Activity> {
-    const id = this.activityId++;
-    const newActivity: Activity = { ...activity, id };
-    this.activities.set(id, newActivity);
-    return newActivity;
+    const activityToInsert = {
+      ...activity,
+      jobId: activity.jobId || null,
+      metadata: activity.metadata || {}
+    };
+    
+    const newActivity = await db.insert(activities).values(activityToInsert).returning();
+    
+    return newActivity[0];
   }
 
   // Stats
   async getTotalScans(): Promise<number> {
-    return this.scrapingJobs.size;
+    const result = await db.select({ count: scrapingJobs }).from(scrapingJobs);
+    return result.length;
   }
 
   async getTotalRecords(): Promise<number> {
-    return this.properties.size;
+    const result = await db.select({ count: properties }).from(properties);
+    return result.length;
   }
 
   async getTotalDataSources(): Promise<number> {
-    return this.dataSources.size;
+    const result = await db.select({ count: dataSources }).from(dataSources);
+    return result.length;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
