@@ -139,9 +139,16 @@ const PropertyData = () => {
               </div>
               <Button 
                 onClick={() => setShowPricing(!showPricing)}
-                className="whitespace-nowrap"
+                className="whitespace-nowrap gap-2"
               >
-                {showPricing ? "Hide Pricing Plans" : "View Pricing Plans"}
+                {showPricing ? (
+                  "Hide Pricing Plans"
+                ) : (
+                  <>
+                    <FileTextIcon className="h-4 w-4" />
+                    Create Personalised Property Report
+                  </>
+                )}
               </Button>
             </div>
           </div>
