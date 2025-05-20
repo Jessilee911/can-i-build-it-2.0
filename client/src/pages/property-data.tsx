@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { PropertyAssessment } from "@/components/assessment/property-assessment";
+import { PropertyReportForm } from "@/components/assessment/property-report-form";
 import { Button } from "@/components/ui/button";
 import { FileTextIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const PropertyData = () => {
   const [showPricing, setShowPricing] = useState(false);
   const [pricingType, setPricingType] = useState<"onetime" | "subscription">("onetime");
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
+  const { toast } = useToast();
   
   const pricingPlans = [
     {
@@ -190,7 +195,10 @@ const PropertyData = () => {
                         <Button 
                           variant={plan.highlight ? "default" : "outline"} 
                           className="w-full"
-                          onClick={() => alert(`Selected plan: ${plan.title}`)}
+                          onClick={() => {
+                            setSelectedPlan(plan.title);
+                            setShowReportForm(true);
+                          }}
                         >
                           {plan.price === "Free" ? "Start Free" : `Buy Now`}
                         </Button>
@@ -209,6 +217,25 @@ const PropertyData = () => {
           This tool is connected to a database of New Zealand building regulations and property zoning requirements
         </div>
       )}
+      
+      {/* Property Report Form Dialog */}
+      <PropertyReportForm 
+        isOpen={showReportForm}
+        onClose={() => setShowReportForm(false)}
+        planType={selectedPlan}
+        onSubmit={(data) => {
+          console.log("Form submitted:", data);
+          setShowReportForm(false);
+          
+          // Here you would typically send this data to your backend
+          // and then redirect to a payment page or show a confirmation
+          
+          toast({
+            title: "Report request submitted",
+            description: `We're generating your ${selectedPlan}. You'll receive a notification when it's ready.`,
+          });
+        }}
+      />
     </div>
   );
 };
