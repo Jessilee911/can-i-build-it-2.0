@@ -7,15 +7,30 @@ import {
   InsertProperty,
   Activity,
   InsertActivity,
+  User,
+  UpsertUser,
   dataSources,
   scrapingJobs,
   properties,
-  activities
+  activities,
+  users
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and, or, SQL } from "drizzle-orm";
 
 export interface IStorage {
+  // User operations
+  getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  updateUserSubscription(id: string, data: {
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    subscriptionTier?: string;
+    subscriptionStatus?: string;
+    subscriptionExpiresAt?: Date;
+  }): Promise<User | undefined>;
+
   // Data Sources
   getDataSources(): Promise<DataSource[]>;
   getDataSource(id: number): Promise<DataSource | undefined>;
@@ -53,6 +68,54 @@ export class DatabaseStorage implements IStorage {
   constructor() {
     // We'll initialize the database with seed data if needed
     this.seedInitialData();
+  }
+
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const results = await db.select().from(users).where(eq(users.id, id));
+    return results.length > 0 ? results[0] : undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    if (!email) return undefined;
+    const results = await db.select().from(users).where(eq(users.email, email));
+    return results.length > 0 ? results[0] : undefined;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...userData,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  async updateUserSubscription(id: string, data: {
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    subscriptionTier?: string;
+    subscriptionStatus?: string;
+    subscriptionExpiresAt?: Date;
+  }): Promise<User | undefined> {
+    const updated = await db.update(users)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
+    
+    return updated.length > 0 ? updated[0] : undefined;
   }
 
   private async seedInitialData() {
