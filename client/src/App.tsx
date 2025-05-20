@@ -4,24 +4,25 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/dashboard";
-import GisData from "@/pages/gis-data";
 import PropertyData from "@/pages/property-data";
-import ScanHistory from "@/pages/scan-history";
-import Settings from "@/pages/settings";
-import Sidebar from "@/components/layout/sidebar";
-import Header from "@/components/layout/header";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100 font-sans">
-      <Sidebar />
-      <div className="flex-1 overflow-auto md:ml-64">
-        <Header />
-        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          {children}
-        </main>
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <div className="py-4 px-4 sm:px-6 lg:px-8 bg-white shadow-sm border-b">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <span className="material-icons text-blue-600 mr-2">home_work</span>
+              <h1 className="text-xl font-semibold text-gray-900">Can I Build It?</h1>
+            </div>
+            <span className="text-sm text-gray-500">New Zealand Building Guide</span>
+          </div>
+        </div>
       </div>
+      <main className="py-6 px-4 sm:px-6 lg:px-8">
+        {children}
+      </main>
     </div>
   );
 }
@@ -31,27 +32,7 @@ function Router() {
     <Switch>
       <Route path="/" component={() => (
         <AppLayout>
-          <Dashboard />
-        </AppLayout>
-      )} />
-      <Route path="/gis-data" component={() => (
-        <AppLayout>
-          <GisData />
-        </AppLayout>
-      )} />
-      <Route path="/property-data" component={() => (
-        <AppLayout>
           <PropertyData />
-        </AppLayout>
-      )} />
-      <Route path="/scan-history" component={() => (
-        <AppLayout>
-          <ScanHistory />
-        </AppLayout>
-      )} />
-      <Route path="/settings" component={() => (
-        <AppLayout>
-          <Settings />
         </AppLayout>
       )} />
       <Route component={NotFound} />
