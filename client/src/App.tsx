@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import PropertyData from "@/pages/property-data";
+import { Link } from "wouter";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,10 +14,16 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <span className="material-icons text-blue-600 mr-2">home_work</span>
-              <h1 className="text-xl font-semibold text-gray-900">Can I Build It?</h1>
+              <Link href="/">
+                <a className="flex items-center">
+                  <span className="material-icons text-blue-600 mr-2">home_work</span>
+                  <h1 className="text-xl font-semibold text-gray-900">Can I Build It?</h1>
+                </a>
+              </Link>
             </div>
-            <span className="text-sm text-gray-500">New Zealand Building Guide</span>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-500">New Zealand Building Guide</span>
+            </div>
           </div>
         </div>
       </div>

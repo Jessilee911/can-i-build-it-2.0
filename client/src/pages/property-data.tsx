@@ -1,6 +1,10 @@
 import { PropertyAssessment } from "@/components/assessment/property-assessment";
+import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 const PropertyData = () => {
+  const [, navigate] = useLocation();
+  
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white shadow rounded-lg mb-6">
@@ -18,6 +22,21 @@ const PropertyData = () => {
           </div>
           
           <PropertyAssessment />
+          
+          <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="mb-4 sm:mb-0">
+                <h3 className="text-lg font-semibold text-gray-900">Unlock advanced features</h3>
+                <p className="text-sm text-gray-600">Get detailed reports, AI sketch concepts, and expert reviews</p>
+              </div>
+              <Button 
+                onClick={() => navigate('/pricing')}
+                className="whitespace-nowrap"
+              >
+                View Pricing Plans
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       
