@@ -1,25 +1,5 @@
 import { useState } from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-// Define the form schema
-const assessmentSchema = z.object({
-  query: z.string().min(5, { message: "Please provide more details about your project" }),
-});
-
-type AssessmentFormValues = z.infer<typeof assessmentSchema>;
 
 // Define the property assessment result structure
 interface AssessmentResult {
@@ -33,23 +13,20 @@ interface AssessmentResult {
 }
 
 export function PropertyAssessment() {
+  const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string}[]>([]);
 
-  const form = useForm<AssessmentFormValues>({
-    resolver: zodResolver(assessmentSchema),
-    defaultValues: {
-      query: "",
-    },
-  });
-
-  const onSubmit = async (data: AssessmentFormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!query.trim() || query.length < 5) return;
+    
     setIsLoading(true);
     
     try {
       // Add user query to conversation history
-      setConversations(prev => [...prev, {type: 'query', content: data.query}]);
+      setConversations(prev => [...prev, {type: 'query', content: query}]);
       
       // In a real application, this would be an API call
       // Since we don't have the actual backend integration yet, we'll simulate a response
@@ -61,25 +38,25 @@ export function PropertyAssessment() {
       let buildingType = "unknown";
       let projectType = "unknown";
       
-      const query = data.query.toLowerCase();
+      const lowerQuery = query.toLowerCase();
       
-      if (query.includes("house") || query.includes("home") || query.includes("dwelling")) {
+      if (lowerQuery.includes("house") || lowerQuery.includes("home") || lowerQuery.includes("dwelling")) {
         buildingType = "single-dwelling";
-      } else if (query.includes("minor") || query.includes("granny flat") || query.includes("secondary")) {
+      } else if (lowerQuery.includes("minor") || lowerQuery.includes("granny flat") || lowerQuery.includes("secondary")) {
         buildingType = "minor-dwelling";
-      } else if (query.includes("apartment") || query.includes("units") || query.includes("multi")) {
+      } else if (lowerQuery.includes("apartment") || lowerQuery.includes("units") || lowerQuery.includes("multi")) {
         buildingType = "multi-unit";
-      } else if (query.includes("commercial") || query.includes("office") || query.includes("retail")) {
+      } else if (lowerQuery.includes("commercial") || lowerQuery.includes("office") || lowerQuery.includes("retail")) {
         buildingType = "commercial";
       }
       
-      if (query.includes("build") || query.includes("new") || query.includes("construct")) {
+      if (lowerQuery.includes("build") || lowerQuery.includes("new") || lowerQuery.includes("construct")) {
         projectType = "new-build";
-      } else if (query.includes("renovate") || query.includes("remodel") || query.includes("extend")) {
+      } else if (lowerQuery.includes("renovate") || lowerQuery.includes("remodel") || lowerQuery.includes("extend")) {
         projectType = "renovation";
-      } else if (query.includes("subdivide") || query.includes("split") || query.includes("divide")) {
+      } else if (lowerQuery.includes("subdivide") || lowerQuery.includes("split") || lowerQuery.includes("divide")) {
         projectType = "subdivision";
-      } else if (query.includes("change use") || query.includes("convert")) {
+      } else if (lowerQuery.includes("change use") || lowerQuery.includes("convert")) {
         projectType = "change-of-use";
       }
       
@@ -138,8 +115,6 @@ export function PropertyAssessment() {
         };
       }
       
-      setAssessmentResult(result);
-      
       // Generate response text
       const responseText = `Based on your query, I've analyzed your project and found the following:
 
@@ -165,7 +140,7 @@ Would you like more specific information about any aspect of this assessment?`;
       setConversations(prev => [...prev, {type: 'response', content: responseText}]);
       
       // Reset form
-      form.reset();
+      setQuery("");
       
     } catch (error) {
       console.error("Error performing assessment:", error);
@@ -219,68 +194,23 @@ Would you like more specific information about any aspect of this assessment?`;
         </div>
         
         {/* Input Form */}
-        <Card>
-          <CardContent className="pt-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-2">
-                <FormField
-                  control={form.control}
-                  name="query"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="flex space-x-2">
-                          <Input 
-                            className="flex-1"
-                            placeholder="Describe your project (e.g., 'I want to build a new house in Auckland')" 
-                            {...field}
-                          />
-                          <Button type="submit" disabled={isLoading}>
-                            {isLoading ? 
-                              <span className="animate-spin">⟳</span> : 
-                              <span className="material-icons text-sm">send</span>
-                            }
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-        
-        {/* Hidden assessment result for debug purposes */}
-        {assessmentResult && (
-          <div className="hidden">
-            <div>
-              <h4>Building Consent</h4>
-              <p>{assessmentResult.requiresConsent 
-                ? "Your project requires building consent" 
-                : "Your project may not require building consent"}</p>
-            </div>
-            
-            <div>
-              <h4>Restrictions</h4>
-              <ul>
-                {assessmentResult.restrictions.map((restriction, i) => (
-                  <li key={i}>{restriction}</li>
-                ))}
-              </ul>
-            </div>
-            
-            <div>
-              <h4>Consultants Needed</h4>
-              <div>
-                {assessmentResult.consultantsNeeded.map((consultant, i) => (
-                  <Badge key={i} variant="outline">{consultant}</Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <form onSubmit={handleSubmit} className="flex space-x-2">
+            <input 
+              type="text"
+              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Describe your project (e.g., 'I want to build a new house in Auckland')" 
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <Button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              {isLoading ? 
+                <span className="animate-spin">⟳</span> : 
+                <span>Send</span>
+              }
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );

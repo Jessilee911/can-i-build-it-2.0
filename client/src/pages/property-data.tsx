@@ -292,13 +292,31 @@ const PropertyData = () => {
               </button>
               <button
                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                onClick={() => {
-                  console.log("Property details submitted:", propertyDetails);
-                  setShowPropertyDetails(false);
-                  toast({
-                    title: "Report request submitted",
-                    description: `We're generating your ${selectedPlan}. You'll receive a notification when it's ready.`,
-                  });
+                onClick={async () => {
+                  try {
+                    setShowPropertyDetails(false);
+                    
+                    // Import payment helper dynamically to avoid issues
+                    const { processReportRequest } = await import("@/lib/payment");
+                    
+                    // Process the report request with payment if needed
+                    const result = await processReportRequest(propertyDetails, selectedPlan);
+                    
+                    // For free plans or after successful payment
+                    if (result.success && !result.redirected) {
+                      toast({
+                        title: "Report request submitted",
+                        description: `We're generating your ${selectedPlan}. You'll receive a notification when it's ready.`,
+                      });
+                    }
+                  } catch (error) {
+                    console.error("Error processing report request:", error);
+                    toast({
+                      title: "Error",
+                      description: "There was a problem processing your request. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
                 }}
               >
                 Generate Report

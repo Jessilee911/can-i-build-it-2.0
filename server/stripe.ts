@@ -9,7 +9,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' as any })
   : null;
 
 export interface PricePlan {
@@ -24,14 +24,14 @@ export interface PricePlan {
 // Price plans - these would ideally be stored in the database
 export const ONE_TIME_PLANS: Record<string, PricePlan> = {
   'basic': { id: 'basic', name: 'Basic Report', amount: 0, currency: 'nzd' },
-  'standard': { id: 'standard', name: 'Detailed Analysis', amount: 9900, currency: 'nzd' },
-  'premium': { id: 'premium', name: 'Comprehensive Package', amount: 14900, currency: 'nzd' },
+  'detailed': { id: 'detailed', name: 'Detailed Analysis', amount: 9900, currency: 'nzd' },
+  'comprehensive': { id: 'comprehensive', name: 'Comprehensive', amount: 14900, currency: 'nzd' },
   'expert': { id: 'expert', name: 'Expert Review', amount: 29900, currency: 'nzd' },
 };
 
 export const SUBSCRIPTION_PLANS: Record<string, PricePlan> = {
   'pro': { id: 'pro', name: 'Pro Subscription', amount: 9900, interval: 'month', currency: 'nzd' },
-  'unlimited': { id: 'unlimited', name: 'Unlimited Access', amount: 19500, interval: 'month', currency: 'nzd' },
+  'unlimited': { id: 'unlimited', name: 'Unlimited', amount: 19500, interval: 'month', currency: 'nzd' },
 };
 
 export async function createCheckoutSession(
@@ -264,7 +264,7 @@ export async function handleStripeWebhook(signature: string, rawBody: Buffer) {
           
           await storage.updateUserSubscription(userId, {
             subscriptionStatus: 'canceled',
-            stripeSubscriptionId: null
+            stripeSubscriptionId: ''
           });
         }
         
@@ -273,7 +273,7 @@ export async function handleStripeWebhook(signature: string, rawBody: Buffer) {
     }
     
     return { success: true };
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error processing Stripe webhook:', err);
     throw new Error(`Webhook error: ${err.message}`);
   }

@@ -15,10 +15,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Link href="/">
-                <a className="flex items-center">
+                <div className="flex items-center cursor-pointer">
                   <span className="material-icons text-blue-600 mr-2">home_work</span>
                   <h1 className="text-xl font-semibold text-gray-900">Can I Build It?</h1>
-                </a>
+                </div>
               </Link>
             </div>
             <div className="flex items-center space-x-4">
