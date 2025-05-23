@@ -280,6 +280,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.json(activities);
   });
 
+  // ==================== Property Assessment Routes ====================
+  // New route for property assessment using real NZ data
+  apiRouter.post("/api/assess-property", async (req: Request, res: Response) => {
+    try {
+      const { query, address } = req.body;
+      
+      if (!query || query.length < 5) {
+        return res.status(400).json({ message: "Query is required and must be at least 5 characters" });
+      }
+
+      // This would connect to actual NZ data sources like:
+      // - LINZ Data Service API for property information
+      // - Auckland Council GeoMaps API for zoning
+      // - Building.govt.nz for building code requirements
+      
+      // For now, we'll return a response indicating we need API access
+      return res.json({
+        message: "To provide accurate property assessments, we need to connect to New Zealand government data sources including LINZ Data Service, Auckland Council GeoMaps, and Building.govt.nz APIs. Please provide the necessary API keys or data access credentials.",
+        requiresApiSetup: true,
+        suggestedDataSources: [
+          "LINZ Data Service API - for property boundaries and ownership",
+          "Auckland Council GeoMaps API - for zoning information", 
+          "Building.govt.nz - for building consent requirements",
+          "Regional council APIs - for resource consent rules"
+        ]
+      });
+    } catch (error) {
+      console.error("Property assessment error:", error);
+      res.status(500).json({ message: "Failed to assess property" });
+    }
+  });
+
   // ==================== Stats Routes ====================
   apiRouter.get("/api/stats", async (req: Request, res: Response) => {
     const totalScans = await storage.getTotalScans();

@@ -10,6 +10,10 @@ export async function initCheckout(planId: string, isSubscription: boolean = fal
       isSubscription
     });
     
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
     
     // If it's a free plan, no payment needed
@@ -26,7 +30,7 @@ export async function initCheckout(planId: string, isSubscription: boolean = fal
     return { success: false, error: 'No checkout URL provided' };
   } catch (error) {
     console.error('Checkout error:', error);
-    return { success: false, error: 'Failed to create checkout session' };
+    return { success: false, error: `Failed to create checkout session: ${error.message}` };
   }
 }
 
