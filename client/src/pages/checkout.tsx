@@ -60,10 +60,17 @@ const CheckoutForm = ({ planId, planName, amount }: { planId: string, planName: 
         <form onSubmit={handleSubmit} className="space-y-6">
           <PaymentElement />
           
+          {/* Debug info */}
+          {(!stripe || !elements) && (
+            <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+              Loading payment form... {!stripe && "Stripe not ready"} {!elements && "Elements not ready"}
+            </div>
+          )}
+          
           <button 
             type="submit"
-            disabled={!stripe || isProcessing}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+            disabled={!stripe || !elements || isProcessing}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
           >
             {isProcessing ? (
               <span className="flex items-center justify-center">
