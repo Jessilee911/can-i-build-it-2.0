@@ -111,8 +111,7 @@ const PropertyData = () => {
           
           {showPricing && (
             <div className="mt-6 border-t pt-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Choose Your Plan</h2>
+              <div className="flex justify-end items-center mb-6">
                 <Button 
                   variant="outline" 
                   size="sm"
