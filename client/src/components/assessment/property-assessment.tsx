@@ -5,7 +5,11 @@ import { Link } from "wouter";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 
-export function PropertyAssessment() {
+interface PropertyAssessmentProps {
+  showPricing?: boolean;
+}
+
+export function PropertyAssessment({ showPricing = false }: PropertyAssessmentProps) {
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
@@ -196,14 +200,14 @@ Would you like to create a personalized property report for your specific projec
             <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
-                  <h3 className="text-lg font-semibold text-gray-900">Choose Your Plan</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Unlock Special Features</h3>
                   <p className="text-sm text-gray-600">Get detailed reports, AI sketch concepts, and expert reviews</p>
                 </div>
                 <Button 
                   onClick={() => window.dispatchEvent(new CustomEvent('togglePricing'))}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
                 >
-                  View Pricing Plans
+                  {showPricing ? "Hide Plans" : "Get Your Personalised Report"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>

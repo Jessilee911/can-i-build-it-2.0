@@ -107,7 +107,7 @@ const PropertyData = () => {
       <div className="bg-white shadow rounded-lg mb-6">
         <div className="p-6">
           {/* Main search component */}
-          <PropertyAssessment />
+          <PropertyAssessment showPricing={showPricing} />
           
           {showPricing && (
             <div className="mt-6 border-t pt-6">
