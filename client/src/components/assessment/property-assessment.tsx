@@ -70,7 +70,7 @@ export function PropertyAssessment() {
         <div className="space-y-4 mb-6">
           {conversations.length === 0 && (
             <div className="text-center py-8">
-              <h3 className="text-lg font-medium text-gray-700 mb-2">Welcome to Can I Build It?</h3>
+              <h1 className="text-4xl font-light text-gray-900 mb-4" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
               <p className="text-gray-500 max-w-md mx-auto">
                 Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
               </p>
