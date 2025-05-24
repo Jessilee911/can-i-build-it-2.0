@@ -30,7 +30,13 @@ export function PropertyAssessment() {
       
       // Check if we need API setup for real data sources
       if (data.requiresApiSetup) {
-        const responseText = `I'm ready to connect to authentic New Zealand building and zoning data sources to give you accurate, real-time information about your property development project.
+        // For first question about API setup, show the setup message
+        // For subsequent questions, provide helpful guidance based on what we can determine
+        const isFirstApiRequest = conversations.filter(c => c.content.includes('data sources')).length === 0;
+        
+        let responseText;
+        if (isFirstApiRequest) {
+          responseText = `I'm ready to connect to authentic New Zealand building and zoning data sources to give you accurate, real-time information about your property development project.
 
 To provide you with genuine assessments based on current regulations, I need access to:
 
@@ -43,11 +49,21 @@ These official data sources will allow me to:
 • Review up-to-date regional planning rules
 
 Would you like to set up access to these data sources so I can provide authentic property assessments rather than general guidance?`;
+        } else {
+          // For follow-up questions, provide helpful general guidance while noting data source limitations
+          responseText = `I understand you have another question about building regulations in New Zealand. While I'm working to connect to the official data sources for precise information, I can offer some general guidance:
+
+For your specific query: "${query}"
+
+This type of question typically requires checking official sources like council zoning maps and current building consent requirements. To give you the most accurate and up-to-date information, I'd need access to the government databases I mentioned earlier.
+
+Would you like to continue with more questions, or shall we work on connecting to the official data sources for precise answers?`;
+        }
         
         // Add response to conversation history
         setConversations(prev => [...prev, {type: 'response', content: responseText}]);
         
-        // Reset form
+        // Reset form input but keep conversation flowing
         setQuery("");
         return;
       }
