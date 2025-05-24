@@ -72,8 +72,9 @@ Would you like to create a personalized property report for your specific projec
         responseText += `\n\n💡 **For property-specific details and current regulations, a personalized property report would provide precise information tailored to your exact address and project requirements.**`;
       }
       
-      // Add response to conversation history with CTA flag from server
-      setConversations(prev => [...prev, {type: 'response', content: responseText, showReportCTA: data.showReportCTA}]);
+      // Add response to conversation history with CTA flag from server or local logic
+      const showCTA = data.showReportCTA || shouldShowReportCTA || data.needsOfficialData;
+      setConversations(prev => [...prev, {type: 'response', content: responseText, showReportCTA: showCTA}]);
       
       // Reset form
       setQuery("");
