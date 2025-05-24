@@ -47,7 +47,7 @@ export function AnimatedSuggestions() {
   }, []);
 
   return (
-    <div className="mt-4 mb-6">
+    <div className="mt-3 mb-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
         <div className="bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
           <h3 className="font-medium text-gray-900 mb-2">Try asking about:</h3>

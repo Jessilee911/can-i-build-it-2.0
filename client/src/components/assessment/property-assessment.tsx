@@ -87,23 +87,24 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="space-y-6 relative min-h-screen">
+    <div className="space-y-4 relative">
       {/* NZ Map Watermark Background */}
       <div 
         className="fixed inset-0 z-0 opacity-30 pointer-events-none"
         style={{
           backgroundImage: `url(${nzMapImage})`,
-          backgroundSize: 'contain',
+          backgroundSize: '60%',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
+          animation: 'float 20s ease-in-out infinite',
         }}
       />
       
       <div className="max-w-3xl mx-auto relative z-10">
         {/* Conversation History */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-3 mb-4">
           {conversations.length === 0 && (
-            <div className="text-center py-8 bg-white bg-opacity-80 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm">
+            <div className="text-center py-6 bg-white bg-opacity-80 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm">
               <h1 className="text-5xl font-bold text-gray-900 mb-4" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
               <p className="text-gray-600 max-w-md mx-auto">
                 Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
