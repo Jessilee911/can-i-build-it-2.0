@@ -158,8 +158,15 @@ const PropertyData = () => {
                           variant={plan.highlight ? "default" : "outline"} 
                           className="w-full"
                           onClick={() => {
-                            setSelectedPlan(plan.title);
-                            setShowPropertyDetails(true);
+                            if (plan.price === "Free") {
+                              // For free plan, go directly to questions
+                              window.location.href = `/report-questions?plan=free`;
+                            } else {
+                              // For paid plans, go to checkout
+                              const amount = plan.price.replace('$', '').replace('/mo', '');
+                              const planId = plan.title.toLowerCase().replace(/\s+/g, '-');
+                              window.location.href = `/checkout?plan=${planId}&name=${encodeURIComponent(plan.title)}&amount=${amount}`;
+                            }
                           }}
                         >
                           {plan.price === "Free" ? "Start Free" : `Buy Now`}

@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import PropertyData from "@/pages/property-data";
 import PricingPage from "@/pages/pricing";
+import Checkout from "@/pages/checkout";
+import ReportQuestions from "@/pages/report-questions";
+import ReportSuccess from "@/pages/report-success";
 import { Link } from "wouter";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -31,6 +34,9 @@ function Router() {
           <PricingPage />
         </AppLayout>
       )} />
+      <Route path="/checkout" component={Checkout} />
+      <Route path="/report-questions" component={ReportQuestions} />
+      <Route path="/report-success" component={ReportSuccess} />
       <Route component={NotFound} />
     </Switch>
   );

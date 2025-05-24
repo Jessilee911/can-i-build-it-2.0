@@ -48,6 +48,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Create checkout session for payment
+  apiRouter.post("/api/create-payment-intent", async (req: Request, res: Response) => {
+    try {
+      const { planId, amount } = req.body;
+      
+      if (!amount || amount < 50) { // Minimum $0.50
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount), // Amount should already be in cents
+        currency: "nzd",
+        metadata: {
+          planId: planId || 'unknown'
+        }
+      });
+
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Payment intent creation error:", error);
+      res.status(500).json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  apiRouter.post("/api/generate-report", async (req: Request, res: Response) => {
+    try {
+      const { planId, propertyAddress, projectDescription, budgetRange, timeframe } = req.body;
+
+      // Store the report request in database
+      await storage.createActivity({
+        type: 'report_generated',
+        description: `Report generated for ${propertyAddress}`,
+        metadata: {
+          planId,
+          propertyAddress,
+          projectDescription,
+          budgetRange,
+          timeframe,
+          status: 'processing'
+        }
+      });
+
+      // Here you would typically:
+      // 1. Use the RAG system to gather property data
+      // 2. Generate the comprehensive report
+      // 3. Send email notification when complete
+      
+      res.json({ 
+        success: true, 
+        message: "Report generation started",
+        estimatedCompletion: "24-48 hours"
+      });
+    } catch (error: any) {
+      console.error("Report generation error:", error);
+      res.status(500).json({ message: "Error generating report: " + error.message });
+    }
+  });
+
   apiRouter.post("/api/checkout", isAuthenticated, async (req: any, res: Response) => {
     const { planId, isSubscription = false } = req.body;
     
