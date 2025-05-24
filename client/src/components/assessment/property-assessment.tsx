@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
+import nzMapImage from "@assets/NZ.png";
 
 export function PropertyAssessment() {
   const [query, setQuery] = useState("");
@@ -86,8 +87,19 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="space-y-6 relative min-h-screen">
+      {/* NZ Map Watermark Background */}
+      <div 
+        className="fixed inset-0 z-0 opacity-5 pointer-events-none"
+        style={{
+          backgroundImage: `url(${nzMapImage})`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+        }}
+      />
+      
+      <div className="max-w-3xl mx-auto relative z-10">
         {/* Conversation History */}
         <div className="space-y-4 mb-6">
           {conversations.length === 0 && (
