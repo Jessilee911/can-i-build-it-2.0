@@ -3,12 +3,18 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { scraper } from "./scraper";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import Stripe from "stripe";
 import {
   createCheckoutSession,
   ONE_TIME_PLANS,
   SUBSCRIPTION_PLANS,
   handleStripeWebhook
 } from "./stripe";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 import {
   insertDataSourceSchema,
   insertScrapingJobSchema,
@@ -78,7 +84,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store the report request in database
       await storage.createActivity({
         type: 'report_generated',
-        description: `Report generated for ${propertyAddress}`,
+        message: `Report generated for ${propertyAddress}`,
+        timestamp: new Date(),
         metadata: {
           planId,
           propertyAddress,
