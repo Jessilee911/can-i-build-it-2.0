@@ -299,9 +299,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate response using RAG (Retrieval Augmented Generation)
       const ragResponse = await generateRAGResponse(query, { address, analysis: queryAnalysis });
       
+      // Check if the response mentions personalized property report
+      const showReportCTA = ragResponse.includes('personalized property report') || 
+                           ragResponse.includes('property-specific details') ||
+                           ragResponse.includes('tailored to your exact address');
+      
       return res.json({
         message: ragResponse,
         queryAnalysis,
+        showReportCTA,
         needsOfficialData: true,
         suggestedDataSources: [
           "LINZ Data Service API - for property boundaries and ownership",
