@@ -31,7 +31,7 @@ const PropertyData = () => {
     },
     {
       title: "Detailed Analysis",
-      price: "$0",
+      price: "$1",
       description: "Complete property assessment",
       features: [
         "Everything in Basic",
@@ -42,7 +42,7 @@ const PropertyData = () => {
     },
     {
       title: "Comprehensive",
-      price: "$0",
+      price: "$1",
       description: "Full assessment with AI sketching",
       features: [
         "Everything in Detailed",
@@ -54,7 +54,7 @@ const PropertyData = () => {
     },
     {
       title: "Expert Review",
-      price: "$0",
+      price: "$1",
       description: "Human expert verification",
       features: [
         "Everything in Comprehensive",
