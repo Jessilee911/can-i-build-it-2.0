@@ -80,3 +80,5 @@ export function AnimatedSuggestions() {
     </div>
   );
 }
+
+export default AnimatedSuggestions;

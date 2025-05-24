@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import nzMapImage from "@assets/NZ.png";
+import AnimatedSuggestions from "@/components/animated-suggestions";
 
 export function PropertyAssessment() {
   const [query, setQuery] = useState("");
@@ -182,6 +183,35 @@ Would you like to create a personalized property report for your specific projec
               }
             </Button>
           </form>
+        </div>
+        
+        {/* Show suggestion boxes and unlock features only when no conversations */}
+        {conversations.length === 0 && (
+          <>
+            <AnimatedSuggestions />
+            
+            <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
+              <div className="flex flex-col sm:flex-row items-center justify-between">
+                <div className="mb-4 sm:mb-0">
+                  <h3 className="text-lg font-semibold text-gray-900">Unlock advanced features</h3>
+                  <p className="text-sm text-gray-600">Get detailed reports, AI sketch concepts, and expert reviews</p>
+                </div>
+                <Link to="/pricing">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2">
+                    View Pricing Plans
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Database disclaimer at bottom */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-500">
+            This tool is connected to a database of New Zealand building regulations and property zoning requirements
+          </p>
         </div>
       </div>
     </div>
