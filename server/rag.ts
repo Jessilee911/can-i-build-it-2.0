@@ -108,7 +108,7 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Council consent processes and requirements
             - Property development regulations in New Zealand
             
-            Provide accurate, helpful information based on current NZ legislation. Always mention that specific situations may require checking with local councils. Be specific about consent requirements, zoning rules, and regulatory processes.`
+            Provide accurate, helpful information based on current NZ legislation. When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information. Mention that while you can provide general guidance, detailed assessments require property-specific data including zoning maps, consent histories, and local planning overlays.`
           },
           {
             role: 'user',

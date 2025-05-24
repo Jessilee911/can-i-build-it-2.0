@@ -31,6 +31,14 @@ export function PropertyAssessment() {
       // Use the RAG-enhanced response that includes actual NZ building knowledge
       let responseText = data.message;
       
+      // Check if this is a property-specific question that would benefit from a personalized report
+      const isPropertySpecific = query.toLowerCase().includes('address') || 
+                                query.toLowerCase().includes('property') ||
+                                query.toLowerCase().includes('my house') ||
+                                query.toLowerCase().includes('specific') ||
+                                query.toLowerCase().includes('exact') ||
+                                /\d+\s+\w+\s+(street|road|avenue|drive|place)/i.test(query);
+      
       // Add query analysis information if available
       if (data.queryAnalysis) {
         const analysis = data.queryAnalysis;
@@ -43,9 +51,19 @@ export function PropertyAssessment() {
         }
       }
       
-      // Note about enhanced accuracy with official data
-      if (data.needsOfficialData) {
-        responseText += `\n\n💡 For property-specific details and current regulations, connecting to official government databases would provide even more precise information.`;
+      // Strategic guidance toward personalized reports for property-specific questions
+      if (isPropertySpecific || data.queryAnalysis?.type === 'new_build' || data.queryAnalysis?.type === 'subdivision') {
+        responseText += `\n\n🏡 **Get a Personalized Property Report**\nFor accurate, property-specific information including zoning details, consent requirements, and development potential for your exact address, I recommend getting a personalized property report. This will provide:
+        
+• Exact zoning rules for your property
+• Building consent requirements specific to your site
+• Resource consent implications
+• Professional consultant recommendations
+• Detailed development timeline and costs
+
+Would you like to create a personalized property report for your specific project?`;
+      } else if (data.needsOfficialData) {
+        responseText += `\n\n💡 For property-specific details and current regulations, a personalized property report would provide precise information tailored to your exact address and project requirements.`;
       }
       
       // Add response to conversation history
