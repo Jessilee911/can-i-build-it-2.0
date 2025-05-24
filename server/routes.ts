@@ -281,7 +281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== Property Assessment Routes ====================
-  // New route for property assessment using real NZ data
+  // Property assessment using RAG and real NZ data
   apiRouter.post("/api/assess-property", async (req: Request, res: Response) => {
     try {
       const { query, address } = req.body;
@@ -290,15 +290,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Query is required and must be at least 5 characters" });
       }
 
-      // This would connect to actual NZ data sources like:
-      // - LINZ Data Service API for property information
-      // - Auckland Council GeoMaps API for zoning
-      // - Building.govt.nz for building code requirements
+      // Import RAG functions
+      const { generateRAGResponse, analyzeQuery } = await import('./rag');
       
-      // For now, we'll return a response indicating we need API access
+      // Analyze the query to understand what the user is asking
+      const queryAnalysis = analyzeQuery(query);
+      
+      // Generate response using RAG (Retrieval Augmented Generation)
+      const ragResponse = generateRAGResponse(query, { address, analysis: queryAnalysis });
+      
       return res.json({
-        message: "To provide accurate property assessments, we need to connect to New Zealand government data sources including LINZ Data Service, Auckland Council GeoMaps, and Building.govt.nz APIs. Please provide the necessary API keys or data access credentials.",
-        requiresApiSetup: true,
+        message: ragResponse,
+        queryAnalysis,
+        needsOfficialData: true,
         suggestedDataSources: [
           "LINZ Data Service API - for property boundaries and ownership",
           "Auckland Council GeoMaps API - for zoning information", 

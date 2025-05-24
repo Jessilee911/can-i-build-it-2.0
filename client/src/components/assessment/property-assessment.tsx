@@ -28,48 +28,25 @@ export function PropertyAssessment() {
       
       const data = await response.json();
       
-      // Check if we need API setup for real data sources
-      if (data.requiresApiSetup) {
-        // For first question about API setup, show the setup message
-        // For subsequent questions, provide helpful guidance based on what we can determine
-        const isFirstApiRequest = conversations.filter(c => c.content.includes('data sources')).length === 0;
-        
-        let responseText;
-        if (isFirstApiRequest) {
-          responseText = `I'm ready to connect to authentic New Zealand building and zoning data sources to give you accurate, real-time information about your property development project.
-
-To provide you with genuine assessments based on current regulations, I need access to:
-
-${data.suggestedDataSources.map((source: string) => `• ${source}`).join('\n')}
-
-These official data sources will allow me to:
-• Check actual zoning rules for specific addresses
-• Verify current building consent requirements
-• Access real property boundary and ownership data
-• Review up-to-date regional planning rules
-
-Would you like to set up access to these data sources so I can provide authentic property assessments rather than general guidance?`;
-        } else {
-          // For follow-up questions, provide helpful general guidance while noting data source limitations
-          responseText = `I understand you have another question about building regulations in New Zealand. While I'm working to connect to the official data sources for precise information, I can offer some general guidance:
-
-For your specific query: "${query}"
-
-This type of question typically requires checking official sources like council zoning maps and current building consent requirements. To give you the most accurate and up-to-date information, I'd need access to the government databases I mentioned earlier.
-
-Would you like to continue with more questions, or shall we work on connecting to the official data sources for precise answers?`;
+      // Use the RAG-enhanced response that includes actual NZ building knowledge
+      let responseText = data.message;
+      
+      // Add query analysis information if available
+      if (data.queryAnalysis) {
+        const analysis = data.queryAnalysis;
+        if (analysis.type !== 'general') {
+          responseText += `\n\n📋 Query Analysis: I've identified this as a ${analysis.type.replace('_', ' ')} inquiry`;
+          if (analysis.buildingType) {
+            responseText += ` regarding ${analysis.buildingType.replace('_', ' ')}`;
+          }
+          responseText += `.`;
         }
-        
-        // Add response to conversation history
-        setConversations(prev => [...prev, {type: 'response', content: responseText}]);
-        
-        // Reset form input but keep conversation flowing
-        setQuery("");
-        return;
       }
       
-      // If we have real data, process it normally
-      const responseText = data.message || "I've received your query and I'm working on connecting to the official New Zealand building and planning databases to provide you with accurate, up-to-date information.";
+      // Note about enhanced accuracy with official data
+      if (data.needsOfficialData) {
+        responseText += `\n\n💡 For property-specific details and current regulations, connecting to official government databases would provide even more precise information.`;
+      }
       
       // Add response to conversation history
       setConversations(prev => [...prev, {type: 'response', content: responseText}]);
