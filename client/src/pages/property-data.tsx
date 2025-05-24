@@ -282,6 +282,13 @@ const PropertyData = () => {
           </div>
         </div>
       )}
+      
+      {/* Always visible blue disclaimer at bottom */}
+      <div className="mt-6 text-center">
+        <p className="text-sm text-blue-600">
+          This tool is connected to a database of New Zealand building regulations and property zoning requirements
+        </p>
+      </div>
     </div>
   );
 };
