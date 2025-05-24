@@ -49,25 +49,25 @@ export function AnimatedSuggestions() {
   return (
     <div className="mt-4 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-sm">
           <h3 className="font-medium text-gray-900 mb-2">Try asking about:</h3>
           <div 
-            className={`text-gray-600 min-h-[24px] transition-opacity duration-300 ${
+            className={`text-gray-700 min-h-[24px] transition-opacity duration-300 ${
               questionVisible ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <span className="text-blue-600">• "{askingAboutQuestions[currentQuestionIndex]}"</span>
+            <span className="text-blue-700">• "{askingAboutQuestions[currentQuestionIndex]}"</span>
           </div>
         </div>
         
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-sm">
           <h3 className="font-medium text-gray-900 mb-2">Quick Building Tips:</h3>
           <div 
-            className={`text-gray-600 min-h-[24px] transition-opacity duration-300 ${
+            className={`text-gray-700 min-h-[24px] transition-opacity duration-300 ${
               tipVisible ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <span className="text-green-600">• {buildingTips[currentTipIndex]}</span>
+            <span className="text-green-700">• {buildingTips[currentTipIndex]}</span>
           </div>
         </div>
       </div>
