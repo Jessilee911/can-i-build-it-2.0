@@ -47,8 +47,8 @@ export function AnimatedSuggestions() {
   }, []);
 
   return (
-    <div className="mt-2 mb-2">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
+    <div className="mt-1 mb-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 text-sm">
         <div 
           className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm"
           style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
