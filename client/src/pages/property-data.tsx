@@ -102,7 +102,7 @@ const PropertyData = () => {
           {/* Animated suggestion content below search bar */}
           <AnimatedSuggestions />
           
-          <div className="mt-4 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
+          <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
             <div className="flex flex-col sm:flex-row items-center justify-between">
               <div className="mb-4 sm:mb-0">
                 <h3 className="text-lg font-semibold text-gray-900">Unlock advanced features</h3>
