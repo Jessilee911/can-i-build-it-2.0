@@ -103,7 +103,7 @@ Would you like to create a personalized property report for your specific projec
         {/* Conversation History */}
         <div className="space-y-4 mb-6">
           {conversations.length === 0 && (
-            <div className="text-center py-8 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm">
+            <div className="text-center py-8 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm">
               <h1 className="text-5xl font-bold text-gray-900 mb-4" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
               <p className="text-gray-600 max-w-md mx-auto">
                 Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
@@ -117,10 +117,10 @@ Would you like to create a personalized property report for your specific projec
               className={`flex ${item.type === 'query' ? 'justify-end' : 'justify-start'}`}
             >
               <div 
-                className={`max-w-[80%] rounded-lg p-4 shadow-sm ${
+                className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm ${
                   item.type === 'query' 
-                    ? 'bg-blue-50/95 text-blue-900 backdrop-blur-sm border border-blue-200' 
-                    : 'bg-white/95 text-gray-900 backdrop-blur-sm border border-gray-200'
+                    ? 'bg-blue-50/90 text-blue-900 backdrop-blur-sm border border-blue-200' 
+                    : 'bg-white/90 text-gray-900 backdrop-blur-sm border border-gray-200'
                 }`}
               >
                 <div className="whitespace-pre-line">{item.content}</div>
@@ -139,7 +139,7 @@ Would you like to create a personalized property report for your specific projec
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-sm">
+              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm">
                 <div className="flex space-x-2 items-center">
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
@@ -151,7 +151,7 @@ Would you like to create a personalized property report for your specific projec
         </div>
         
         {/* Input Form */}
-        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm border border-gray-200">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input 
               type="text"
