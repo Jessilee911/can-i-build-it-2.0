@@ -111,7 +111,16 @@ const PropertyData = () => {
           
           {showPricing && (
             <div className="mt-6 border-t pt-6">
-              <h2 className="text-xl font-bold mb-6 text-center">Choose Your Plan</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Choose Your Plan</h2>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowPricing(false)}
+                >
+                  Hide Pricing Plans
+                </Button>
+              </div>
               
               <div className="mb-6">
                 <div className="flex justify-center space-x-2 mb-6">
