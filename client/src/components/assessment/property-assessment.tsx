@@ -87,7 +87,7 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="space-y-4 relative">
+    <div className="min-h-screen flex items-center justify-center relative">
       {/* NZ Map Watermark Background */}
       <div 
         className="fixed inset-0 z-0 opacity-30 pointer-events-none"
@@ -100,7 +100,7 @@ Would you like to create a personalized property report for your specific projec
         }}
       />
       
-      <div className="max-w-3xl mx-auto relative z-10">
+      <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-3 mb-4">
           {conversations.length === 0 && (
