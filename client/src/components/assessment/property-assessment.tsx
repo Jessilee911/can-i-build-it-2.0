@@ -115,9 +115,8 @@ Would you like to create a personalized property report for your specific projec
                 {item.showReportCTA && item.type === 'response' && (
                   <div className="mt-4 pt-3 border-t border-gray-300">
                     <Link to="/pricing">
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                        Choose Your Plan
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white p-2">
+                        <ArrowRight className="h-4 w-4" />
                       </Button>
                     </Link>
                   </div>
