@@ -215,6 +215,12 @@ Would you like to create a personalized property report for your specific projec
           </>
         )}
         
+        {/* Always visible database disclaimer */}
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600 bg-white bg-opacity-70 backdrop-blur-sm p-3 rounded-lg border border-gray-200">
+            This tool is connected to a database of New Zealand building regulations and property zoning requirements
+          </p>
+        </div>
 
       </div>
     </div>
