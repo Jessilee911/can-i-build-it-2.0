@@ -93,22 +93,9 @@ const PropertyData = () => {
   const activePlans = pricingType === "onetime" ? pricingPlans : subscriptionPlans;
   
   return (
-    <div className="relative">
-      {/* Fixed NZ Map Background */}
-      <div 
-        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: `url(/attached_assets/NZ.png)`,
-          backgroundSize: '60%',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          animation: 'float 20s ease-in-out infinite',
-        }}
-      />
-      
-      <div className="relative z-10">
-        <div className="bg-white bg-opacity-90 backdrop-blur-sm shadow rounded-lg mb-6">
-          <div className="p-6">
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white shadow rounded-lg mb-6">
+        <div className="p-6">
           {/* Main search component */}
           <PropertyAssessment />
           
@@ -206,7 +193,6 @@ const PropertyData = () => {
           This tool is connected to a database of New Zealand building regulations and property zoning requirements
         </div>
       )}
-      </div>
       
       {/* Simple Property Details Modal */}
       {showPropertyDetails && (
