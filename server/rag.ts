@@ -79,68 +79,61 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
 }
 
 /**
- * Generate an informed response using RAG with Perplexity API for real-time data
+ * Generate an informed response using RAG with OpenAI API
  */
 export async function generateRAGResponse(query: string, userContext?: any): Promise<string> {
-  if (!process.env.PERPLEXITY_API_KEY) {
-    return `To provide you with accurate, real-time information about New Zealand building regulations and property assessments, I need access to web search capabilities. This would allow me to search current government websites, council databases, and official sources for the most up-to-date information.
+  if (!process.env.OPENAI_API_KEY) {
+    return `To provide you with accurate information about New Zealand building regulations and property assessments, I need access to AI capabilities that can help analyze and provide guidance on building regulations.
 
-Would you like to set up web search access so I can provide authentic, current property and building regulation information?`;
+Would you like to set up AI assistance so I can provide detailed property and building regulation information?`;
   }
 
   try {
-    // Use Perplexity to search for current NZ building information
-    const searchQuery = `New Zealand building regulations ${query} site:building.govt.nz OR site:linz.govt.nz OR site:aucklandcouncil.govt.nz`;
-    
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    // Use OpenAI to provide informed responses about NZ building regulations
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           {
             role: 'system',
-            content: 'You are an expert on New Zealand building regulations, zoning laws, and property development. Provide accurate information based on current NZ legislation and official sources. Always cite your sources.'
+            content: `You are an expert on New Zealand building regulations, zoning laws, and property development. You have extensive knowledge of:
+            - Building Act 2004 and Building Code requirements
+            - Resource Management Act 1991 and planning rules
+            - National Planning Standards and zone types
+            - Council consent processes and requirements
+            - Property development regulations in New Zealand
+            
+            Provide accurate, helpful information based on current NZ legislation. Always mention that specific situations may require checking with local councils. Be specific about consent requirements, zoning rules, and regulatory processes.`
           },
           {
             role: 'user',
-            content: `${query}. Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query.`
+            content: `${query}
+
+Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Include practical guidance about next steps and mention key legislation or standards that apply.`
           }
         ],
-        max_tokens: 500,
-        temperature: 0.2,
-        search_domain_filter: ['building.govt.nz', 'linz.govt.nz', 'aucklandcouncil.govt.nz'],
-        return_citations: true,
-        search_recency_filter: 'month'
+        max_tokens: 600,
+        temperature: 0.3,
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Perplexity API error: ${response.status}`);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content;
-    const citations = data.citations || [];
 
     if (content) {
-      let ragResponse = content;
-      
-      // Add citations if available
-      if (citations.length > 0) {
-        ragResponse += '\n\nSources:\n';
-        citations.forEach((citation: string, index: number) => {
-          ragResponse += `${index + 1}. ${citation}\n`;
-        });
-      }
-      
-      return ragResponse;
+      return content;
     }
   } catch (error) {
-    console.error('Perplexity API error:', error);
+    console.error('OpenAI API error:', error);
   }
 
   // Fallback to local knowledge base if API fails
