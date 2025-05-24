@@ -102,7 +102,7 @@ Would you like to create a personalized property report for your specific projec
       
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
-        <div className="space-y-3 mb-2">
+        <div className="space-y-4 mb-4">
           {conversations.length === 0 && (
             <div 
               className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm"
