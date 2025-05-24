@@ -92,14 +92,14 @@ const PropertyData = () => {
   
   const activePlans = pricingType === "onetime" ? pricingPlans : subscriptionPlans;
   
-  // Listen for pricing display events
+  // Listen for pricing toggle events
   useEffect(() => {
-    const handleShowPricing = () => {
-      setShowPricing(true);
+    const handleTogglePricing = () => {
+      setShowPricing(prev => !prev);
     };
     
-    window.addEventListener('showPricing', handleShowPricing);
-    return () => window.removeEventListener('showPricing', handleShowPricing);
+    window.addEventListener('togglePricing', handleTogglePricing);
+    return () => window.removeEventListener('togglePricing', handleTogglePricing);
   }, []);
   
   return (

@@ -197,7 +197,7 @@ Would you like to create a personalized property report for your specific projec
                   <p className="text-sm text-gray-600">Get detailed reports, AI sketch concepts, and expert reviews</p>
                 </div>
                 <Button 
-                  onClick={() => window.dispatchEvent(new CustomEvent('showPricing'))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('togglePricing'))}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
                 >
                   View Pricing Plans
