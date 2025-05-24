@@ -172,11 +172,7 @@ const PropertyData = () => {
         </div>
       </div>
       
-      {!showPricing && (
-        <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 text-center">
-          This tool is connected to a database of New Zealand building regulations and property zoning requirements
-        </div>
-      )}
+
       
       {/* Simple Property Details Modal */}
       {showPropertyDetails && (
