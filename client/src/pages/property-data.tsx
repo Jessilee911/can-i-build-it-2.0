@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PropertyAssessment } from "@/components/assessment/property-assessment";
+import { AnimatedSuggestions } from "@/components/animated-suggestions";
 import { Button } from "@/components/ui/button";
 import { FileTextIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -104,30 +105,8 @@ const PropertyData = () => {
           {/* Main search component */}
           <PropertyAssessment />
           
-          {/* Suggestion content moved below search bar */}
-          <div className="mt-4 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-900 mb-2">Try asking about:</h3>
-                <ul className="space-y-2 text-gray-600">
-                  <li>• "Can I build a minor dwelling in Auckland?"</li>
-                  <li>• "I want to renovate my kitchen, do I need consent?"</li>
-                  <li>• "What consultants do I need to subdivide my property?"</li>
-                  <li>• "How long does it take to get building consent?"</li>
-                </ul>
-              </div>
-              
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-900 mb-2">Quick Building Tips:</h3>
-                <ul className="space-y-2 text-gray-600">
-                  <li>• Most structural changes require consent</li>
-                  <li>• Resource consent is separate from building consent</li>
-                  <li>• NZ Building Code sets national standards for construction</li>
-                  <li>• Engaging professionals early saves time and money</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+          {/* Animated suggestion content below search bar */}
+          <AnimatedSuggestions />
           
           <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
             <div className="flex flex-col sm:flex-row items-center justify-between">
@@ -303,7 +282,7 @@ const PropertyData = () => {
                     const result = await processReportRequest(propertyDetails, selectedPlan);
                     
                     // For free plans or after successful payment
-                    if (result.success && !result.redirected) {
+                    if (result.success && !(result as any).redirected) {
                       toast({
                         title: "Report request submitted",
                         description: `We're generating your ${selectedPlan}. You'll receive a notification when it's ready.`,
