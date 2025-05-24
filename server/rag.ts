@@ -9,40 +9,126 @@ interface KnowledgeBase {
   lastUpdated: Date;
 }
 
-// This would typically connect to a vector database for semantic search
-// For now, we'll create a structured knowledge base of NZ building regulations
+// Official MBIE building consent exemptions knowledge base
 const nzBuildingKnowledge: KnowledgeBase[] = [
+  // From MBIE Exemptions Guidance Document
+  {
+    id: 'exempt_001',
+    content: 'General repair, maintenance, and replacement of building parts does not require consent if using the same or similar materials and maintaining original function.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_002',
+    content: 'Interior alterations to existing non-residential buildings do not require consent if they do not affect structural elements, fire safety systems, or accessibility provisions.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_003',
+    content: 'Single-storey detached buildings less than 10 square metres do not require building consent regardless of use.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_004',
+    content: 'Windows and exterior doorways in existing dwellings and outbuildings can be replaced without consent if same size and performance level maintained.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_005',
+    content: 'Internal walls and doorways in existing buildings can be altered without consent provided they are not structural or affect fire safety systems.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_006',
+    content: 'Repair, maintenance, and replacement of sanitary plumbing and drainage does not require consent when maintaining existing function and capacity.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_007',
+    content: 'Thermal insulation installation or replacement does not require consent provided it meets Building Code requirements and does not affect structural elements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_008',
+    content: 'Porches and verandas up to 20 square metres do not require consent if single-storey and meet specific height and structural requirements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_009',
+    content: 'Decks, platforms, and bridges up to 1.5m high and meeting specific structural requirements do not require consent.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_010',
+    content: 'Carports not exceeding 20 square metres in floor area do not require consent if single-storey and meeting structural requirements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_011',
+    content: 'Fences and hoardings do not require building consent regardless of height, but must comply with district plan rules.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_012',
+    content: 'Retaining walls up to 1.5 metres depth of ground without surcharge do not require consent if meeting specific design requirements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  // General building consent requirements
   {
     id: 'bc_001',
-    content: 'Building consent is required for most new buildings, significant alterations, and additions over 10m². Minor alterations like internal wall removal may be exempt under Schedule 1.',
+    content: 'Building consent is required for most new buildings, significant alterations, and additions. Work must be carried out by licensed building practitioners where required.',
     source: 'Building Act 2004',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'bc_002', 
-    content: 'Minor dwellings (granny flats) are permitted in residential zones up to 65m² floor area, must share vehicle access, and require building consent but not resource consent in most cases.',
-    source: 'National Planning Standards',
+    content: 'All building work, whether exempt or requiring consent, must comply with the Building Code and other relevant legislation.',
+    source: 'Building Act 2004 - MBIE Guidance',
     category: 'building_consent',
     lastUpdated: new Date()
   },
+  // Zoning information
   {
     id: 'zone_001',
-    content: 'Residential - Single House Zone allows one dwelling per site with specific height, boundary setback, and site coverage rules. Maximum height 8m in most areas.',
+    content: 'Residential - Single House Zone allows one dwelling per site with specific height, boundary setback, and site coverage rules.',
     source: 'National Planning Standards',
     category: 'zoning',
     lastUpdated: new Date()
   },
   {
     id: 'zone_002',
-    content: 'Mixed Housing Urban Zone allows multiple dwellings per site up to 3 storeys, with higher density development permitted subject to design standards.',
+    content: 'Mixed Housing Urban Zone allows multiple dwellings per site up to 3 storeys, with higher density development permitted.',
     source: 'National Planning Standards', 
     category: 'zoning',
     lastUpdated: new Date()
   },
   {
     id: 'rc_001',
-    content: 'Resource consent is required for activities that breach zone rules or are not permitted activities. Subdivision always requires resource consent.',
+    content: 'Resource consent is required for activities that breach zone rules. Subdivision always requires resource consent.',
     source: 'Resource Management Act 1991',
     category: 'resource_consent',
     lastUpdated: new Date()
@@ -101,14 +187,18 @@ Would you like to set up AI assistance so I can provide detailed property and bu
         messages: [
           {
             role: 'system',
-            content: `You are an expert on New Zealand building regulations, zoning laws, and property development. You have extensive knowledge of:
+            content: `You are an expert on New Zealand building regulations, zoning laws, and property development. You have access to official MBIE guidance including the "Building work that does not require a building consent - Exemptions Guidance for Schedule 1 of the Building Act 2004" document.
+
+            Your knowledge includes:
             - Building Act 2004 and Building Code requirements
+            - Official MBIE exemptions guidance (Schedule 1)
             - Resource Management Act 1991 and planning rules
             - National Planning Standards and zone types
             - Council consent processes and requirements
-            - Property development regulations in New Zealand
             
-            Provide accurate, helpful information based on current NZ legislation. When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information. Mention that while you can provide general guidance, detailed assessments require property-specific data including zoning maps, consent histories, and local planning overlays.`
+            When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
+            
+            When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays.`
           },
           {
             role: 'user',
