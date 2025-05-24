@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import PropertyData from "@/pages/property-data";
+import PricingPage from "@/pages/pricing";
 import { Link } from "wouter";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,11 @@ function Router() {
       <Route path="/" component={() => (
         <AppLayout>
           <PropertyData />
+        </AppLayout>
+      )} />
+      <Route path="/pricing" component={() => (
+        <AppLayout>
+          <PricingPage />
         </AppLayout>
       )} />
       <Route component={NotFound} />
