@@ -7,10 +7,8 @@ import { useLocation } from "wouter";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
-}
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_51RQvpCRkbQxb8ZT81y427XFSZqx33n9z3zcL4rjnzBzUSdVXWQuU88mK1Dxq6c2H1ZDEzwmIu3okToiNtQOsJ5XJ00ye8lSjaC';
+const stripePromise = loadStripe(stripePublicKey);
 
 const CheckoutForm = ({ planId, planName, amount }: { planId: string, planName: string, amount: number }) => {
   const stripe = useStripe();
