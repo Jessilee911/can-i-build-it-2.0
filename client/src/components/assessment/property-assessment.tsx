@@ -120,8 +120,8 @@ Would you like to create a personalized property report for your specific projec
               <div 
                 className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm ${
                   item.type === 'query' 
-                    ? 'bg-blue-50/90 text-blue-900 backdrop-blur-sm border border-blue-200' 
-                    : 'bg-white/90 text-gray-900 backdrop-blur-sm border border-gray-200'
+                    ? 'bg-blue-50 bg-opacity-80 text-blue-900 backdrop-blur-sm border border-blue-200' 
+                    : 'bg-white bg-opacity-80 text-gray-900 backdrop-blur-sm border border-gray-200'
                 }`}
               >
                 <div className="whitespace-pre-line">{item.content}</div>
@@ -140,7 +140,7 @@ Would you like to create a personalized property report for your specific projec
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm">
+              <div className="bg-white bg-opacity-80 backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm">
                 <div className="flex space-x-2 items-center">
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
@@ -152,7 +152,7 @@ Would you like to create a personalized property report for your specific projec
         </div>
         
         {/* Input Form */}
-        <div className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm border border-gray-200">
+        <div className="bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm border border-gray-200">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input 
               type="text"
