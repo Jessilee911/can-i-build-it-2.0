@@ -10,23 +10,6 @@ import { Link } from "wouter";
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <div className="py-4 px-4 sm:px-6 lg:px-8 bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Link href="/">
-                <div className="flex items-center cursor-pointer">
-                  <span className="material-icons text-blue-600 mr-2">home_work</span>
-                  <h1 className="text-xl font-semibold text-gray-900">Can I Build It?</h1>
-                </div>
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">New Zealand Building Guide</span>
-            </div>
-          </div>
-        </div>
-      </div>
       <main className="py-6 px-4 sm:px-6 lg:px-8">
         {children}
       </main>

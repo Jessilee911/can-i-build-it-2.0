@@ -96,12 +96,6 @@ const PropertyData = () => {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white shadow rounded-lg mb-6">
         <div className="p-6">
-          <div className="mb-6 text-center">
-            <p className="text-gray-600 mb-4">
-              Ask me anything about building, renovating, or developing property in New Zealand
-            </p>
-          </div>
-          
           {/* Main search component */}
           <PropertyAssessment />
           
