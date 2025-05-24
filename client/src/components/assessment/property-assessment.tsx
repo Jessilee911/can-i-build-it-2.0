@@ -136,11 +136,13 @@ Would you like to create a personalized property report for your specific projec
                 <div className="whitespace-pre-line">{item.content}</div>
                 {item.showReportCTA && item.type === 'response' && (
                   <div className="mt-4 pt-3 border-t border-gray-300">
-                    <Link to="/pricing">
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white p-2">
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <Button 
+                      size="sm" 
+                      className="bg-blue-600 hover:bg-blue-700 text-white p-2"
+                      onClick={() => window.dispatchEvent(new CustomEvent('togglePricing'))}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
               </div>
