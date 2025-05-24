@@ -196,12 +196,13 @@ Would you like to create a personalized property report for your specific projec
                   <h3 className="text-lg font-semibold text-gray-900">Unlock advanced features</h3>
                   <p className="text-sm text-gray-600">Get detailed reports, AI sketch concepts, and expert reviews</p>
                 </div>
-                <Link to="/pricing">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2">
-                    View Pricing Plans
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('showPricing'))}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                >
+                  View Pricing Plans
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </div>
           </>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PropertyAssessment } from "@/components/assessment/property-assessment";
 import { AnimatedSuggestions } from "@/components/animated-suggestions";
 import { Button } from "@/components/ui/button";
@@ -91,6 +91,16 @@ const PropertyData = () => {
   ];
   
   const activePlans = pricingType === "onetime" ? pricingPlans : subscriptionPlans;
+  
+  // Listen for pricing display events
+  useEffect(() => {
+    const handleShowPricing = () => {
+      setShowPricing(true);
+    };
+    
+    window.addEventListener('showPricing', handleShowPricing);
+    return () => window.removeEventListener('showPricing', handleShowPricing);
+  }, []);
   
   return (
     <div className="max-w-4xl mx-auto">
