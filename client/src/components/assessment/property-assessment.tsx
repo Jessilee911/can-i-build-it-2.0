@@ -90,7 +90,7 @@ Would you like to create a personalized property report for your specific projec
     <div className="space-y-6 relative min-h-screen">
       {/* NZ Map Watermark Background */}
       <div 
-        className="fixed inset-0 z-0 opacity-5 pointer-events-none"
+        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
         style={{
           backgroundImage: `url(${nzMapImage})`,
           backgroundSize: 'contain',
