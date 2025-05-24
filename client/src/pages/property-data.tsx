@@ -110,16 +110,7 @@ const PropertyData = () => {
           <PropertyAssessment showPricing={showPricing} />
           
           {showPricing && (
-            <div className="mt-6 border-t pt-6">
-              <div className="flex justify-end items-center mb-6">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowPricing(false)}
-                >
-                  Hide Pricing Plans
-                </Button>
-              </div>
+            <div className="mt-4 pt-4">{/* Reduced spacing to move closer to search bar */}
               
               <div className="mb-6">
                 <div className="flex justify-center space-x-2 mb-6">
