@@ -135,7 +135,7 @@ const PropertyData = () => {
                   {activePlans.map((plan, index) => (
                     <div 
                       key={index} 
-                      className={`bg-white p-4 rounded-lg border ${plan.highlight ? 'border-blue-500 shadow-lg' : 'border-gray-200'} flex flex-col h-full`}
+                      className={`bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border ${plan.highlight ? 'border-blue-500 shadow-lg' : 'border-gray-200'} flex flex-col h-full`}
                     >
                       <div className="mb-4">
                         <h3 className="font-bold text-lg">{plan.title}</h3>
