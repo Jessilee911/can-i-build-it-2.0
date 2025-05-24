@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { Link } from "wouter";
 
 export function PropertyAssessment() {
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string}[]>([]);
+  const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +54,8 @@ export function PropertyAssessment() {
       }
       
       // Strategic guidance toward personalized reports for property-specific questions
+      const shouldShowReportCTA = isPropertySpecific || data.queryAnalysis?.type === 'new_build' || data.queryAnalysis?.type === 'subdivision' || data.needsOfficialData;
+      
       if (isPropertySpecific || data.queryAnalysis?.type === 'new_build' || data.queryAnalysis?.type === 'subdivision') {
         responseText += `\n\n🏡 **Get a Personalized Property Report**\nFor accurate, property-specific information including zoning details, consent requirements, and development potential for your exact address, I recommend getting a personalized property report. This will provide:
         
@@ -63,11 +67,11 @@ export function PropertyAssessment() {
 
 Would you like to create a personalized property report for your specific project?`;
       } else if (data.needsOfficialData) {
-        responseText += `\n\n💡 For property-specific details and current regulations, a personalized property report would provide precise information tailored to your exact address and project requirements.`;
+        responseText += `\n\n💡 **For property-specific details and current regulations, a personalized property report would provide precise information tailored to your exact address and project requirements.**`;
       }
       
-      // Add response to conversation history
-      setConversations(prev => [...prev, {type: 'response', content: responseText}]);
+      // Add response to conversation history with CTA flag
+      setConversations(prev => [...prev, {type: 'response', content: responseText, showReportCTA: shouldShowReportCTA}]);
       
       // Reset form
       setQuery("");
@@ -108,6 +112,16 @@ Would you like to create a personalized property report for your specific projec
                 }`}
               >
                 <div className="whitespace-pre-line">{item.content}</div>
+                {item.showReportCTA && item.type === 'response' && (
+                  <div className="mt-4 pt-3 border-t border-gray-300">
+                    <Link to="/pricing">
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+                        Choose Your Plan
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           ))}
