@@ -79,41 +79,86 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
 }
 
 /**
- * Generate an informed response using RAG
+ * Generate an informed response using RAG with Perplexity API for real-time data
  */
-export function generateRAGResponse(query: string, userContext?: any): string {
-  // Extract key concepts from the query
-  const queryLower = query.toLowerCase();
-  let category: KnowledgeBase['category'] | undefined;
-  
-  if (queryLower.includes('zone') || queryLower.includes('zoning')) {
-    category = 'zoning';
-  } else if (queryLower.includes('consent') && queryLower.includes('building')) {
-    category = 'building_consent';
-  } else if (queryLower.includes('consent') && (queryLower.includes('resource') || queryLower.includes('planning'))) {
-    category = 'resource_consent';
-  } else if (queryLower.includes('building code') || queryLower.includes('standards')) {
-    category = 'building_code';
+export async function generateRAGResponse(query: string, userContext?: any): Promise<string> {
+  if (!process.env.PERPLEXITY_API_KEY) {
+    return `To provide you with accurate, real-time information about New Zealand building regulations and property assessments, I need access to web search capabilities. This would allow me to search current government websites, council databases, and official sources for the most up-to-date information.
+
+Would you like to set up web search access so I can provide authentic, current property and building regulation information?`;
   }
-  
-  // Search knowledge base
-  const relevantInfo = searchKnowledgeBase(query, category);
-  
-  if (relevantInfo.length === 0) {
-    return `I understand your question about "${query}". To provide you with accurate information from New Zealand building regulations and planning rules, I need access to the official data sources. Once connected to LINZ, Auckland Council, and Building.govt.nz APIs, I can give you precise, up-to-date answers.`;
+
+  try {
+    // Use Perplexity to search for current NZ building information
+    const searchQuery = `New Zealand building regulations ${query} site:building.govt.nz OR site:linz.govt.nz OR site:aucklandcouncil.govt.nz`;
+    
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-sonar-small-128k-online',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert on New Zealand building regulations, zoning laws, and property development. Provide accurate information based on current NZ legislation and official sources. Always cite your sources.'
+          },
+          {
+            role: 'user',
+            content: `${query}. Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query.`
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.2,
+        search_domain_filter: ['building.govt.nz', 'linz.govt.nz', 'aucklandcouncil.govt.nz'],
+        return_citations: true,
+        search_recency_filter: 'month'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Perplexity API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+    const citations = data.citations || [];
+
+    if (content) {
+      let ragResponse = content;
+      
+      // Add citations if available
+      if (citations.length > 0) {
+        ragResponse += '\n\nSources:\n';
+        citations.forEach((citation: string, index: number) => {
+          ragResponse += `${index + 1}. ${citation}\n`;
+        });
+      }
+      
+      return ragResponse;
+    }
+  } catch (error) {
+    console.error('Perplexity API error:', error);
   }
+
+  // Fallback to local knowledge base if API fails
+  const relevantInfo = searchKnowledgeBase(query);
   
-  // Build response using retrieved information
-  let response = `Based on New Zealand building regulations and planning standards:\n\n`;
-  
-  relevantInfo.forEach((info, index) => {
-    response += `${index + 1}. ${info.content}\n`;
-    response += `   (Source: ${info.source})\n\n`;
-  });
-  
-  response += `This information is based on current New Zealand legislation. For specific properties, I recommend checking with your local council as rules may vary by district. Would you like more detailed information about any of these points?`;
-  
-  return response;
+  if (relevantInfo.length > 0) {
+    let response = `Based on New Zealand building regulations and planning standards:\n\n`;
+    
+    relevantInfo.forEach((info, index) => {
+      response += `${index + 1}. ${info.content}\n`;
+      response += `   (Source: ${info.source})\n\n`;
+    });
+    
+    response += `This information is based on current New Zealand legislation. For the most current details, I recommend checking official government websites.`;
+    return response;
+  }
+
+  return `I understand your question about "${query}". To provide you with the most accurate and current information from official New Zealand sources, I need access to web search capabilities. This would allow me to search building.govt.nz, council websites, and other official sources in real-time.`;
 }
 
 /**

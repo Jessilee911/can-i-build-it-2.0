@@ -297,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const queryAnalysis = analyzeQuery(query);
       
       // Generate response using RAG (Retrieval Augmented Generation)
-      const ragResponse = generateRAGResponse(query, { address, analysis: queryAnalysis });
+      const ragResponse = await generateRAGResponse(query, { address, analysis: queryAnalysis });
       
       return res.json({
         message: ragResponse,
