@@ -118,6 +118,7 @@ const PropertyData = () => {
                     variant={pricingType === "onetime" ? "default" : "outline"} 
                     size="sm"
                     onClick={() => setPricingType("onetime")}
+                    className="opacity-80"
                   >
                     One-Time Purchase
                   </Button>
@@ -125,6 +126,7 @@ const PropertyData = () => {
                     variant={pricingType === "subscription" ? "default" : "outline"} 
                     size="sm"
                     onClick={() => setPricingType("subscription")}
+                    className="opacity-80"
                   >
                     Subscription
                   </Button>
