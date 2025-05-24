@@ -104,7 +104,10 @@ Would you like to create a personalized property report for your specific projec
         {/* Conversation History */}
         <div className="space-y-3 mb-4">
           {conversations.length === 0 && (
-            <div className="text-center py-6 bg-white bg-opacity-80 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm">
+            <div 
+              className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+            >
               <h1 className="text-5xl font-bold text-gray-900 mb-4" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
               <p className="text-gray-600 max-w-md mx-auto">
                 Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
@@ -118,11 +121,16 @@ Would you like to create a personalized property report for your specific projec
               className={`flex ${item.type === 'query' ? 'justify-end' : 'justify-start'}`}
             >
               <div 
-                className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm ${
+                className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm backdrop-blur-sm border ${
                   item.type === 'query' 
-                    ? 'bg-blue-50 bg-opacity-80 text-blue-900 backdrop-blur-sm border border-blue-200' 
-                    : 'bg-white bg-opacity-80 text-gray-900 backdrop-blur-sm border border-gray-200'
+                    ? 'text-blue-900 border-blue-200' 
+                    : 'text-gray-900 border-gray-200'
                 }`}
+                style={{
+                  backgroundColor: item.type === 'query' 
+                    ? 'rgba(239, 246, 255, 0.5)' 
+                    : 'rgba(255, 255, 255, 0.5)'
+                }}
               >
                 <div className="whitespace-pre-line">{item.content}</div>
                 {item.showReportCTA && item.type === 'response' && (
@@ -140,7 +148,10 @@ Would you like to create a personalized property report for your specific projec
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white bg-opacity-80 backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm">
+              <div 
+                className="backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+              >
                 <div className="flex space-x-2 items-center">
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
@@ -152,7 +163,10 @@ Would you like to create a personalized property report for your specific projec
         </div>
         
         {/* Input Form */}
-        <div className="bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm border border-gray-200">
+        <div 
+          className="backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm border border-gray-200"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+        >
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input 
               type="text"

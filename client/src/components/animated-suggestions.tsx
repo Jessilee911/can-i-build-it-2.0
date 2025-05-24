@@ -49,7 +49,10 @@ export function AnimatedSuggestions() {
   return (
     <div className="mt-3 mb-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
-        <div className="bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
+        <div 
+          className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+        >
           <h3 className="font-medium text-gray-900 mb-2">Try asking about:</h3>
           <div 
             className={`text-gray-700 min-h-[24px] transition-opacity duration-300 ${
@@ -60,7 +63,10 @@ export function AnimatedSuggestions() {
           </div>
         </div>
         
-        <div className="bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
+        <div 
+          className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+        >
           <h3 className="font-medium text-gray-900 mb-2">Quick Building Tips:</h3>
           <div 
             className={`text-gray-700 min-h-[24px] transition-opacity duration-300 ${
