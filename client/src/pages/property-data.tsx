@@ -93,9 +93,10 @@ const PropertyData = () => {
   const activePlans = pricingType === "onetime" ? pricingPlans : subscriptionPlans;
   
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white shadow rounded-lg mb-6">
-        <div className="p-6">
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-4xl mx-auto w-full px-4">
+        <div className="bg-white shadow rounded-lg mb-6">
+          <div className="p-6">
           {/* Main search component */}
           <PropertyAssessment />
           
@@ -193,6 +194,7 @@ const PropertyData = () => {
           This tool is connected to a database of New Zealand building regulations and property zoning requirements
         </div>
       )}
+      </div>
       
       {/* Simple Property Details Modal */}
       {showPropertyDetails && (
