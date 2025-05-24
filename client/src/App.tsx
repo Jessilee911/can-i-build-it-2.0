@@ -9,8 +9,8 @@ import { Link } from "wouter";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <main className="py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 font-sans flex items-center justify-center">
+      <main className="w-full max-w-4xl px-4">
         {children}
       </main>
     </div>

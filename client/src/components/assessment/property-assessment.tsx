@@ -87,20 +87,8 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
-      {/* NZ Map Watermark Background */}
-      <div 
-        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: `url(${nzMapImage})`,
-          backgroundSize: '60%',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          animation: 'float 20s ease-in-out infinite',
-        }}
-      />
-      
-      <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
+    <div className="relative">
+      <div className="w-full">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
           {conversations.length === 0 && (
