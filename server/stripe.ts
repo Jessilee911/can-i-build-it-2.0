@@ -21,11 +21,19 @@ export interface PricePlan {
   metadata?: Record<string, string>;
 }
 
+// Price plans with actual Stripe price IDs
+export const STRIPE_PRICE_IDS: Record<string, string> = {
+  'basic': '', // Free plan - no Stripe needed
+  'standard': '', // Add your price ID when you create this product
+  'premium': '', // Add your price ID when you create this product  
+  'expert': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Your Expert Review product
+};
+
 // Price plans - these would ideally be stored in the database
 export const ONE_TIME_PLANS: Record<string, PricePlan> = {
   'basic': { id: 'basic', name: 'Basic Report', amount: 0, currency: 'nzd' },
-  'detailed': { id: 'detailed', name: 'Detailed Analysis', amount: 9900, currency: 'nzd' },
-  'comprehensive': { id: 'comprehensive', name: 'Comprehensive', amount: 14900, currency: 'nzd' },
+  'standard': { id: 'standard', name: 'Standard', amount: 9900, currency: 'nzd' },
+  'premium': { id: 'premium', name: 'Premium', amount: 14900, currency: 'nzd' },
   'expert': { id: 'expert', name: 'Expert Review', amount: 29900, currency: 'nzd' },
 };
 
@@ -74,22 +82,35 @@ export async function createCheckoutSession(
 
   // For one-time payments
   if (!isSubscription) {
+    // Use actual Stripe price ID if available, otherwise create price on the fly
+    const priceId = STRIPE_PRICE_IDS[planId];
+    
+    let lineItems;
+    if (priceId) {
+      // Use actual Stripe product
+      lineItems = [{
+        price: priceId,
+        quantity: 1,
+      }];
+    } else {
+      // Fall back to creating price on the fly for plans without Stripe products
+      lineItems = [{
+        price_data: {
+          currency: plan.currency,
+          product_data: {
+            name: plan.name,
+            description: `One-time payment for ${plan.name}`,
+          },
+          unit_amount: plan.amount,
+        },
+        quantity: 1,
+      }];
+    }
+    
     const session = await stripe.checkout.sessions.create({
       customer,
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: plan.currency,
-            product_data: {
-              name: plan.name,
-              description: `One-time payment for ${plan.name}`,
-            },
-            unit_amount: plan.amount,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: 'payment',
       success_url: successUrl,
       cancel_url: cancelUrl,
