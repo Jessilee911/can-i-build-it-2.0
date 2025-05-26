@@ -41,7 +41,7 @@ export default function PricingPage() {
     {
       id: "standard",
       name: "Detailed Analysis",
-      price: 1,
+      price: 49,
       description: "Complete property assessment",
       features: [
         "Everything in Basic",
@@ -54,7 +54,7 @@ export default function PricingPage() {
     {
       id: "premium",
       name: "Comprehensive",
-      price: 1.1,
+      price: 99,
       description: "Full assessment with AI sketching",
       features: [
         "Everything in Detailed",
@@ -66,7 +66,7 @@ export default function PricingPage() {
     {
       id: "expert",
       name: "Expert Review",
-      price: 1.20,
+      price: 149,
       description: "Human expert verification",
       features: [
         "Everything in Comprehensive",
@@ -82,7 +82,7 @@ export default function PricingPage() {
     {
       id: "pro",
       name: "Pro",
-      price: 1,
+      price: 99,
       description: "Unlimited access for regular users",
       features: [
         "Everything in Premium one-time",
@@ -96,7 +96,7 @@ export default function PricingPage() {
     {
       id: "unlimited",
       name: "Unlimited",
-      price: 1,
+      price: 195,
       description: "Complete access for professionals",
       features: [
         "Everything in Pro",
