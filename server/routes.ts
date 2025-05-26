@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { scraper } from "./scraper";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { generateRAGResponse } from "./rag";
 import Stripe from "stripe";
 import {
   createCheckoutSession,
@@ -80,10 +81,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   apiRouter.post("/api/generate-report", async (req: Request, res: Response) => {
     try {
-      const { planId, propertyAddress, projectDescription, budgetRange, timeframe } = req.body;
+      const { planId, propertyAddress, projectDescription, budgetRange, timeframe, userEmail } = req.body;
 
-      // Store the report request in database
-      await storage.createActivity({
+      // Generate the comprehensive property report
+      const reportData = await generatePropertyReport({
+        propertyAddress,
+        projectDescription,
+        budgetRange,
+        timeframe,
+        planId
+      });
+
+      // Store the report in database
+      const activity = await storage.createActivity({
         type: 'report_generated',
         message: `Report generated for ${propertyAddress}`,
         timestamp: new Date(),
@@ -93,19 +103,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           projectDescription,
           budgetRange,
           timeframe,
-          status: 'processing'
+          status: 'completed',
+          reportData: reportData
         }
       });
 
-      // Here you would typically:
-      // 1. Use the RAG system to gather property data
-      // 2. Generate the comprehensive report
-      // 3. Send email notification when complete
+      // Send email with report (if email provided)
+      if (userEmail) {
+        try {
+          await sendReportEmail(userEmail, propertyAddress, reportData);
+        } catch (emailError) {
+          console.error("Email sending failed:", emailError);
+          // Continue even if email fails
+        }
+      }
       
       res.json({ 
         success: true, 
-        message: "Report generation started",
-        estimatedCompletion: "24-48 hours"
+        message: "Report generated successfully",
+        reportId: activity.id,
+        reportData: reportData,
+        downloadUrl: `/api/report/${activity.id}/download`
       });
     } catch (error: any) {
       console.error("Report generation error:", error);
@@ -397,6 +415,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Add PDF download route
+  apiRouter.get("/api/report/:id/download", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const activity = await storage.getActivities().then(activities => 
+        activities.find(a => a.id === parseInt(id))
+      );
+      
+      if (!activity || !activity.metadata.reportData) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+      
+      const reportData = activity.metadata.reportData;
+      const pdfBuffer = await generatePDF(reportData);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="property-report-${reportData.propertyAddress.replace(/\s+/g, '-')}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error: any) {
+      console.error("PDF generation error:", error);
+      res.status(500).json({ message: "Error generating PDF: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Report generation function
+async function generatePropertyReport(data: {
+  propertyAddress: string;
+  projectDescription: string;
+  budgetRange: string;
+  timeframe: string;
+  planId: string;
+}) {
+  console.log(`Generating report for ${data.propertyAddress}...`);
+  
+  // Get property data from GIS sources
+  const propertyData = await getPropertyData(data.propertyAddress);
+  
+  // Generate AI response using RAG for the user's project
+  const aiAnalysis = await generateRAGResponse(
+    `Property: ${data.propertyAddress}. Project: ${data.projectDescription}. Budget: ${data.budgetRange}. Timeframe: ${data.timeframe}. Provide detailed analysis for New Zealand building regulations, consent requirements, and development guidance.`
+  );
+  
+  const report = {
+    id: Date.now().toString(),
+    propertyAddress: data.propertyAddress,
+    projectDescription: data.projectDescription,
+    budgetRange: data.budgetRange,
+    timeframe: data.timeframe,
+    planId: data.planId,
+    generatedAt: new Date().toISOString(),
+    
+    // Property Information
+    propertyData: {
+      address: data.propertyAddress,
+      windZone: propertyData.windZone || "Still to come",
+      earthquakeZone: propertyData.earthquakeZone || "Still to come", 
+      propertyZone: propertyData.propertyZone || "Still to come",
+      districtPlan: propertyData.districtPlan || "Still to come",
+      gisData: propertyData.gisData || "Still to come"
+    },
+    
+    // AI Analysis
+    analysis: {
+      buildingConsent: aiAnalysis.includes("building consent") ? 
+        aiAnalysis.substring(0, 500) + "..." : 
+        "Based on your project description, building consent requirements will depend on the specific scope of work. Our AI analysis suggests reviewing the Building Act 2004 requirements for your project type.",
+      
+      zoneCompliance: "Zoning compliance analysis will be provided once GIS data integration is complete. This will include permitted activities, height restrictions, and setback requirements.",
+      
+      recommendations: [
+        "Consult with a licensed building practitioner for detailed plans",
+        "Check with local council for specific district plan requirements", 
+        "Consider engaging a structural engineer for earthquake zone compliance",
+        "Review wind zone requirements for building design"
+      ]
+    },
+    
+    // Project Specific
+    projectGuidance: aiAnalysis,
+    
+    // Regulatory Requirements
+    consents: {
+      buildingConsent: "Assessment pending - will depend on project scope",
+      resourceConsent: "Assessment pending - subject to district plan rules",
+      otherPermits: "To be determined based on project specifics"
+    }
+  };
+  
+  return report;
+}
+
+// Get property data from various sources
+async function getPropertyData(address: string) {
+  // This would integrate with actual GIS APIs in the future
+  // For now, return placeholder structure
+  return {
+    windZone: "Still to come", // Would integrate with NIWA/Met Service data
+    earthquakeZone: "Still to come", // Would integrate with GeoNet/NZGD data
+    propertyZone: "Still to come", // Would integrate with council GIS
+    districtPlan: "Still to come", // Would integrate with council planning data
+    gisData: "Still to come" // Would integrate with LINZ data
+  };
+}
+
+// Email function (requires SendGrid setup)
+async function sendReportEmail(email: string, propertyAddress: string, reportData: any) {
+  // Check if SendGrid is configured
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log("SendGrid not configured - skipping email");
+    return;
+  }
+  
+  // This would send the actual email with SendGrid
+  console.log(`Email would be sent to ${email} for property ${propertyAddress}`);
+}
+
+// PDF generation function
+async function generatePDF(reportData: any): Promise<Buffer> {
+  // For now, create a simple text-based PDF structure
+  // In production, you'd use a library like PDFKit or Puppeteer
+  const pdfContent = `
+Property Report
+===============
+
+Property Address: ${reportData.propertyAddress}
+Generated: ${new Date(reportData.generatedAt).toLocaleDateString()}
+Plan: ${reportData.planId}
+
+PROJECT DETAILS
+---------------
+Description: ${reportData.projectDescription}
+Budget Range: ${reportData.budgetRange}
+Timeframe: ${reportData.timeframe}
+
+PROPERTY INFORMATION
+-------------------
+Wind Zone: ${reportData.propertyData.windZone}
+Earthquake Zone: ${reportData.propertyData.earthquakeZone}
+Property Zone: ${reportData.propertyData.propertyZone}
+District Plan: ${reportData.propertyData.districtPlan}
+
+ANALYSIS & RECOMMENDATIONS
+--------------------------
+${reportData.analysis.buildingConsent}
+
+Zone Compliance: ${reportData.analysis.zoneCompliance}
+
+Recommendations:
+${reportData.analysis.recommendations.map((r: string) => `• ${r}`).join('\n')}
+
+PROJECT GUIDANCE
+----------------
+${reportData.projectGuidance}
+
+CONSENT REQUIREMENTS
+-------------------
+Building Consent: ${reportData.consents.buildingConsent}
+Resource Consent: ${reportData.consents.resourceConsent}
+Other Permits: ${reportData.consents.otherPermits}
+
+---
+Report generated by Can I Build It? NZ Property Assessment Platform
+  `;
+  
+  // Convert text to Buffer (in production, use proper PDF library)
+  return Buffer.from(pdfContent, 'utf-8');
 }
