@@ -34,9 +34,9 @@ export const STRIPE_PAYMENT_LINKS: Record<string, string> = {
 // Price plans - these would ideally be stored in the database
 export const ONE_TIME_PLANS: Record<string, PricePlan> = {
   'basic': { id: 'basic', name: 'Basic Chat', amount: 0, currency: 'nzd' },
-  'standard': { id: 'standard', name: 'Detailed Analysis', amount: 4900, currency: 'nzd' },
-  'premium': { id: 'premium', name: 'Comprehensive', amount: 9900, currency: 'nzd' },
-  'expert': { id: 'expert', name: 'Expert Review', amount: 14900, currency: 'nzd' },
+  'standard': { id: 'standard', name: 'Detailed Analysis', amount: 99, currency: 'nzd' },
+  'premium': { id: 'premium', name: 'Comprehensive', amount: 100, currency: 'nzd' },
+  'expert': { id: 'expert', name: 'Expert Review', amount: 101, currency: 'nzd' },
 };
 
 export const SUBSCRIPTION_PLANS: Record<string, PricePlan> = {
