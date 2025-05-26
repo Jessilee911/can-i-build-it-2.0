@@ -8,6 +8,7 @@ import {
   createCheckoutSession,
   ONE_TIME_PLANS,
   SUBSCRIPTION_PLANS,
+  STRIPE_PAYMENT_LINKS,
   handleStripeWebhook
 } from "./stripe";
 
@@ -121,24 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const userId = req.user.claims.sub;
-      const email = req.user.claims.email;
       
-      // Host URLs for success and cancel
-      const host = `${req.protocol}://${req.get('host')}`;
-      const successUrl = `${host}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${host}/pricing`;
-      
-      const session = await createCheckoutSession(
-        planId,
-        isSubscription,
-        userId,
-        email,
-        successUrl,
-        cancelUrl
-      );
-      
-      // For free plan, no payment needed
-      if (session.freeAccess) {
+      // Check if it's the free plan
+      if (planId === 'basic') {
         // Update user subscription status for free tier
         await storage.updateUserSubscription(userId, {
           subscriptionTier: planId,
@@ -149,10 +135,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ success: true, free: true });
       }
       
-      res.json({ success: true, sessionId: session.sessionId, url: session.url });
-    } catch (error) {
+      // Get the Stripe payment link for this plan
+      const paymentLink = STRIPE_PAYMENT_LINKS[planId];
+      
+      if (!paymentLink) {
+        return res.status(400).json({ message: "No payment link available for this plan" });
+      }
+      
+      // Return the payment link URL for redirect
+      res.json({ 
+        success: true,
+        url: paymentLink,
+        redirectToStripe: true
+      });
+    } catch (error: any) {
       console.error("Checkout error:", error);
-      res.status(500).json({ message: "Failed to create checkout session" });
+      res.status(500).json({ message: "Error processing checkout: " + error.message });
     }
   });
   

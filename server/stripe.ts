@@ -21,17 +21,14 @@ export interface PricePlan {
   metadata?: Record<string, string>;
 }
 
-// Use the same Stripe product for all paid plans
-export const STRIPE_PRODUCT_ID = 'prod_SNfcWyx6pjzGfk';
-
-// Price plans with actual Stripe price IDs - all using the same product
-export const STRIPE_PRICE_IDS: Record<string, string> = {
-  'basic': '', // Free plan - no Stripe needed
-  'standard': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product
-  'premium': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product
-  'expert': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product
-  'pro': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product for subscription
-  'unlimited': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product for subscription
+// Use Stripe payment links for direct checkout
+export const STRIPE_PAYMENT_LINKS: Record<string, string> = {
+  'basic': '', // Free plan - no payment needed
+  'standard': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
+  'premium': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
+  'expert': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
+  'pro': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
+  'unlimited': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
 };
 
 // Price plans - these would ideally be stored in the database
