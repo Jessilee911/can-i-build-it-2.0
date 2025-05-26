@@ -40,43 +40,39 @@ export default function PricingPage() {
     },
     {
       id: "standard",
-      name: "Standard",
+      name: "Detailed Analysis",
       price: 1,
-      description: "Detailed property analysis for one-time projects",
+      description: "Complete property assessment",
       features: [
         "Everything in Basic",
-        "Advanced AI Property Analysis",
-        "Detailed building consent guidance",
-        "Wind & earthquake zone data",
-        "Cost estimation support"
+        "Detailed zone analysis",
+        "Building consent requirements",
+        "Resource consent guidance"
       ],
       highlight: true,
     },
     {
       id: "premium",
-      name: "Premium",
-      price: 1,
-      description: "Advanced analysis with professional insights",
+      name: "Comprehensive",
+      price: 2,
+      description: "Full assessment with AI sketching",
       features: [
-        "Everything in Standard",
-        "Expert AI Property Consultant",
-        "Heritage & environmental analysis",
-        "Complex development strategies", 
-        "Timeline & budget planning",
-        "Priority support"
+        "Everything in Detailed",
+        "Upload existing plans",
+        "AI sketch concept generation",
+        "Site constraints analysis"
       ],
     },
     {
       id: "expert",
       name: "Expert Review",
-      price: 1,
-      description: "Premium package with human expert review",
+      price: 3,
+      description: "Human expert verification",
       features: [
-        "Everything in Premium", 
-        "Licensed Designer Chat Review",
-        "Personalized recommendations",
-        "Custom project planning",
-        "90-day data access",
+        "Everything in Comprehensive",
+        "Licensed designer review",
+        "Professional insights",
+        "Email consultation"
       ],
       badge: "Best Value",
     },
