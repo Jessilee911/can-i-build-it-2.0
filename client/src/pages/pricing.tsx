@@ -28,7 +28,7 @@ export default function PricingPage() {
     {
       id: "basic",
       name: "Basic",
-      price: 1,
+      price: 0,
       description: "Get started with basic property insights",
       features: [
         "AI Property Advisor Chat",
@@ -86,7 +86,7 @@ export default function PricingPage() {
     {
       id: "pro",
       name: "Pro",
-      price: 0,
+      price: 1,
       description: "Unlimited access for regular users",
       features: [
         "Everything in Premium one-time",
@@ -100,7 +100,7 @@ export default function PricingPage() {
     {
       id: "unlimited",
       name: "Unlimited",
-      price: 0,
+      price: 1,
       description: "Complete access for professionals",
       features: [
         "Everything in Pro",
