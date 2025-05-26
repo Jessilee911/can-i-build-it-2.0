@@ -40,7 +40,7 @@ export default function PricingPage() {
     {
       id: "standard",
       name: "Standard",
-      price: 1,
+      price: 0,
       description: "Detailed property analysis for one-time projects",
       features: [
         "Everything in Basic",
@@ -54,7 +54,7 @@ export default function PricingPage() {
     {
       id: "premium",
       name: "Premium",
-      price: 1,
+      price: 0,
       description: "Advanced analysis with professional insights",
       features: [
         "Everything in Standard",
@@ -68,7 +68,7 @@ export default function PricingPage() {
     {
       id: "expert",
       name: "Expert Review",
-      price: 1,
+      price: 0,
       description: "Premium package with human expert review",
       features: [
         "Everything in Premium",
