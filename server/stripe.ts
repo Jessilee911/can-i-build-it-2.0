@@ -114,7 +114,7 @@ export async function createCheckoutSession(
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: successUrl,
+      success_url: successUrl.replace('/report-success', '/chat'),
       cancel_url: cancelUrl,
       metadata: {
         userId,
@@ -164,7 +164,7 @@ export async function createCheckoutSession(
     payment_method_types: ['card'],
     line_items: lineItems,
     mode: 'subscription',
-    success_url: successUrl,
+    success_url: successUrl.replace('/report-success', '/chat'),
     cancel_url: cancelUrl,
     metadata: {
       userId,
