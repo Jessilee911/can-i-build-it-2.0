@@ -54,7 +54,7 @@ export default function PricingPage() {
     {
       id: "premium",
       name: "Comprehensive",
-      price: 2,
+      price: 1.10,
       description: "Full assessment with AI sketching",
       features: [
         "Everything in Detailed",
@@ -66,7 +66,7 @@ export default function PricingPage() {
     {
       id: "expert",
       name: "Expert Review",
-      price: 3,
+      price: 1.20,
       description: "Human expert verification",
       features: [
         "Everything in Comprehensive",
