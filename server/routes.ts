@@ -81,53 +81,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   apiRouter.post("/api/generate-report", async (req: Request, res: Response) => {
     try {
-      const { planId, propertyAddress, projectDescription, budgetRange, timeframe, userEmail } = req.body;
+      const { planId, propertyAddress, projectDescription, budgetRange, timeframe } = req.body;
 
-      // Generate the comprehensive property report
-      const reportData = await generatePropertyReport({
-        propertyAddress,
-        projectDescription,
-        budgetRange,
-        timeframe,
-        planId
-      });
-
-      // Store the report in database
-      const activity = await storage.createActivity({
-        type: 'report_generated',
-        message: `Report generated for ${propertyAddress}`,
-        timestamp: new Date(),
-        metadata: {
-          planId,
-          propertyAddress,
-          projectDescription,
-          budgetRange,
-          timeframe,
-          status: 'completed',
-          reportData: reportData
-        }
-      });
-
-      // Send email with report (if email provided)
-      if (userEmail) {
-        try {
-          await sendReportEmail(userEmail, propertyAddress, reportData);
-        } catch (emailError) {
-          console.error("Email sending failed:", emailError);
-          // Continue even if email fails
-        }
-      }
+      console.log(`Redirecting to chat for ${propertyAddress}...`);
       
+      // Instead of generating static reports, redirect to chat interface
       res.json({ 
         success: true, 
-        message: "Report generated successfully",
-        reportId: activity.id,
-        reportData: reportData,
-        downloadUrl: `/api/report/${activity.id}/download`
+        message: "Redirecting to chat interface",
+        redirect: "/chat",
+        projectData: {
+          propertyAddress,
+          projectDescription,
+          budgetRange: budgetRange || "Not specified",
+          timeframe: timeframe || "Not specified",
+          planId: planId || "basic"
+        }
       });
     } catch (error: any) {
-      console.error("Report generation error:", error);
-      res.status(500).json({ message: "Error generating report: " + error.message });
+      console.error("Chat redirect error:", error);
+      res.status(500).json({ message: "Error processing request: " + error.message });
+    }
+  });
+
+  // Checkout endpoint for paid plans
+  apiRouter.post("/api/checkout", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { planId } = req.body;
+      
+      if (!planId) {
+        return res.status(400).json({ message: "Plan ID is required" });
+      }
+    
+      const userId = req.user.claims.sub;
+      
+      // Check if it's the free plan
+      if (planId === 'basic') {
+        // Update user subscription status for free tier
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: planId,
+          subscriptionStatus: 'active',
+          subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        });
+        
+        return res.json({ success: true, free: true });
+      }
+      
+      // Get the Stripe payment link for this plan
+      const paymentLink = STRIPE_PAYMENT_LINKS[planId];
+      
+      if (!paymentLink) {
+        return res.status(400).json({ message: "No payment link available for this plan" });
+      }
+      
+      // Return the payment link URL for redirect
+      res.json({ 
+        success: true,
+        url: paymentLink,
+        redirectToStripe: true
+      });
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      res.status(500).json({ message: "Error processing checkout: " + error.message });
+    }
+  });
+  
+  // Stripe webhook handler
+  apiRouter.post("/api/webhook", async (req: Request, res: Response) => {
+    const signature = req.headers['stripe-signature'] as string;
+    
+    if (!signature) {
+      return res.status(400).json({ message: "Missing Stripe signature" });
+    }
+    
+    try {
+      await handleStripeWebhook(signature, req.body);
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ message: "Webhook error" });
     }
   });
 

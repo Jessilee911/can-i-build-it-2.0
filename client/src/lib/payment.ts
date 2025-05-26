@@ -35,7 +35,7 @@ export async function initCheckout(planId: string, isSubscription: boolean = fal
 }
 
 /**
- * Processes a property report request and handles payment if needed
+ * Processes a property chat request and handles payment if needed
  */
 export async function processReportRequest(formData: any, planId: string) {
   // Convert plan name to ID format
@@ -51,15 +51,21 @@ export async function processReportRequest(formData: any, planId: string) {
   // Determine if it's a subscription based on plan name
   const isSubscription = planId.includes('Subscription') || planId === 'Unlimited';
   
-  // Save the property details for later use
-  sessionStorage.setItem('propertyReportRequest', JSON.stringify({
-    ...formData,
-    planId: planIdMap[planId] || 'basic',
-    timestamp: new Date().toISOString()
+  // Save the property details for the chat session
+  sessionStorage.setItem('projectDetails', JSON.stringify({
+    propertyAddress: formData.propertyAddress || formData.address,
+    projectDescription: formData.projectDescription,
+    budgetRange: formData.budgetRange || formData.budget,
+    timeframe: formData.timeframe,
+    planId: planIdMap[planId] || 'basic'
   }));
   
-  // For free Basic Report, we don't need payment
+  // Store selected plan for chat features
+  sessionStorage.setItem('selectedPlan', planIdMap[planId] || 'basic');
+  
+  // For free Basic plan, redirect directly to chat
   if (planId === 'Basic Report') {
+    window.location.href = '/chat';
     return { success: true, free: true };
   }
   
