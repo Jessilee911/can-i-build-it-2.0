@@ -126,17 +126,8 @@ Let me help you understand the building regulations, consent requirements, and d
       
       // Redirect to pricing page for the upgrade
       setLocation('/pricing');
-      
-      toast({
-        title: "Upgrading Plan",
-        description: `Redirecting to upgrade to ${planId} plan for just $1!`,
-      });
     } catch (error) {
-      toast({
-        title: "Upgrade Error", 
-        description: "Unable to process upgrade. Please try again.",
-        variant: "destructive"
-      });
+      console.error('Upgrade error:', error);
     }
   };
 

@@ -708,16 +708,19 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
 function enhancePlanResponse(response: string, plan: string) {
   switch (plan) {
     case 'basic':
-      return response + "\n\n💡 *For more detailed analysis including specific zoning data and cost estimates, consider upgrading to our Professional plan.*";
+      return response + "\n\n💡 For more detailed analysis including specific zoning data and cost estimates, upgrade to get comprehensive insights!\n\n[UPGRADE_BUTTON:standard:Upgrade to Detailed Analysis - $1]";
     
-    case 'professional':
-      return response + "\n\n✅ *Professional Analysis Complete* - Need even more detailed guidance? Our Premium plan includes licensed designer review.";
+    case 'standard':
+      return response + "\n\n✅ Detailed Analysis Complete - Want AI sketching and advanced features? Get our comprehensive package!\n\n[UPGRADE_BUTTON:premium:Upgrade to Comprehensive - $2]";
     
     case 'premium':
-      return response + "\n\n⭐ *Premium Analysis* - This response will be reviewed by our licensed designer within 24 hours for additional insights.";
+      return response + "\n\n🎯 Need human expert validation? Get professional review from our licensed designers!\n\n[UPGRADE_BUTTON:expert:Upgrade to Expert Review - $3]";
+    
+    case 'expert':
+      return response + "\n\n⭐ Expert Analysis - This response will be reviewed by our licensed designer within 24 hours for additional insights.";
     
     default:
-      return response + "\n\n📋 *General guidance provided. For personalized property analysis, please select a plan.*";
+      return response + "\n\n📋 General guidance provided. For personalized property analysis, please select a plan.\n\n[UPGRADE_BUTTON:standard:Start with Detailed Analysis - $1]";
   }
 }
 
