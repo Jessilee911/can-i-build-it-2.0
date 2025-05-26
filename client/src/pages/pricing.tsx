@@ -140,7 +140,7 @@ export default function PricingPage() {
           description: "You now have access to the basic features.",
         });
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          window.location.href = "/chat";
         }, 1000);
         return;
       }
