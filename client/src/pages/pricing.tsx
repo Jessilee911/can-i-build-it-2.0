@@ -213,7 +213,7 @@ export default function PricingPage() {
               <CardDescription className="text-sm">{plan.description}</CardDescription>
               <div className="mt-2">
                 <span className="text-3xl font-bold">
-                  {plan.price === 0 ? 'Free' : `$${plan.price}`}
+                  {plan.price === 0 ? 'Free' : `$${plan.price.toFixed(2)}`}
                 </span>
                 {plan.isSubscription && <span className="text-muted-foreground ml-1">/month</span>}
               </div>
