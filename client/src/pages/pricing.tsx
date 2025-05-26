@@ -54,7 +54,7 @@ export default function PricingPage() {
     {
       id: "premium",
       name: "Comprehensive",
-      price: 1.10,
+      price: 1.1,
       description: "Full assessment with AI sketching",
       features: [
         "Everything in Detailed",
@@ -212,8 +212,8 @@ export default function PricingPage() {
               </div>
               <CardDescription className="text-sm">{plan.description}</CardDescription>
               <div className="mt-2">
-                <span className="text-3xl font-bold">
-                  {plan.price === 0 ? 'Free' : `$${plan.price.toFixed(2)}`}
+                <span className="text-3xl font-bold text-foreground">
+                  {plan.price === 0 ? 'Free' : `$${plan.price}`}
                 </span>
                 {plan.isSubscription && <span className="text-muted-foreground ml-1">/month</span>}
               </div>
