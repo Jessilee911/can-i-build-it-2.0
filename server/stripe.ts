@@ -23,20 +23,20 @@ export interface PricePlan {
 
 // Use Stripe payment links for direct checkout
 export const STRIPE_PAYMENT_LINKS: Record<string, string> = {
-  'basic': '', // Free plan - no payment needed
-  'standard': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
-  'premium': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
-  'expert': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
-  'pro': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
-  'unlimited': 'https://buy.stripe.com/test_bJeeVf9eudfHdfz5GT1ZS01',
+  'basic': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
+  'standard': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
+  'premium': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
+  'expert': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
+  'pro': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
+  'unlimited': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
 };
 
 // Price plans - these would ideally be stored in the database
 export const ONE_TIME_PLANS: Record<string, PricePlan> = {
-  'basic': { id: 'basic', name: 'Basic Report', amount: 0, currency: 'nzd' },
-  'standard': { id: 'standard', name: 'Standard', amount: 9900, currency: 'nzd' },
-  'premium': { id: 'premium', name: 'Premium', amount: 14900, currency: 'nzd' },
-  'expert': { id: 'expert', name: 'Expert Review', amount: 29900, currency: 'nzd' },
+  'basic': { id: 'basic', name: 'Basic Chat', amount: 100, currency: 'nzd' },
+  'standard': { id: 'standard', name: 'Standard Chat', amount: 100, currency: 'nzd' },
+  'premium': { id: 'premium', name: 'Premium Chat', amount: 100, currency: 'nzd' },
+  'expert': { id: 'expert', name: 'Expert Review Chat', amount: 100, currency: 'nzd' },
 };
 
 export const SUBSCRIPTION_PLANS: Record<string, PricePlan> = {
