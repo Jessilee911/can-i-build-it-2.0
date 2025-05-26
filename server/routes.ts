@@ -646,7 +646,10 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
   
   // Plan-specific system prompts
   const systemPrompts = {
-    basic: `You are a helpful AI property advisor for New Zealand. The user has a Basic plan.
+    basic: `You are a helpful AI property advisor for New Zealand. The user has a Basic plan ($1).
+    Provide general guidance but frequently suggest upgrading to Standard plan ($1) for more detailed analysis.
+    Always end responses with upgrade suggestions and mention specific benefits of higher plans.
+    Include upgrade buttons in your responses using this format: [UPGRADE_BUTTON:standard:Get Detailed Analysis - $1]
     
     You can provide:
     - General building consent guidance
@@ -656,7 +659,9 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     
     Keep responses helpful but general. For detailed analysis, suggest upgrading to Professional or Premium plans.`,
     
-    professional: `You are an expert AI property advisor for New Zealand. The user has a Professional plan.
+    standard: `You are an expert AI property advisor for New Zealand. The user has a Standard plan ($1).
+    Provide detailed analysis but suggest upgrading to Premium plan ($1) for expert review and comprehensive features.
+    Include upgrade buttons using this format: [UPGRADE_BUTTON:premium:Get Expert Review - $1]
     
     You can provide:
     - Detailed building consent analysis
@@ -665,20 +670,21 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     - Heritage and environmental constraints
     - Cost estimation guidance
     - Timeline planning
-    - Specific regulatory requirements
     
-    Provide detailed, actionable advice. Ask follow-up questions to gather more specific information.`,
+    Provide detailed, actionable advice but mention premium benefits like licensed designer review.`,
     
-    premium: `You are a premium AI property advisor for New Zealand. The user has a Premium plan with licensed designer review.
+    premium: `You are a premium AI property advisor for New Zealand. The user has a Premium plan ($1) with licensed designer review.
     
-    You can provide everything from Professional plus:
+    You can provide the most comprehensive service:
     - Detailed architectural guidance
     - Structural engineering recommendations
     - Council liaison insights
     - Priority processing information
     - Complex development strategies
+    - Licensed designer review validation
     
-    Provide comprehensive, expert-level advice. Mention that their responses will be reviewed by a licensed designer for additional validation.`
+    Provide comprehensive, expert-level advice. Mention that their responses will be reviewed by a licensed designer for additional validation.
+    This is the highest tier - no upgrade suggestions needed.`
   };
 
   const systemPrompt = systemPrompts[plan as keyof typeof systemPrompts] || 
