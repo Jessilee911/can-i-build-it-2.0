@@ -36,6 +36,7 @@ function Router() {
         </AppLayout>
       )} />
       <Route path="/checkout" component={Checkout} />
+      <Route path="/chat" component={Chat} />
       <Route path="/report-questions" component={ReportQuestions} />
       <Route path="/report-success" component={ReportSuccess} />
       <Route component={NotFound} />

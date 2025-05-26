@@ -31,10 +31,11 @@ export default function PricingPage() {
       price: 0,
       description: "Get started with basic property insights",
       features: [
-        "Property zoning information",
-        "Basic feasibility assessment",
-        "Limited API calls",
-        "24-hour data access",
+        "AI Property Advisor Chat",
+        "General building guidance",
+        "Basic zoning information",
+        "Building code basics",
+        "Unlimited conversations"
       ],
     },
     {
@@ -44,10 +45,10 @@ export default function PricingPage() {
       description: "Detailed property analysis for one-time projects",
       features: [
         "Everything in Basic",
-        "Comprehensive zoning analysis",
-        "Detailed feasibility report",
-        "Building consent requirements",
-        "30-day data access",
+        "Advanced AI Property Analysis",
+        "Detailed building consent guidance",
+        "Wind & earthquake zone data",
+        "Cost estimation support"
       ],
       highlight: true,
     },
@@ -58,11 +59,11 @@ export default function PricingPage() {
       description: "Advanced analysis with professional insights",
       features: [
         "Everything in Standard",
-        "Detailed property constraints",
-        "Comprehensive feasibility study",
-        "Building code compliance check",
-        "Consultants recommendation",
-        "60-day data access",
+        "Expert AI Property Consultant",
+        "Heritage & environmental analysis",
+        "Complex development strategies", 
+        "Timeline & budget planning",
+        "Priority support"
       ],
     },
     {
@@ -71,8 +72,8 @@ export default function PricingPage() {
       price: 0,
       description: "Premium package with human expert review",
       features: [
-        "Everything in Premium",
-        "Review by licensed designer",
+        "Everything in Premium", 
+        "Licensed Designer Chat Review",
         "Personalized recommendations",
         "Custom project planning",
         "90-day data access",
