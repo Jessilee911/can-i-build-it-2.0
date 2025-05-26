@@ -68,7 +68,7 @@ export function PropertyReportForm({ isOpen, onClose, planType, onSubmit }: Prop
     setIsLoading(true);
     try {
       // Submit the form data
-      await onSubmit(data);
+      onSubmit(data);
     } catch (error) {
       console.error("Error submitting report form:", error);
     } finally {
