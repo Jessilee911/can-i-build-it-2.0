@@ -298,4 +298,79 @@ const PropertyData = () => {
   );
 };
 
-export default PropertyData;
+import { useLocation } from "wouter";
+
+export default function PropertyData() {
+  const [, setLocation] = useLocation();
+
+  const handleReportSubmit = async (formData: any) => {
+    try {
+      const response = await fetch('/api/generate-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planId: 'basic',
+          propertyAddress: formData.address,
+          projectDescription: formData.projectDescription,
+          budgetRange: `$${formData.budget.toLocaleString()}`,
+          timeframe: formData.timeframe,
+          userEmail: null // Add email collection if needed
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Store the complete report data in session storage
+        sessionStorage.setItem('generatedReport', JSON.stringify(result));
+        
+        // Navigate to success page
+        setLocation('/report-success');
+      } else {
+        throw new Error(result.message || 'Failed to generate report');
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+      // You might want to show an error toast here
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Property Assessment & Building Guidance
+            </h1>
+            <p className="text-lg text-gray-600 mb-8">
+              Get expert guidance on New Zealand building regulations, consent requirements, and development potential for your property.
+            </p>
+          </div>
+          
+          <PropertyAssessment 
+            showPricing={false}
+            onReportRequest={handleReportSubmit}
+          />
+          
+          <div className="mt-12">
+            <AnimatedSuggestions />
+          </div>
+          
+          <div className="mt-8 text-center">
+            <Button
+              onClick={() => setLocation('/pricing')}
+              variant="outline"
+              className="mx-2"
+            >
+              <FileTextIcon className="w-4 h-4 mr-2" />
+              View Pricing Plans
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}a;

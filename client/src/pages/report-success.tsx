@@ -12,11 +12,19 @@ export default function ReportSuccess() {
     // Get report data from session storage (passed from report generation)
     const storedReport = sessionStorage.getItem('generatedReport');
     if (storedReport) {
-      setReportData(JSON.parse(storedReport));
-      setLoading(false);
-      // Clear from session storage
-      sessionStorage.removeItem('generatedReport');
+      try {
+        const parsedReport = JSON.parse(storedReport);
+        console.log('Loaded report data:', parsedReport);
+        setReportData(parsedReport);
+        setLoading(false);
+        // Clear from session storage after successful load
+        sessionStorage.removeItem('generatedReport');
+      } catch (error) {
+        console.error('Error parsing stored report:', error);
+        setLoading(false);
+      }
     } else {
+      console.log('No stored report found in session storage');
       setLoading(false);
     }
   }, []);
