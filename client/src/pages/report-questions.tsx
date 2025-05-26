@@ -107,13 +107,29 @@ export default function ReportQuestions() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        
+        // Store project details for chat
+        sessionStorage.setItem('projectDetails', JSON.stringify({
+          propertyAddress: questionData.propertyAddress,
+          projectDescription: questionData.projectDescription,
+          budgetRange: questionData.budgetRange,
+          timeframe: questionData.timeframe,
+          planId: planId
+        }));
+        
+        // Store selected plan
+        sessionStorage.setItem('selectedPlan', planId);
+        
         toast({
-          title: "Report Generation Started",
-          description: "Your personalized property report is being generated. You'll receive an email notification when it's ready.",
+          title: "Redirecting to Chat",
+          description: "Let's discuss your property development project!",
         });
-        setLocation('/report-success');
+        
+        // Redirect to chat interface
+        setLocation('/chat');
       } else {
-        throw new Error('Failed to generate report');
+        throw new Error('Failed to process request');
       }
     } catch (error) {
       console.error('Report generation failed:', error);

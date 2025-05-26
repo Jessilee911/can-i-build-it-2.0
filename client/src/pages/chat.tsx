@@ -40,7 +40,21 @@ export default function Chat() {
   }, [conversation]);
 
   const initializeConversation = (plan: string) => {
-    const welcomeMessage = getWelcomeMessage(plan);
+    // Check for project details from the property form
+    const projectDetails = sessionStorage.getItem('projectDetails');
+    let welcomeMessage = getWelcomeMessage(plan);
+    
+    if (projectDetails) {
+      const details = JSON.parse(projectDetails);
+      welcomeMessage = `Hi! I see you're interested in developing the property at ${details.propertyAddress}. ${welcomeMessage.replace('Hi! ', '')} 
+
+I understand you're planning: ${details.projectDescription}
+Budget range: ${details.budgetRange}
+Timeframe: ${details.timeframe}
+
+Let me help you understand the building regulations, consent requirements, and development opportunities for this specific project. What would you like to know first?`;
+    }
+    
     setConversation([{
       id: Date.now().toString(),
       type: 'agent',
