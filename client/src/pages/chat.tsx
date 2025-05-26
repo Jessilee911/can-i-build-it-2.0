@@ -80,6 +80,66 @@ Let me help you understand the building regulations, consent requirements, and d
     }
   };
 
+  const renderMessageWithUpgradeButtons = (content: string) => {
+    // Parse upgrade buttons from the format: [UPGRADE_BUTTON:planId:buttonText]
+    const buttonRegex = /\[UPGRADE_BUTTON:([^:]+):([^\]]+)\]/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = buttonRegex.exec(content)) !== null) {
+      // Add text before the button
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index));
+      }
+      
+      // Add the upgrade button
+      const [, planId, buttonText] = match;
+      parts.push(
+        <div key={match.index} className="mt-3 mb-2">
+          <Button
+            onClick={() => handleUpgrade(planId)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            size="sm"
+          >
+            <ArrowRight className="w-4 h-4 mr-2" />
+            {buttonText}
+          </Button>
+        </div>
+      );
+      
+      lastIndex = buttonRegex.lastIndex;
+    }
+    
+    // Add remaining text
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+    
+    return parts.length > 1 ? parts : content;
+  };
+
+  const handleUpgrade = async (planId: string) => {
+    try {
+      // Store the current plan selection
+      sessionStorage.setItem('selectedPlan', planId);
+      
+      // Redirect to pricing page for the upgrade
+      setLocation('/pricing');
+      
+      toast({
+        title: "Upgrading Plan",
+        description: `Redirecting to upgrade to ${planId} plan for just $1!`,
+      });
+    } catch (error) {
+      toast({
+        title: "Upgrade Error", 
+        description: "Unable to process upgrade. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -209,10 +269,23 @@ Let me help you understand the building regulations, consent requirements, and d
                       ? 'bg-blue-600 text-white' 
                       : 'bg-gray-100 text-gray-900'
                   }`}>
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
-                    <div className="text-xs opacity-70 mt-1">
-                      {msg.timestamp.toLocaleTimeString()}
-                    </div>
+                    {msg.type === 'agent' ? (
+                      <div>
+                        <div className="whitespace-pre-wrap">
+                          {renderMessageWithUpgradeButtons(msg.content)}
+                        </div>
+                        <div className="text-xs opacity-70 mt-1">
+                          {msg.timestamp.toLocaleTimeString()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <div className="text-xs opacity-70 mt-1">
+                          {msg.timestamp.toLocaleTimeString()}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
