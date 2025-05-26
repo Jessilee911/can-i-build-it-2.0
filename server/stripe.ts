@@ -21,12 +21,17 @@ export interface PricePlan {
   metadata?: Record<string, string>;
 }
 
-// Price plans with actual Stripe price IDs
+// Use the same Stripe product for all paid plans
+export const STRIPE_PRODUCT_ID = 'prod_SNfcWyx6pjzGfk';
+
+// Price plans with actual Stripe price IDs - all using the same product
 export const STRIPE_PRICE_IDS: Record<string, string> = {
   'basic': '', // Free plan - no Stripe needed
-  'standard': '', // Add your price ID when you create this product
-  'premium': '', // Add your price ID when you create this product  
-  'expert': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Your Expert Review product
+  'standard': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product
+  'premium': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product
+  'expert': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product
+  'pro': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product for subscription
+  'unlimited': 'price_1RSTiv2n0eUpE8pdkv89aPMn', // Using your product for subscription
 };
 
 // Price plans - these would ideally be stored in the database
@@ -128,27 +133,39 @@ export async function createCheckoutSession(
   }
   
   // For subscriptions
+  const priceId = STRIPE_PRICE_IDS[planId];
+  
+  let lineItems;
+  if (priceId) {
+    // Use actual Stripe product
+    lineItems = [{
+      price: priceId,
+      quantity: 1,
+    }];
+  } else {
+    // Fall back to creating price on the fly for plans without Stripe products
+    lineItems = [{
+      price_data: {
+        currency: plan.currency,
+        product_data: {
+          name: plan.name,
+          description: plan.interval === 'month' 
+            ? `Monthly subscription to ${plan.name}` 
+            : `Annual subscription to ${plan.name}`,
+        },
+        unit_amount: plan.amount,
+        recurring: {
+          interval: plan.interval,
+        },
+      },
+      quantity: 1,
+    }];
+  }
+  
   const session = await stripe.checkout.sessions.create({
     customer,
     payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: plan.currency,
-          product_data: {
-            name: plan.name,
-            description: plan.interval === 'month' 
-              ? `Monthly subscription to ${plan.name}` 
-              : `Annual subscription to ${plan.name}`,
-          },
-          unit_amount: plan.amount,
-          recurring: {
-            interval: plan.interval,
-          },
-        },
-        quantity: 1,
-      },
-    ],
+    line_items: lineItems,
     mode: 'subscription',
     success_url: successUrl,
     cancel_url: cancelUrl,
