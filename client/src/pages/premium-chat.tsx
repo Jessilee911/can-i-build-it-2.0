@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { Bot, User, Send, FileText, Download, MapPin, Calculator, Clock, AlertTriangle, Upload, Mic, MicOff, Star as StarIcon } from "lucide-react";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import nzMapImage from "@assets/NZ.png";
 
 interface Message {
@@ -329,13 +330,14 @@ Let's dive deep into your development potential. What specific aspect would you 
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
                   Property Address *
                 </label>
-                <Input
-                  id="address"
-                  type="text"
+                <AddressAutocomplete
                   value={propertyAddress}
-                  onChange={(e) => setPropertyAddress(e.target.value)}
-                  placeholder="e.g., 123 Queen Street, Auckland 1010"
-                  className="w-full border-blue-300 focus:border-blue-500"
+                  onChange={setPropertyAddress}
+                  onSelect={(addressOption) => {
+                    setPropertyAddress(addressOption.fullAddress);
+                  }}
+                  placeholder="Start typing a New Zealand address..."
+                  className="border-blue-300 focus:border-blue-500"
                   required
                 />
               </div>

@@ -501,6 +501,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== Address Search Routes ====================
+  // Address search endpoint for New Zealand addresses
+  apiRouter.get("/api/search-addresses", async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.length < 3) {
+        return res.json({ suggestions: [] });
+      }
+
+      // Use LINZ Data Service API for authentic NZ address data
+      const linzApiKey = process.env.LINZ_API_KEY;
+      if (!linzApiKey) {
+        // Fallback to local search when LINZ API key is not available
+        const fallbackSuggestions = performLocalAddressSearch(query);
+        return res.json({ 
+          suggestions: fallbackSuggestions,
+          notice: "Using local address database. For complete New Zealand address coverage, please configure LINZ_API_KEY."
+        });
+      }
+
+      const encodedQuery = encodeURIComponent(query);
+      const linzUrl = `https://data.linz.govt.nz/services;key=${linzApiKey}/v1/search?q=${encodedQuery}&layer=50308&format=json&limit=6`;
+      
+      const response = await fetch(linzUrl);
+      
+      if (!response.ok) {
+        throw new Error(`LINZ API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Transform LINZ data into our format
+      const suggestions = data.features?.map((feature: any, index: number) => {
+        const properties = feature.properties;
+        return {
+          id: `linz-${properties.objectid || index}`,
+          fullAddress: properties.full_address || properties.display_name,
+          streetNumber: properties.address_number,
+          streetName: properties.road_name,
+          suburb: properties.suburb_locality,
+          city: properties.town_city,
+          postcode: properties.postcode,
+          region: properties.territorial_authority
+        };
+      }) || [];
+
+      res.json({ suggestions });
+    } catch (error) {
+      console.error('Address search error:', error);
+      res.status(500).json({ 
+        error: "Address search failed",
+        message: "Unable to retrieve address suggestions"
+      });
+    }
+  });
+
+// Helper function for local address search fallback
+function performLocalAddressSearch(query: string) {
+  const commonNZAddresses = [
+    { streetName: 'Queen Street', suburb: 'Auckland Central', city: 'Auckland', postcode: '1010', region: 'Auckland' },
+    { streetName: 'Lambton Quay', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
+    { streetName: 'Cashel Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
+    { streetName: 'George Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
+    { streetName: 'Victoria Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
+    { streetName: 'Devonport Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
+    { streetName: 'Riccarton Road', suburb: 'Riccarton', city: 'Christchurch', postcode: '8041', region: 'Canterbury' },
+    { streetName: 'Great South Road', suburb: 'Newmarket', city: 'Auckland', postcode: '1023', region: 'Auckland' },
+    { streetName: 'Manukau Road', suburb: 'Epsom', city: 'Auckland', postcode: '1023', region: 'Auckland' },
+    { streetName: 'Cuba Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' }
+  ];
+
+  const lowerQuery = query.toLowerCase();
+  return commonNZAddresses
+    .filter(addr => 
+      addr.streetName.toLowerCase().includes(lowerQuery) ||
+      addr.suburb.toLowerCase().includes(lowerQuery) ||
+      addr.city.toLowerCase().includes(lowerQuery) ||
+      addr.postcode.includes(lowerQuery)
+    )
+    .map((addr, index) => ({
+      id: `local-${index}`,
+      fullAddress: `${addr.streetName}, ${addr.suburb}, ${addr.city} ${addr.postcode}`,
+      streetName: addr.streetName,
+      suburb: addr.suburb,
+      city: addr.city,
+      postcode: addr.postcode,
+      region: addr.region
+    }))
+    .slice(0, 6);
+}
+
   // ==================== Stats Routes ====================
   apiRouter.get("/api/stats", async (req: Request, res: Response) => {
     const totalScans = await storage.getTotalScans();
