@@ -228,17 +228,22 @@ Let me help you understand the building regulations, consent requirements, and d
           
           {/* Messages */}
           <div className="h-96 overflow-y-auto p-6 space-y-4">
-            {conversation.length === 0 && !userPlan && (
+            {conversation.length === 0 && (
               <div className="text-center py-8">
                 <Bot className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Welcome! To start your property assessment, please select a plan.</p>
-                <Button
-                  onClick={() => setLocation('/pricing')}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                  View Plans
-                </Button>
+                <div className="text-left max-w-md mx-auto">
+                  <p className="text-gray-800 font-medium mb-3">Hi! I'm your AI property advisor for New Zealand.</p>
+                  <p className="text-gray-600 mb-4">I provide comprehensive, free guidance on:</p>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-6">
+                    <li>• Building consent requirements and processes</li>
+                    <li>• Detailed zoning information and compliance</li>
+                    <li>• Building code requirements and interpretation</li>
+                    <li>• Resource consent guidance</li>
+                    <li>• Development potential assessment</li>
+                    <li>• Cost estimates and timeline planning</li>
+                  </ul>
+                  <p className="text-gray-700">What's your property address and what type of development are you planning?</p>
+                </div>
               </div>
             )}
 
@@ -303,26 +308,24 @@ Let me help you understand the building regulations, consent requirements, and d
           </div>
 
           {/* Input */}
-          {userPlan && (
-            <div className="border-t border-gray-200 p-6">
-              <form onSubmit={handleSubmit} className="flex space-x-4">
-                <Input
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ask about your property development..."
-                  className="flex-1"
-                  disabled={isLoading}
-                />
-                <Button 
-                  type="submit" 
-                  disabled={!message.trim() || isLoading}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </form>
-            </div>
-          )}
+          <div className="border-t border-gray-200 p-6">
+            <form onSubmit={handleSubmit} className="flex space-x-4">
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Ask about your property development..."
+                className="flex-1"
+                disabled={isLoading}
+              />
+              <Button 
+                type="submit" 
+                disabled={!message.trim() || isLoading}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </form>
+          </div>
         </div>
 
         {/* Footer Actions */}
@@ -335,15 +338,13 @@ Let me help you understand the building regulations, consent requirements, and d
             Back to Assessment
           </Button>
           
-          {!userPlan && (
-            <Button
-              onClick={() => setLocation('/pricing')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <ArrowRight className="w-4 h-4 mr-2" />
-              Unlock Full Features
-            </Button>
-          )}
+          <Button
+            onClick={() => setLocation('/reports')}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <ArrowRight className="w-4 h-4 mr-2" />
+            Generate Report
+          </Button>
         </div>
       </div>
     </div>
