@@ -521,31 +521,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Try the LINZ Geocoding API for better address suggestions
       const encodedQuery = encodeURIComponent(query);
-      const linzUrl = `https://data.linz.govt.nz/services;key=${linzApiKey}/v1/search?q=${encodedQuery}&layer=50308&format=json&limit=6`;
       
-      const response = await fetch(linzUrl);
+      // First try the LINZ geocoding service
+      let linzUrl = `https://api.linz.govt.nz/v1/geocode?q=${encodedQuery}&format=json&limit=6`;
+      
+      const headers = {
+        'Authorization': `Bearer ${linzApiKey}`,
+        'User-Agent': 'CanIBuildIt-AddressSearch/1.0'
+      };
+      
+      let response = await fetch(linzUrl, { headers });
+      
+      // If that fails, try the data service
+      if (!response.ok) {
+        linzUrl = `https://data.linz.govt.nz/services/api/v1/vector/layers/50308/search?q=${encodedQuery}&format=json&limit=6&key=${linzApiKey}`;
+        response = await fetch(linzUrl);
+      }
       
       if (!response.ok) {
-        throw new Error(`LINZ API error: ${response.status}`);
+        // Fall back to local search on API failure
+        const fallbackSuggestions = performLocalAddressSearch(query);
+        return res.json({ 
+          suggestions: fallbackSuggestions,
+          notice: "Using local address database. LINZ API temporarily unavailable."
+        });
       }
 
       const data = await response.json();
       
-      // Transform LINZ data into our format
-      const suggestions = data.features?.map((feature: any, index: number) => {
-        const properties = feature.properties;
-        return {
-          id: `linz-${properties.objectid || index}`,
-          fullAddress: properties.full_address || properties.display_name,
-          streetNumber: properties.address_number,
-          streetName: properties.road_name,
-          suburb: properties.suburb_locality,
-          city: properties.town_city,
-          postcode: properties.postcode,
-          region: properties.territorial_authority
-        };
-      }) || [];
+      // Transform LINZ data into our format - handle different response structures
+      let suggestions = [];
+      
+      if (data.features) {
+        // Vector layer response format
+        suggestions = data.features.map((feature: any, index: number) => {
+          const props = feature.properties;
+          return {
+            id: `linz-${props.objectid || index}`,
+            fullAddress: props.full_address || `${props.address_number || ''} ${props.road_name || ''}, ${props.suburb_locality || ''}, ${props.town_city || ''} ${props.postcode || ''}`.trim(),
+            streetNumber: props.address_number,
+            streetName: props.road_name,
+            suburb: props.suburb_locality,
+            city: props.town_city,
+            postcode: props.postcode,
+            region: props.territorial_authority
+          };
+        });
+      } else if (data.results) {
+        // Geocoding API response format
+        suggestions = data.results.map((result: any, index: number) => {
+          return {
+            id: `linz-geo-${index}`,
+            fullAddress: result.display_name || result.formatted_address,
+            streetNumber: result.house_number,
+            streetName: result.road,
+            suburb: result.suburb,
+            city: result.city,
+            postcode: result.postcode,
+            region: result.state
+          };
+        });
+      }
 
       res.json({ suggestions });
     } catch (error) {
@@ -557,29 +595,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-// Helper function for local address search fallback
+// Helper function for local address search fallback with comprehensive NZ addresses
 function performLocalAddressSearch(query: string) {
-  const commonNZAddresses = [
+  const comprehensiveNZAddresses = [
+    // Auckland addresses
     { streetName: 'Queen Street', suburb: 'Auckland Central', city: 'Auckland', postcode: '1010', region: 'Auckland' },
-    { streetName: 'Lambton Quay', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
-    { streetName: 'Cashel Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
-    { streetName: 'George Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
-    { streetName: 'Victoria Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
-    { streetName: 'Devonport Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
-    { streetName: 'Riccarton Road', suburb: 'Riccarton', city: 'Christchurch', postcode: '8041', region: 'Canterbury' },
+    { streetName: 'Karangahape Road', suburb: 'Auckland Central', city: 'Auckland', postcode: '1010', region: 'Auckland' },
+    { streetName: 'Ponsonby Road', suburb: 'Ponsonby', city: 'Auckland', postcode: '1011', region: 'Auckland' },
+    { streetName: 'Dominion Road', suburb: 'Mount Eden', city: 'Auckland', postcode: '1024', region: 'Auckland' },
     { streetName: 'Great South Road', suburb: 'Newmarket', city: 'Auckland', postcode: '1023', region: 'Auckland' },
     { streetName: 'Manukau Road', suburb: 'Epsom', city: 'Auckland', postcode: '1023', region: 'Auckland' },
-    { streetName: 'Cuba Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' }
+    { streetName: 'Broadway', suburb: 'Newmarket', city: 'Auckland', postcode: '1023', region: 'Auckland' },
+    { streetName: 'Remuera Road', suburb: 'Remuera', city: 'Auckland', postcode: '1050', region: 'Auckland' },
+    { streetName: 'Lake Road', suburb: 'Devonport', city: 'Auckland', postcode: '0624', region: 'Auckland' },
+    { streetName: 'Tamaki Drive', suburb: 'Mission Bay', city: 'Auckland', postcode: '1071', region: 'Auckland' },
+    
+    // Wellington addresses
+    { streetName: 'Lambton Quay', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
+    { streetName: 'Cuba Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
+    { streetName: 'Courtney Place', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
+    { streetName: 'Oriental Parade', suburb: 'Oriental Bay', city: 'Wellington', postcode: '6011', region: 'Wellington' },
+    { streetName: 'The Terrace', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
+    { streetName: 'Bowen Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
+    { streetName: 'Adelaide Road', suburb: 'Newtown', city: 'Wellington', postcode: '6021', region: 'Wellington' },
+    
+    // Christchurch addresses
+    { streetName: 'Cashel Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
+    { streetName: 'Colombo Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
+    { streetName: 'Worcester Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
+    { streetName: 'Riccarton Road', suburb: 'Riccarton', city: 'Christchurch', postcode: '8041', region: 'Canterbury' },
+    { streetName: 'Papanui Road', suburb: 'Papanui', city: 'Christchurch', postcode: '8053', region: 'Canterbury' },
+    { streetName: 'Lincoln Road', suburb: 'Addington', city: 'Christchurch', postcode: '8024', region: 'Canterbury' },
+    
+    // Hamilton addresses
+    { streetName: 'Victoria Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
+    { streetName: 'Ward Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
+    { streetName: 'Anglesea Street', suburb: 'Hamilton East', city: 'Hamilton', postcode: '3216', region: 'Waikato' },
+    
+    // Tauranga addresses
+    { streetName: 'Devonport Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
+    { streetName: 'Cameron Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
+    { streetName: 'Fraser Street', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
+    
+    // Dunedin addresses
+    { streetName: 'George Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
+    { streetName: 'Princes Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
+    { streetName: 'Stuart Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
+    
+    // Rotorua addresses
+    { streetName: 'Fenton Street', suburb: 'Rotorua Central', city: 'Rotorua', postcode: '3010', region: 'Bay of Plenty' },
+    { streetName: 'Tutanekai Street', suburb: 'Rotorua Central', city: 'Rotorua', postcode: '3010', region: 'Bay of Plenty' },
+    
+    // Palmerston North addresses
+    { streetName: 'Main Street', suburb: 'Palmerston North Central', city: 'Palmerston North', postcode: '4410', region: 'Manawatu' },
+    { streetName: 'Broadway Avenue', suburb: 'Palmerston North Central', city: 'Palmerston North', postcode: '4410', region: 'Manawatu' },
+    
+    // New Plymouth addresses
+    { streetName: 'Devon Street East', suburb: 'New Plymouth Central', city: 'New Plymouth', postcode: '4310', region: 'Taranaki' },
+    { streetName: 'Devon Street West', suburb: 'New Plymouth Central', city: 'New Plymouth', postcode: '4310', region: 'Taranaki' },
+    
+    // Nelson addresses
+    { streetName: 'Trafalgar Street', suburb: 'Nelson Central', city: 'Nelson', postcode: '7010', region: 'Tasman' },
+    { streetName: 'Hardy Street', suburb: 'Nelson Central', city: 'Nelson', postcode: '7010', region: 'Tasman' }
   ];
 
   const lowerQuery = query.toLowerCase();
-  return commonNZAddresses
-    .filter(addr => 
-      addr.streetName.toLowerCase().includes(lowerQuery) ||
-      addr.suburb.toLowerCase().includes(lowerQuery) ||
-      addr.city.toLowerCase().includes(lowerQuery) ||
-      addr.postcode.includes(lowerQuery)
-    )
+  
+  // Enhanced fuzzy matching with scoring
+  const matches = comprehensiveNZAddresses
+    .map(addr => {
+      let score = 0;
+      const searchTerms = lowerQuery.split(' ').filter(term => term.length > 0);
+      
+      // Check each search term against address components
+      searchTerms.forEach(term => {
+        if (addr.streetName.toLowerCase().includes(term)) score += 10;
+        if (addr.suburb.toLowerCase().includes(term)) score += 8;
+        if (addr.city.toLowerCase().includes(term)) score += 6;
+        if (addr.postcode.includes(term)) score += 5;
+        if (addr.region.toLowerCase().includes(term)) score += 4;
+        
+        // Bonus for exact matches at start of words
+        if (addr.streetName.toLowerCase().startsWith(term)) score += 5;
+        if (addr.suburb.toLowerCase().startsWith(term)) score += 4;
+        if (addr.city.toLowerCase().startsWith(term)) score += 3;
+      });
+      
+      return { ...addr, score };
+    })
+    .filter(addr => addr.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6)
     .map((addr, index) => ({
       id: `local-${index}`,
       fullAddress: `${addr.streetName}, ${addr.suburb}, ${addr.city} ${addr.postcode}`,
@@ -588,8 +694,9 @@ function performLocalAddressSearch(query: string) {
       city: addr.city,
       postcode: addr.postcode,
       region: addr.region
-    }))
-    .slice(0, 6);
+    }));
+
+  return matches;
 }
 
   // ==================== Stats Routes ====================
