@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { Bot, User, Send, FileText, Download, MapPin, Calculator, Clock, AlertTriangle, Upload, Mic, MicOff } from "lucide-react";
+import { Bot, User, Send, FileText, Download, MapPin, Calculator, Clock, AlertTriangle, Upload, Mic, MicOff, Star as StarIcon } from "lucide-react";
 import nzMapImage from "@assets/NZ.png";
 
 interface Message {
@@ -27,6 +27,8 @@ export default function PremiumChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [propertyAddress, setPropertyAddress] = useState("");
+  const [hasEnteredAddress, setHasEnteredAddress] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -36,14 +38,28 @@ export default function PremiumChat() {
   }, [conversation]);
 
   useEffect(() => {
-    // Initialize with premium welcome message
-    initializePremiumConversation();
+    // Check if user has already entered property address
+    const savedAddress = sessionStorage.getItem('premiumPropertyAddress');
+    if (savedAddress) {
+      setPropertyAddress(savedAddress);
+      setHasEnteredAddress(true);
+      initializePremiumConversation(savedAddress);
+    }
   }, []);
 
-  const initializePremiumConversation = () => {
+  const handleAddressSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (propertyAddress.trim()) {
+      sessionStorage.setItem('premiumPropertyAddress', propertyAddress);
+      setHasEnteredAddress(true);
+      initializePremiumConversation(propertyAddress);
+    }
+  };
+
+  const initializePremiumConversation = (address: string) => {
     const projectDetails = sessionStorage.getItem('projectDetails');
     
-    let welcomeMessage = `Welcome to your Premium Property Development Assessment! I'm your expert AI advisor with enhanced capabilities.
+    let welcomeMessage = `Welcome to your Premium Property Development Assessment for **${address}**! I'm your expert AI advisor with enhanced capabilities.
 
 🏆 **Premium Features Unlocked:**
 • Advanced building consent analysis with cost breakdowns
@@ -53,11 +69,11 @@ export default function PremiumChat() {
 • Document generation and download capabilities
 • Priority regulatory guidance with citations
 
-I can provide comprehensive analysis including specific costs, timelines, and detailed regulatory requirements.`;
+I can provide comprehensive analysis including specific costs, timelines, and detailed regulatory requirements for your property.`;
 
     if (projectDetails) {
       const details = JSON.parse(projectDetails);
-      welcomeMessage = `Welcome to your Premium Property Development Assessment for **${details.propertyAddress}**!
+      welcomeMessage = `Welcome to your Premium Property Development Assessment for **${address}**!
 
 🎯 **Project Overview:**
 • **Development Type:** ${details.projectDescription}
@@ -297,11 +313,59 @@ Let's dive deep into your development potential. What specific aspect would you 
           </Card>
         </div>
 
-        {/* Chat Container */}
-        <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
-          
-          {/* Messages */}
-          <div className="h-96 overflow-y-auto p-6 space-y-4">
+        {/* Property Address Input Form */}
+        {!hasEnteredAddress ? (
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-8">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <StarIcon className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Premium Property Assessment</h2>
+              <p className="text-gray-600">To provide you with accurate, location-specific guidance, please enter your property address.</p>
+            </div>
+            
+            <form onSubmit={handleAddressSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                  Property Address *
+                </label>
+                <Input
+                  id="address"
+                  type="text"
+                  value={propertyAddress}
+                  onChange={(e) => setPropertyAddress(e.target.value)}
+                  placeholder="e.g., 123 Queen Street, Auckland 1010"
+                  className="w-full border-blue-300 focus:border-blue-500"
+                  required
+                />
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white py-3"
+                disabled={!propertyAddress.trim()}
+              >
+                <StarIcon className="w-4 h-4 mr-2" />
+                Start Premium Assessment
+              </Button>
+            </form>
+            
+            <div className="mt-6 p-4 bg-blue-50/50 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-800 mb-2">What you'll get:</h3>
+              <ul className="text-xs text-gray-600 space-y-1">
+                <li>• Location-specific building consent requirements</li>
+                <li>• Council-specific zoning and planning rules</li>
+                <li>• Accurate cost estimates for your area</li>
+                <li>• Regional timeline estimates</li>
+              </ul>
+            </div>
+          </div>
+        ) : (
+          // Chat Container
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
+            
+            {/* Messages */}
+            <div className="h-96 overflow-y-auto p-6 space-y-4">
             {conversation.map((msg) => (
               <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`flex max-w-4xl ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -480,8 +544,10 @@ Let's dive deep into your development potential. What specific aspect would you 
             />
           </div>
         </div>
+        )}
 
         {/* Premium Actions */}
+        {hasEnteredAddress && (
         <div className="mt-6 flex flex-wrap justify-center gap-4">
           <Button
             onClick={handleDownloadReport}
@@ -506,6 +572,7 @@ Let's dive deep into your development potential. What specific aspect would you 
             Back to Home
           </Button>
         </div>
+        )}
       </div>
     </div>
   );
