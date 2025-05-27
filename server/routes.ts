@@ -510,80 +510,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ suggestions: [] });
       }
 
-      // Use LINZ Data Service API for authentic NZ address data
-      const linzApiKey = process.env.LINZ_API_KEY;
-      if (!linzApiKey) {
-        // Fallback to local search when LINZ API key is not available
+      // Use Google Maps Places API for comprehensive address data
+      const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (!googleMapsApiKey) {
+        // Fallback to local search when Google Maps API key is not available
         const fallbackSuggestions = performLocalAddressSearch(query);
         return res.json({ 
           suggestions: fallbackSuggestions,
-          notice: "Using local address database. For complete New Zealand address coverage, please configure LINZ_API_KEY."
+          notice: "Using local address database. For complete New Zealand address coverage, please configure Google Maps API key."
         });
       }
 
-      // Try the LINZ Geocoding API for better address suggestions
+      // Use Google Places API Autocomplete for New Zealand addresses
       const encodedQuery = encodeURIComponent(query);
+      const googleUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodedQuery}&components=country:nz&types=address&key=${googleMapsApiKey}`;
       
-      // First try the LINZ geocoding service
-      let linzUrl = `https://api.linz.govt.nz/v1/geocode?q=${encodedQuery}&format=json&limit=6`;
-      
-      const headers = {
-        'Authorization': `Bearer ${linzApiKey}`,
-        'User-Agent': 'CanIBuildIt-AddressSearch/1.0'
-      };
-      
-      let response = await fetch(linzUrl, { headers });
-      
-      // If that fails, try the data service
-      if (!response.ok) {
-        linzUrl = `https://data.linz.govt.nz/services/api/v1/vector/layers/50308/search?q=${encodedQuery}&format=json&limit=6&key=${linzApiKey}`;
-        response = await fetch(linzUrl);
-      }
+      const response = await fetch(googleUrl);
       
       if (!response.ok) {
         // Fall back to local search on API failure
         const fallbackSuggestions = performLocalAddressSearch(query);
         return res.json({ 
           suggestions: fallbackSuggestions,
-          notice: "Using local address database. LINZ API temporarily unavailable."
+          notice: "Using local address database. Google Maps API temporarily unavailable."
         });
       }
 
       const data = await response.json();
       
-      // Transform LINZ data into our format - handle different response structures
-      let suggestions = [];
-      
-      if (data.features) {
-        // Vector layer response format
-        suggestions = data.features.map((feature: any, index: number) => {
-          const props = feature.properties;
-          return {
-            id: `linz-${props.objectid || index}`,
-            fullAddress: props.full_address || `${props.address_number || ''} ${props.road_name || ''}, ${props.suburb_locality || ''}, ${props.town_city || ''} ${props.postcode || ''}`.trim(),
-            streetNumber: props.address_number,
-            streetName: props.road_name,
-            suburb: props.suburb_locality,
-            city: props.town_city,
-            postcode: props.postcode,
-            region: props.territorial_authority
-          };
-        });
-      } else if (data.results) {
-        // Geocoding API response format
-        suggestions = data.results.map((result: any, index: number) => {
-          return {
-            id: `linz-geo-${index}`,
-            fullAddress: result.display_name || result.formatted_address,
-            streetNumber: result.house_number,
-            streetName: result.road,
-            suburb: result.suburb,
-            city: result.city,
-            postcode: result.postcode,
-            region: result.state
-          };
+      if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+        // Fall back to local search on API error
+        const fallbackSuggestions = performLocalAddressSearch(query);
+        return res.json({ 
+          suggestions: fallbackSuggestions,
+          notice: "Using local address database. Google Maps API error."
         });
       }
+
+      // Transform Google Places API data into our format
+      const suggestions = (data.predictions || []).map((prediction: any, index: number) => {
+        // Parse address components from structured_formatting
+        const mainText = prediction.structured_formatting?.main_text || '';
+        const secondaryText = prediction.structured_formatting?.secondary_text || '';
+        
+        return {
+          id: `google-${prediction.place_id || index}`,
+          fullAddress: prediction.description,
+          streetName: mainText,
+          suburb: secondaryText.split(',')[0]?.trim() || '',
+          city: secondaryText.split(',')[1]?.trim() || '',
+          postcode: '',
+          region: 'New Zealand'
+        };
+      });
 
       res.json({ suggestions });
     } catch (error) {
