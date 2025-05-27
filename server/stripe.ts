@@ -22,9 +22,10 @@ export interface PricePlan {
 }
 
 // Use Stripe payment links for direct checkout
+// Note: You'll need to update these in your Stripe dashboard with success URL: /payment-success?plan={CHECKOUT_SESSION_ID}
 export const STRIPE_PAYMENT_LINKS: Record<string, string> = {
   'basic': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
-  'standard': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
+  'standard': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02', 
   'premium': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
   'expert': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
   'pro': 'https://buy.stripe.com/test_3cIbJ3cqG3F7grL8T51ZS02',
