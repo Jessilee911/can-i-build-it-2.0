@@ -121,15 +121,19 @@ export function AddressAutocomplete({
   };
 
   const handleSuggestionClick = (suggestion: AddressOption) => {
-    // Ensure the input is properly updated
-    onChange(suggestion.fullAddress);
-    onSelect?.(suggestion);
+    // Immediately hide suggestions to prevent multiple clicks
     setShowSuggestions(false);
     setHighlightedIndex(-1);
-    // Small delay to ensure state updates properly
-    setTimeout(() => {
-      inputRef.current?.blur();
-    }, 100);
+    
+    // Update the value through the parent component
+    onChange(suggestion.fullAddress);
+    onSelect?.(suggestion);
+    
+    // Force the input to update and blur
+    if (inputRef.current) {
+      inputRef.current.value = suggestion.fullAddress;
+      inputRef.current.blur();
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -209,7 +213,10 @@ export function AddressAutocomplete({
               className={`px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
                 index === highlightedIndex ? 'bg-blue-50 border-blue-200' : ''
               }`}
-              onClick={() => handleSuggestionClick(suggestion)}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleSuggestionClick(suggestion);
+              }}
             >
               <div className="flex items-start space-x-3">
                 <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
