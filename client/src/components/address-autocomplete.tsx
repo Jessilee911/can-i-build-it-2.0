@@ -121,10 +121,15 @@ export function AddressAutocomplete({
   };
 
   const handleSuggestionClick = (suggestion: AddressOption) => {
+    // Ensure the input is properly updated
     onChange(suggestion.fullAddress);
     onSelect?.(suggestion);
     setShowSuggestions(false);
-    inputRef.current?.focus();
+    setHighlightedIndex(-1);
+    // Small delay to ensure state updates properly
+    setTimeout(() => {
+      inputRef.current?.blur();
+    }, 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -177,9 +182,12 @@ export function AddressAutocomplete({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => value.length >= 3 && setShowSuggestions(true)}
-          onBlur={() => {
-            // Delay hiding suggestions to allow for clicks
-            setTimeout(() => setShowSuggestions(false), 200);
+          onBlur={(e) => {
+            // Only hide suggestions if not clicking on a suggestion
+            const relatedTarget = e.relatedTarget as HTMLElement;
+            if (!relatedTarget || !relatedTarget.closest('[data-suggestion]')) {
+              setTimeout(() => setShowSuggestions(false), 150);
+            }
           }}
           placeholder={placeholder}
           className={`pl-10 pr-10 ${className}`}
@@ -197,6 +205,7 @@ export function AddressAutocomplete({
             <div
               key={suggestion.id}
               ref={el => suggestionRefs.current[index] = el}
+              data-suggestion="true"
               className={`px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
                 index === highlightedIndex ? 'bg-blue-50 border-blue-200' : ''
               }`}
