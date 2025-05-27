@@ -561,7 +561,14 @@ Let's dive deep into your development potential. What specific aspect would you 
           
           <Button
             variant="outline"
-            onClick={() => setLocation('/reports')}
+            onClick={() => {
+              // Clear saved address and reset the form
+              sessionStorage.removeItem('premiumPropertyAddress');
+              sessionStorage.removeItem('projectDetails');
+              setPropertyAddress('');
+              setHasEnteredAddress(false);
+              setConversation([]);
+            }}
           >
             <FileText className="w-4 h-4 mr-2" />
             Generate New Assessment
