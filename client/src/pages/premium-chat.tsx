@@ -30,6 +30,8 @@ export default function PremiumChat() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [propertyAddress, setPropertyAddress] = useState("");
   const [hasEnteredAddress, setHasEnteredAddress] = useState(false);
+  const [projectDescription, setProjectDescription] = useState("");
+  const [hasEnteredProject, setHasEnteredProject] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -39,12 +41,19 @@ export default function PremiumChat() {
   }, [conversation]);
 
   useEffect(() => {
-    // Check if user has already entered property address
+    // Check if user has already entered property address and project
     const savedAddress = sessionStorage.getItem('premiumPropertyAddress');
+    const savedProject = sessionStorage.getItem('premiumProjectDescription');
+    
     if (savedAddress) {
       setPropertyAddress(savedAddress);
       setHasEnteredAddress(true);
-      initializePremiumConversation(savedAddress);
+      
+      if (savedProject) {
+        setProjectDescription(savedProject);
+        setHasEnteredProject(true);
+        initializePremiumConversation(savedAddress, savedProject);
+      }
     }
   }, []);
 
@@ -53,14 +62,22 @@ export default function PremiumChat() {
     if (propertyAddress.trim()) {
       sessionStorage.setItem('premiumPropertyAddress', propertyAddress);
       setHasEnteredAddress(true);
-      initializePremiumConversation(propertyAddress);
     }
   };
 
-  const initializePremiumConversation = (address: string) => {
-    const projectDetails = sessionStorage.getItem('projectDetails');
-    
+  const handleProjectSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (projectDescription.trim()) {
+      sessionStorage.setItem('premiumProjectDescription', projectDescription);
+      setHasEnteredProject(true);
+      initializePremiumConversation(propertyAddress, projectDescription);
+    }
+  };
+
+  const initializePremiumConversation = (address: string, project: string) => {
     let welcomeMessage = `Welcome to your Premium Property Development Assessment for **${address}**! I'm your expert AI advisor with enhanced capabilities.
+
+🎯 **Your Project:** ${project}
 
 🏆 **Premium Features Unlocked:**
 • Advanced building consent analysis with cost breakdowns
@@ -70,26 +87,7 @@ export default function PremiumChat() {
 • Document generation and download capabilities
 • Priority regulatory guidance with citations
 
-I can provide comprehensive analysis including specific costs, timelines, and detailed regulatory requirements for your property.`;
-
-    if (projectDetails) {
-      const details = JSON.parse(projectDetails);
-      welcomeMessage = `Welcome to your Premium Property Development Assessment for **${address}**!
-
-🎯 **Project Overview:**
-• **Development Type:** ${details.projectDescription}
-• **Budget Range:** ${details.budgetRange}
-• **Timeline:** ${details.timeframe}
-
-🏆 **Premium Analysis Includes:**
-• Detailed consent cost breakdowns and processing times
-• Zoning compliance with specific rule interpretations
-• Professional timeline with regulatory milestones
-• Risk assessment and mitigation recommendations
-• Downloadable reports and documentation
-
-Let's dive deep into your development potential. What specific aspect would you like to explore first?`;
-    }
+I'll provide comprehensive analysis including specific costs, timelines, and detailed regulatory requirements for your property development project. What specific aspect would you like to explore first?`;
     
     setConversation([{
       id: Date.now().toString(),
@@ -362,6 +360,80 @@ Let's dive deep into your development potential. What specific aspect would you 
               </ul>
             </div>
           </div>
+        ) : hasEnteredAddress && !hasEnteredProject ? (
+          // Project Description Form
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-8">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">What's Your Project?</h2>
+              <p className="text-gray-600">Tell us about your building project to get specific guidance and requirements.</p>
+            </div>
+            
+            <form onSubmit={handleProjectSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="project" className="block text-sm font-medium text-gray-700 mb-3">
+                  Project Description *
+                </label>
+                <textarea
+                  id="project"
+                  value={projectDescription}
+                  onChange={(e) => setProjectDescription(e.target.value)}
+                  placeholder="Describe your building project..."
+                  className="w-full h-24 px-4 py-3 border border-blue-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setProjectDescription("Do I need building consent for a new garage?")}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 text-left transition-colors"
+                >
+                  <div className="font-medium text-gray-900">Garage Construction</div>
+                  <div className="text-sm text-gray-600">Building consent requirements</div>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setProjectDescription("Can I subdivide my property into two sections?")}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 text-left transition-colors"
+                >
+                  <div className="font-medium text-gray-900">Property Subdivision</div>
+                  <div className="text-sm text-gray-600">Land division requirements</div>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setProjectDescription("What permits do I need for a kitchen renovation?")}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 text-left transition-colors"
+                >
+                  <div className="font-medium text-gray-900">Kitchen Renovation</div>
+                  <div className="text-sm text-gray-600">Renovation permits needed</div>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setProjectDescription("Can I build a deck without consent?")}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 text-left transition-colors"
+                >
+                  <div className="font-medium text-gray-900">Deck Construction</div>
+                  <div className="text-sm text-gray-600">Consent requirements</div>
+                </button>
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white py-3"
+                disabled={!projectDescription.trim()}
+              >
+                <StarIcon className="w-4 h-4 mr-2" />
+                Start Premium Assessment
+              </Button>
+            </form>
+          </div>
         ) : (
           // Chat Container
           <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
@@ -562,11 +634,14 @@ Let's dive deep into your development potential. What specific aspect would you 
           <Button
             variant="outline"
             onClick={() => {
-              // Clear saved address and reset the form
+              // Clear saved address, project and reset the form
               sessionStorage.removeItem('premiumPropertyAddress');
+              sessionStorage.removeItem('premiumProjectDescription');
               sessionStorage.removeItem('projectDetails');
               setPropertyAddress('');
+              setProjectDescription('');
               setHasEnteredAddress(false);
+              setHasEnteredProject(false);
               setConversation([]);
             }}
           >
