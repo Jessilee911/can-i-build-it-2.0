@@ -21,6 +21,11 @@ export async function initCheckout(planId: string, isSubscription: boolean = fal
       return { success: true, free: true };
     }
     
+    // Check if payment was processed directly (temporary solution)
+    if (data.paymentProcessed) {
+      return { success: true, paymentProcessed: true };
+    }
+    
     // For paid plans, redirect to Stripe checkout
     if (data.url) {
       window.location.assign(data.url);
