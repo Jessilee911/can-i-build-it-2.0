@@ -35,13 +35,8 @@ export function Sidebar({ className }: SidebarProps) {
       icon: <HomeIcon className="h-4 w-4" />
     },
     {
-      title: "Agent 2 - Property Assessment",
+      title: "Property Assessment & Reports",
       href: "/property-chat",
-      icon: <MessageSquareIcon className="h-4 w-4" />
-    },
-    {
-      title: "Generate Report",
-      href: "/reports",
       icon: <FileTextIcon className="h-4 w-4" />
     }
   ];
