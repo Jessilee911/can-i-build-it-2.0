@@ -42,7 +42,7 @@ export default function Chat() {
   const initializeConversation = (plan: string) => {
     // Check for project details from the property form
     const projectDetails = sessionStorage.getItem('projectDetails');
-    let welcomeMessage = getWelcomeMessage(plan);
+    let welcomeMessage = getWelcomeMessage();
     
     if (projectDetails) {
       const details = JSON.parse(projectDetails);
@@ -64,20 +64,8 @@ Let me help you understand the building regulations, consent requirements, and d
     }]);
   };
 
-  const getWelcomeMessage = (plan: string) => {
-    switch (plan) {
-      case 'basic':
-        return `Welcome to your Basic Property Assessment! I'm your AI property advisor.\n\nI can help you with:\n• General building consent guidance\n• Basic zoning information\n• Building code requirements\n• Resource consent basics\n\nLet's start with your property. What's the address you'd like to assess?`;
-      
-      case 'professional':
-        return `Welcome to your Professional Property Assessment! I'm your expert AI property advisor.\n\nWith your Professional plan, I can provide:\n• Detailed building consent analysis\n• Comprehensive zoning compliance review\n• Wind and earthquake zone data\n• Heritage and environmental constraints\n• Cost estimation guidance\n• Timeline planning\n\nLet's dive deep into your property analysis. What's the address of the property you're planning to develop?`;
-      
-      case 'premium':
-        return `Welcome to your Premium Property Assessment with Licensed Designer Review!\n\nYour Premium plan includes everything, plus:\n• Licensed designer consultation\n• Detailed architectural guidance\n• Structural engineering recommendations\n• Council liaison support\n• Priority processing\n• Unlimited follow-up questions\n\nI'll gather comprehensive information for our licensed designer to review. What's the property address and what type of development are you planning?`;
-      
-      default:
-        return `Welcome! I'm your AI property advisor. Please upgrade to a plan to unlock my full capabilities, or let me know if you have any general questions about New Zealand building regulations.`;
-    }
+  const getWelcomeMessage = () => {
+    return `Welcome! I'm your AI property advisor for New Zealand. I provide comprehensive, free guidance on building consent requirements, zoning compliance, building codes, resource consents, development potential, and regulatory advice. I'm here to help you understand everything about developing your property.`;
   };
 
   const renderMessageWithUpgradeButtons = (content: string) => {
