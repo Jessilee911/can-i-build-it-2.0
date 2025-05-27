@@ -13,6 +13,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FileTextIcon,
+  StarIcon,
   ShieldCheckIcon,
   SearchIcon,
   BuildingIcon
@@ -38,6 +39,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: "Generate Report",
       href: "/reports",
       icon: <FileTextIcon className="h-4 w-4" />
+    },
+    {
+      title: "Premium Assessment",
+      href: "/premium-chat",
+      icon: <StarIcon className="h-4 w-4" />
     },
     {
       title: "Chat Assistant",
