@@ -239,22 +239,22 @@ Let's dive deep into your development potential. What specific aspect would you 
 
       <div className="relative z-10 max-w-6xl mx-auto p-4">
         {/* Premium Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-2xl shadow-xl mb-6">
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 mb-6">
           <div className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold flex items-center">
-                  <Bot className="mr-3 h-8 w-8" />
+                <h1 className="text-3xl font-bold flex items-center text-gray-900">
+                  <Bot className="mr-3 h-8 w-8 text-blue-600" />
                   Premium Property Assessment
                 </h1>
-                <p className="text-blue-100 mt-2">Expert AI advisor with advanced development analysis</p>
+                <p className="text-gray-600 mt-2">Expert AI advisor with advanced development analysis</p>
               </div>
               
               <div className="text-right">
-                <Badge className="bg-yellow-500 text-black font-semibold mb-2">
+                <Badge className="bg-gradient-to-r from-blue-600 to-green-600 text-white font-semibold mb-2">
                   🏆 PREMIUM
                 </Badge>
-                <div className="text-sm text-blue-200">
+                <div className="text-sm text-gray-600">
                   Enhanced features unlocked
                 </div>
               </div>
@@ -264,41 +264,41 @@ Let's dive deep into your development potential. What specific aspect would you 
 
         {/* Premium Feature Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-white/90 backdrop-blur-sm border-green-200">
+          <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
             <CardContent className="p-4 text-center">
-              <Calculator className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-sm font-medium">Cost Analysis</div>
+              <Calculator className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <div className="text-sm font-medium text-gray-800">Cost Analysis</div>
               <div className="text-xs text-gray-600">Detailed breakdowns</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/90 backdrop-blur-sm border-blue-200">
+          <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
             <CardContent className="p-4 text-center">
-              <Clock className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-sm font-medium">Timeline Planning</div>
+              <Clock className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="text-sm font-medium text-gray-800">Timeline Planning</div>
               <div className="text-xs text-gray-600">Milestone tracking</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/90 backdrop-blur-sm border-purple-200">
+          <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
             <CardContent className="p-4 text-center">
-              <AlertTriangle className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-sm font-medium">Risk Assessment</div>
+              <AlertTriangle className="h-8 w-8 text-blue-700 mx-auto mb-2" />
+              <div className="text-sm font-medium text-gray-800">Risk Assessment</div>
               <div className="text-xs text-gray-600">Mitigation strategies</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/90 backdrop-blur-sm border-orange-200">
+          <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
             <CardContent className="p-4 text-center">
-              <FileText className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-              <div className="text-sm font-medium">Documentation</div>
+              <FileText className="h-8 w-8 text-green-700 mx-auto mb-2" />
+              <div className="text-sm font-medium text-gray-800">Documentation</div>
               <div className="text-xs text-gray-600">Professional reports</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Chat Container */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30">
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
           
           {/* Messages */}
           <div className="h-96 overflow-y-auto p-6 space-y-4">
@@ -405,7 +405,7 @@ Let's dive deep into your development potential. What specific aspect would you 
           )}
 
           {/* Premium Input */}
-          <div className="border-t border-blue-200 p-6 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div className="border-t border-white/20 p-6 bg-gradient-to-r from-blue-50/50 to-green-50/50 backdrop-blur-sm">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex space-x-2">
                 <Input
@@ -422,7 +422,7 @@ Let's dive deep into your development potential. What specific aspect would you 
                   onClick={isRecording ? stopRecording : startRecording}
                   className={`${isRecording 
                     ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                    : 'bg-purple-600 hover:bg-purple-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                   disabled={isLoading}
                 >
@@ -443,7 +443,7 @@ Let's dive deep into your development potential. What specific aspect would you 
                 <Button 
                   type="submit" 
                   disabled={!message.trim() || isLoading}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
