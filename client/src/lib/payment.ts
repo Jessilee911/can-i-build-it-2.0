@@ -23,7 +23,7 @@ export async function initCheckout(planId: string, isSubscription: boolean = fal
     
     // For paid plans, redirect to Stripe checkout
     if (data.url) {
-      window.location.href = data.url;
+      window.location.assign(data.url);
       return { success: true, redirected: true };
     }
     
@@ -65,7 +65,7 @@ export async function processReportRequest(formData: any, planId: string) {
   
   // For free Basic plan, redirect directly to chat
   if (planId === 'Basic Report') {
-    window.location.href = '/chat';
+    window.location.assign('/chat');
     return { success: true, free: true };
   }
   
