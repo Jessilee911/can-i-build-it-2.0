@@ -528,6 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await fetch(googleUrl);
       
       if (!response.ok) {
+        console.error(`Google Maps API error: ${response.status} ${response.statusText}`);
         // Fall back to local search on API failure
         const fallbackSuggestions = performLocalAddressSearch(query);
         return res.json({ 
