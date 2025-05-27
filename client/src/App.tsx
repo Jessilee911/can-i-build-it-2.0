@@ -35,9 +35,9 @@ function Router() {
           <PropertyData />
         </AppLayout>
       )} />
-      <Route path="/pricing" component={() => (
+      <Route path="/reports" component={() => (
         <AppLayout>
-          <PricingPage />
+          <ReportGenerator />
         </AppLayout>
       )} />
 
