@@ -47,7 +47,11 @@ function Router() {
         <PaymentSuccess />
       )} />
       <Route path="/chat" component={Chat} />
-      <Route path="/premium-chat" component={PremiumChat} />
+      <Route path="/premium-chat" component={() => (
+        <AppLayout>
+          <PremiumChat />
+        </AppLayout>
+      )} />
       <Route path="/report-questions" component={ReportQuestions} />
       <Route path="/report-success" component={ReportSuccess} />
       <Route component={NotFound} />
