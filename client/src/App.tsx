@@ -12,11 +12,13 @@ import ReportSuccess from "@/pages/report-success";
 import Chat from "@/pages/chat";
 import FAQPage from "@/pages/faq";
 import { Link } from "wouter";
+import { Sidebar } from "@/components/sidebar";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <main className="py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 font-sans flex">
+      <Sidebar />
+      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 md:ml-0">
         {children}
       </main>
     </div>
