@@ -10,6 +10,7 @@ import Checkout from "@/pages/checkout";
 import ReportQuestions from "@/pages/report-questions";
 import ReportSuccess from "@/pages/report-success";
 import PaymentSuccess from "@/pages/payment-success";
+import ReportGenerator from "@/pages/report-generator";
 import Chat from "@/pages/chat";
 
 import { Link } from "wouter";

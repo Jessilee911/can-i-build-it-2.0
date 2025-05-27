@@ -10,18 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 export default function PricingPage() {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = React.useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = React.useState<'onetime' | 'subscription'>('subscription');
 
-  interface PricingPlan {
+  interface ReportOption {
     id: string;
     name: string;
-    price: number;
     description: string;
     features: string[];
     highlight?: boolean;
-    isSubscription?: boolean;
-    badge?: string;
   }
 
   const ONE_TIME_PLANS: PricingPlan[] = [
