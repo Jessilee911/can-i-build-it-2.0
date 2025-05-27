@@ -10,6 +10,7 @@ import Checkout from "@/pages/checkout";
 import ReportQuestions from "@/pages/report-questions";
 import ReportSuccess from "@/pages/report-success";
 import Chat from "@/pages/chat";
+import FAQPage from "@/pages/faq";
 import { Link } from "wouter";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -33,6 +34,11 @@ function Router() {
       <Route path="/pricing" component={() => (
         <AppLayout>
           <PricingPage />
+        </AppLayout>
+      )} />
+      <Route path="/faq" component={() => (
+        <AppLayout>
+          <FAQPage />
         </AppLayout>
       )} />
       <Route path="/checkout" component={Checkout} />
