@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Send, Bot, User, ArrowRight, FileText } from "lucide-react";
+import { Send, Bot, User, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import nzMapImage from "@assets/NZ.png";
 
@@ -65,16 +65,7 @@ Let me help you understand the building regulations, consent requirements, and d
   };
 
   const getWelcomeMessage = () => {
-    return `Welcome! I'm your Property Assessment & Report Agent for New Zealand. I provide comprehensive, free guidance on building consent requirements, zoning compliance, building codes, resource consents, development potential, and regulatory advice. 
-
-I can also generate detailed property reports including:
-• Comprehensive development analysis
-• Building consent requirements
-• Zoning restrictions and opportunities
-• Regulatory compliance guidance
-• PDF report downloads
-
-How can I help you assess your property today?`;
+    return `Welcome! I'm your AI property advisor for New Zealand. I provide comprehensive, free guidance on building consent requirements, zoning compliance, building codes, resource consents, development potential, and regulatory advice. I'm here to help you understand everything about developing your property.`;
   };
 
   const renderMessageWithUpgradeButtons = (content: string) => {
@@ -207,26 +198,15 @@ How can I help you assess your property today?`;
           <div className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Property Assessment & Reports</h1>
-                <p className="text-gray-600">Specialized analysis and comprehensive report generation</p>
+                <h1 className="text-2xl font-bold text-gray-900">Agent 2 - Property Assessment</h1>
+                <p className="text-gray-600">Specialized property development analysis and guidance</p>
               </div>
               
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={() => setLocation('/reports')}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Generate Report
-                </Button>
-                
-                {userPlan && (
-                  <div className={`px-4 py-2 rounded-full text-sm font-medium ${getPlanBadgeColor(userPlan)}`}>
-                    {userPlan.charAt(0).toUpperCase() + userPlan.slice(1)} Plan
-                  </div>
-                )}
-              </div>
+              {userPlan && (
+                <div className={`px-4 py-2 rounded-full text-sm font-medium ${getPlanBadgeColor(userPlan)}`}>
+                  {userPlan.charAt(0).toUpperCase() + userPlan.slice(1)} Plan
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -30,14 +30,24 @@ export function Sidebar({ className }: SidebarProps) {
 
   const navigationItems = [
     {
-      title: "Can I Build It? (Agent 1)",
+      title: "Home",
       href: "/",
       icon: <HomeIcon className="h-4 w-4" />
     },
     {
-      title: "Property Assessment & Reports",
-      href: "/property-chat",
+      title: "Generate Report",
+      href: "/reports",
       icon: <FileTextIcon className="h-4 w-4" />
+    },
+    {
+      title: "Agent 1 - General Help",
+      href: "/main-chat",
+      icon: <MessageSquareIcon className="h-4 w-4" />
+    },
+    {
+      title: "Agent 2 - Property Assessment",
+      href: "/property-chat",
+      icon: <MessageSquareIcon className="h-4 w-4" />
     }
   ];
 
