@@ -12,7 +12,6 @@ import ReportSuccess from "@/pages/report-success";
 import PaymentSuccess from "@/pages/payment-success";
 import ReportGenerator from "@/pages/report-generator";
 import Chat from "@/pages/chat";
-import MainChat from "@/pages/main-chat";
 
 import { Link } from "wouter";
 import { Sidebar } from "@/components/sidebar";
@@ -46,16 +45,7 @@ function Router() {
       <Route path="/payment-success" component={() => (
         <PaymentSuccess />
       )} />
-      <Route path="/main-chat" component={() => (
-        <AppLayout>
-          <MainChat />
-        </AppLayout>
-      )} />
-      <Route path="/property-chat" component={() => (
-        <AppLayout>
-          <Chat />
-        </AppLayout>
-      )} />
+      <Route path="/chat" component={Chat} />
       <Route path="/report-questions" component={ReportQuestions} />
       <Route path="/report-success" component={ReportSuccess} />
       <Route component={NotFound} />

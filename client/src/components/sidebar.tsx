@@ -40,13 +40,8 @@ export function Sidebar({ className }: SidebarProps) {
       icon: <FileTextIcon className="h-4 w-4" />
     },
     {
-      title: "Agent 1 - General Help",
-      href: "/main-chat",
-      icon: <MessageSquareIcon className="h-4 w-4" />
-    },
-    {
-      title: "Agent 2 - Property Assessment",
-      href: "/property-chat",
+      title: "Chat Assistant",
+      href: "/chat",
       icon: <MessageSquareIcon className="h-4 w-4" />
     }
   ];

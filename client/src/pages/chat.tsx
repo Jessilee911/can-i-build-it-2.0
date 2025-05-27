@@ -198,8 +198,8 @@ Let me help you understand the building regulations, consent requirements, and d
           <div className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Agent 2 - Property Assessment</h1>
-                <p className="text-gray-600">Specialized property development analysis and guidance</p>
+                <h1 className="text-2xl font-bold text-gray-900">Property Assessment Chat</h1>
+                <p className="text-gray-600">Your AI-powered property development advisor</p>
               </div>
               
               {userPlan && (
@@ -220,17 +220,17 @@ Let me help you understand the building regulations, consent requirements, and d
               <div className="text-center py-8">
                 <Bot className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                 <div className="text-left max-w-md mx-auto">
-                  <p className="text-gray-800 font-medium mb-3">Hi! I'm Agent 2, your specialized property assessment advisor.</p>
-                  <p className="text-gray-600 mb-4">I focus specifically on detailed property analysis:</p>
+                  <p className="text-gray-800 font-medium mb-3">Hi! I'm your AI property advisor for New Zealand.</p>
+                  <p className="text-gray-600 mb-4">I provide comprehensive, free guidance on:</p>
                   <ul className="text-sm text-gray-600 space-y-1 mb-6">
-                    <li>• Property-specific building consent analysis</li>
-                    <li>• Detailed development potential assessment</li>
-                    <li>• Site-specific constraints and opportunities</li>
-                    <li>• Zoning compliance for your exact location</li>
-                    <li>• Cost estimates and project timelines</li>
-                    <li>• Step-by-step development guidance</li>
+                    <li>• Building consent requirements and processes</li>
+                    <li>• Detailed zoning information and compliance</li>
+                    <li>• Building code requirements and interpretation</li>
+                    <li>• Resource consent guidance</li>
+                    <li>• Development potential assessment</li>
+                    <li>• Cost estimates and timeline planning</li>
                   </ul>
-                  <p className="text-gray-700">What's your property address and what specific development are you planning?</p>
+                  <p className="text-gray-700">What's your property address and what type of development are you planning?</p>
                 </div>
               </div>
             )}
