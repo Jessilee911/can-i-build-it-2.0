@@ -33,7 +33,7 @@ function Router() {
     <Switch>
       <Route path="/" component={() => (
         <AppLayout>
-          <Home />
+          <PropertyData />
         </AppLayout>
       )} />
       <Route path="/reports" component={() => (
