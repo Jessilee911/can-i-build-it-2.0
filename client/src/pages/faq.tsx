@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { SearchIcon, HomeIcon, FileTextIcon, ShieldCheckIcon } from "lucide-react";
+import nzMapPath from "@assets/NZ.png";
 
 export default function FAQPage() {
   const faqCategories = [
@@ -114,25 +115,37 @@ export default function FAQPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background with floating NZ map */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="absolute inset-0 opacity-5">
+          <img
+            src={nzMapPath}
+            alt=""
+            className="w-full h-full object-cover animate-float"
+            style={{ transform: 'scale(1.2)' }}
+          />
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white py-16">
+      <div className="relative z-10 pt-16 pb-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              New Zealand Building Consent & Resource Consent FAQ
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+              Building Consent & Resource Consent FAQ
             </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">
+            <p className="text-xl md:text-2xl mb-8 text-gray-700">
               Get instant answers to the most asked questions about building consents, resource consents, and NZ Building Code compliance
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Badge variant="secondary" className="text-lg px-4 py-2">
+              <Badge variant="secondary" className="text-lg px-4 py-2 bg-white/80 backdrop-blur-sm">
                 Building Consent Expert
               </Badge>
-              <Badge variant="secondary" className="text-lg px-4 py-2">
+              <Badge variant="secondary" className="text-lg px-4 py-2 bg-white/80 backdrop-blur-sm">
                 Resource Consent Guide
               </Badge>
-              <Badge variant="secondary" className="text-lg px-4 py-2">
+              <Badge variant="secondary" className="text-lg px-4 py-2 bg-white/80 backdrop-blur-sm">
                 NZ Building Code
               </Badge>
             </div>
@@ -141,7 +154,7 @@ export default function FAQPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="relative z-10 container mx-auto px-4 pb-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">
@@ -156,24 +169,24 @@ export default function FAQPage() {
           {/* FAQ Categories */}
           <div className="grid gap-8">
             {faqCategories.map((category, categoryIndex) => (
-              <Card key={categoryIndex} className="overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-green-50">
+              <Card key={categoryIndex} className="overflow-hidden bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-blue-50/80 to-green-50/80 backdrop-blur-sm">
                   <div className="flex items-center gap-3">
                     {category.icon}
-                    <CardTitle className="text-2xl">{category.category}</CardTitle>
+                    <CardTitle className="text-2xl text-gray-800">{category.category}</CardTitle>
                   </div>
-                  <CardDescription className="text-lg">
+                  <CardDescription className="text-lg text-gray-600">
                     Common questions and expert answers about {category.category.toLowerCase()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Accordion type="single" collapsible className="w-full">
                     {category.questions.map((faq, index) => (
-                      <AccordionItem key={index} value={`${categoryIndex}-${index}`} className="px-6">
-                        <AccordionTrigger className="text-left font-medium hover:text-blue-600">
+                      <AccordionItem key={index} value={`${categoryIndex}-${index}`} className="px-6 border-gray-200/50">
+                        <AccordionTrigger className="text-left font-medium hover:text-blue-600 text-gray-800">
                           {faq.question}
                         </AccordionTrigger>
-                        <AccordionContent className="text-muted-foreground leading-relaxed">
+                        <AccordionContent className="text-gray-600 leading-relaxed">
                           {faq.answer}
                         </AccordionContent>
                       </AccordionItem>
@@ -185,18 +198,18 @@ export default function FAQPage() {
           </div>
 
           {/* CTA Section */}
-          <div className="mt-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl p-8 text-white text-center">
-            <h3 className="text-3xl font-bold mb-4">
+          <div className="mt-16 bg-white/80 backdrop-blur-md border-white/20 shadow-xl rounded-2xl p-8 text-center">
+            <h3 className="text-3xl font-bold mb-4 text-gray-800">
               Need Specific Advice for Your Property?
             </h3>
-            <p className="text-xl mb-6 opacity-90">
+            <p className="text-xl mb-6 text-gray-600">
               Get personalized building consent and resource consent guidance with our AI-powered property advisor
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Button size="lg" variant="secondary" className="text-blue-600">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
                 Start Free Assessment
               </Button>
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-blue-600">
+              <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white">
                 View Pricing Plans
               </Button>
             </div>
