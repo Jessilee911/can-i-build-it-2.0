@@ -217,7 +217,7 @@ How can I help you assess your property today?`;
                   className="bg-green-600 hover:bg-green-700 text-white"
                   size="sm"
                 >
-                  <FileTextIcon className="w-4 h-4 mr-2" />
+                  <FileText className="w-4 h-4 mr-2" />
                   Generate Report
                 </Button>
                 
