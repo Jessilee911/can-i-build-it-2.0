@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { Bot, User, Send, FileText, Download, MapPin, Calculator, Clock, AlertTriangle } from "lucide-react";
+import { Bot, User, Send, FileText, Download, MapPin, Calculator, Clock, AlertTriangle, Upload, Mic, MicOff } from "lucide-react";
 import nzMapImage from "@assets/NZ.png";
 
 interface Message {
@@ -25,7 +25,11 @@ export default function PremiumChat() {
   const [conversation, setConversation] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -144,6 +148,82 @@ Let's dive deep into your development potential. What specific aspect would you 
   const handleDownloadReport = () => {
     // Trigger comprehensive report download
     window.open('/api/premium-report/download', '_blank');
+  };
+
+  // File upload handler
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+      
+      // Add a message about the uploaded files
+      const fileMessage: Message = {
+        id: Date.now().toString(),
+        type: 'user',
+        content: `Uploaded ${newFiles.length} file(s): ${newFiles.map(f => f.name).join(', ')}`,
+        timestamp: new Date()
+      };
+      setConversation(prev => [...prev, fileMessage]);
+    }
+  };
+
+  // Voice recording handlers
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      
+      const audioChunks: Blob[] = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        await transcribeAudio(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      alert('Unable to access microphone. Please check your permissions.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const transcribeAudio = async (audioBlob: Blob) => {
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.wav');
+      
+      const response = await fetch('/api/transcribe-audio', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.text) {
+        setMessage(data.text);
+      }
+    } catch (error) {
+      console.error('Error transcribing audio:', error);
+      alert('Error transcribing audio. Please try typing your message.');
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -304,24 +384,100 @@ Let's dive deep into your development potential. What specific aspect would you 
             <div ref={messagesEndRef} />
           </div>
 
+          {/* File Upload Section */}
+          {uploadedFiles.length > 0 && (
+            <div className="border-t border-blue-200 px-6 py-3 bg-blue-50">
+              <div className="flex flex-wrap gap-2">
+                {uploadedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center bg-white rounded-lg px-3 py-2 text-sm border">
+                    <FileText className="w-4 h-4 mr-2 text-blue-600" />
+                    <span className="mr-2">{file.name}</span>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Premium Input */}
           <div className="border-t border-blue-200 p-6 bg-gradient-to-r from-blue-50 to-purple-50">
-            <form onSubmit={handleSubmit} className="flex space-x-4">
-              <Input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Ask for detailed analysis, cost estimates, timelines..."
-                className="flex-1 border-blue-300 focus:border-blue-500"
-                disabled={isLoading}
-              />
-              <Button 
-                type="submit" 
-                disabled={!message.trim() || isLoading}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex space-x-2">
+                <Input
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Ask for detailed analysis, cost estimates, timelines..."
+                  className="flex-1 border-blue-300 focus:border-blue-500"
+                  disabled={isLoading}
+                />
+                
+                {/* Voice Recording Button */}
+                <Button
+                  type="button"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`${isRecording 
+                    ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                    : 'bg-purple-600 hover:bg-purple-700'
+                  }`}
+                  disabled={isLoading}
+                >
+                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </Button>
+                
+                {/* File Upload Button */}
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={isLoading}
+                >
+                  <Upload className="w-4 h-4" />
+                </Button>
+                
+                {/* Send Button */}
+                <Button 
+                  type="submit" 
+                  disabled={!message.trim() || isLoading}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {/* Feature indicators */}
+              <div className="flex items-center justify-between text-xs text-gray-600">
+                <div className="flex space-x-4">
+                  <span className="flex items-center">
+                    <Mic className="w-3 h-3 mr-1" />
+                    Voice dictation
+                  </span>
+                  <span className="flex items-center">
+                    <Upload className="w-3 h-3 mr-1" />
+                    File upload
+                  </span>
+                </div>
+                {isRecording && (
+                  <span className="text-red-500 animate-pulse">
+                    Recording... Click mic to stop
+                  </span>
+                )}
+              </div>
             </form>
+            
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.dwg"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
           </div>
         </div>
 
