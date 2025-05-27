@@ -51,40 +51,88 @@ export function Sidebar({ className }: SidebarProps) {
       title: "Building Consent",
       icon: <FileTextIcon className="h-4 w-4" />,
       items: [
-        "Do I need building consent?",
-        "Building consent costs",
-        "Application timeline",
-        "Without consent penalties"
+        {
+          question: "Do I need building consent?",
+          answer: "Building consent is required for most alterations that change the structure, add floor area, or affect building systems like plumbing and electrical. Minor cosmetic changes like painting or carpet replacement typically don't require consent."
+        },
+        {
+          question: "How much does building consent cost?",
+          answer: "Building consent fees vary by council and project complexity, typically ranging from $1,500 to $15,000+. Costs include application fees, inspections, and processing."
+        },
+        {
+          question: "How long does building consent take?",
+          answer: "Standard building consent applications take 20 working days once all required information is submitted. Complex projects may take longer."
+        },
+        {
+          question: "Can I start building without consent?",
+          answer: "No, you cannot legally start building work that requires consent before approval. Doing so can result in stop-work notices, fines, and difficulties selling your property."
+        }
       ]
     },
     {
       title: "Resource Consent", 
       icon: <ShieldCheckIcon className="h-4 w-4" />,
       items: [
-        "Building vs Resource consent",
-        "Deck additions",
-        "Subdivision process",
-        "Permitted activities"
+        {
+          question: "Building vs Resource consent?",
+          answer: "Building consent ensures your building meets safety standards under the Building Code. Resource consent ensures your development complies with planning rules like setbacks, height limits, and environmental effects."
+        },
+        {
+          question: "Do I need resource consent for a deck?",
+          answer: "You may need resource consent if your deck exceeds height limits, breaches setback rules, or affects neighbours' privacy. Building consent is typically also required."
+        },
+        {
+          question: "How much does resource consent cost?",
+          answer: "Resource consent fees range from $500 for minor applications to $10,000+ for complex developments. Non-notified applications are cheaper than notified ones."
+        },
+        {
+          question: "Can I subdivide my section?",
+          answer: "Most subdivision requires resource consent under the Resource Management Act. Some minor boundary adjustments may be exempt."
+        }
       ]
     },
     {
       title: "Building Code",
       icon: <BuildingIcon className="h-4 w-4" />,
       items: [
-        "NZ Building Code",
-        "Architect requirements",
-        "Exempt building work",
-        "Owner-builder rules"
+        {
+          question: "What is the NZ Building Code?",
+          answer: "The Building Code sets minimum standards for building work in New Zealand, covering structural safety, fire safety, weathertightness, energy efficiency, and accessibility."
+        },
+        {
+          question: "Do I need an architect?",
+          answer: "You don't always need an architect. Simple projects may only require building plans from a draughtsperson. Complex or large projects typically need architectural and engineering input."
+        },
+        {
+          question: "What building work doesn't need consent?",
+          answer: "Exempt work includes painting, minor repairs, carpet/flooring replacement, and small detached buildings under 10m². Schedule 1 of the Building Act lists all exempt building work."
+        },
+        {
+          question: "Can I do my own building work?",
+          answer: "Owner-builders can do their own work but must still obtain required consents and use licensed practitioners for restricted work like electrical and gas fitting."
+        }
       ]
     },
     {
       title: "Planning & Zoning",
       icon: <SearchIcon className="h-4 w-4" />,
       items: [
-        "Property zoning check",
-        "Granny flat rules",
-        "Setback requirements",
-        "Height restrictions"
+        {
+          question: "How do I check my property's zoning?",
+          answer: "Check your council's online district plan or GIS maps. Zoning determines what you can build and how you can use your land."
+        },
+        {
+          question: "Can I build a granny flat?",
+          answer: "This depends on your zoning rules, site coverage limits, parking requirements, and setback rules. Some areas allow minor dwelling units as permitted activities."
+        },
+        {
+          question: "What are setback rules?",
+          answer: "Setbacks are minimum distances from property boundaries. They vary by zone but typically range from 1.5m to 6m to prevent overcrowding and protect neighbours' amenity."
+        },
+        {
+          question: "How high can I build?",
+          answer: "Height limits vary by zone and location, typically 8-12m in residential areas. Some areas have additional recession plane rules to protect neighbours' sunlight access."
+        }
       ]
     }
   ];
@@ -141,38 +189,39 @@ export function Sidebar({ className }: SidebarProps) {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-1 mt-2">
-              {/* All FAQ Link */}
-              <Link href="/faq">
-                <Button
-                  variant={location === "/faq" ? "secondary" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start ml-6"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <span>View All FAQ</span>
-                </Button>
-              </Link>
-              
-              {/* FAQ Categories */}
-              {faqSections.map((section, index) => (
-                <div key={index} className="ml-4">
-                  <div className="flex items-center py-1 px-2 text-sm font-medium text-muted-foreground">
-                    {section.icon}
-                    <span className="ml-2">{section.title}</span>
-                  </div>
-                  {section.items.map((item, itemIndex) => (
-                    <Link key={itemIndex} href="/faq">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start ml-4 text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {item}
-                      </Button>
-                    </Link>
-                  ))}
-                </div>
+              {/* FAQ Categories with Expandable Answers */}
+              {faqSections.map((section, sectionIndex) => (
+                <Collapsible key={sectionIndex}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full justify-between ml-4">
+                      <div className="flex items-center">
+                        {section.icon}
+                        <span className="ml-2 text-sm">{section.title}</span>
+                      </div>
+                      <ChevronRightIcon className="h-3 w-3" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-1 ml-8">
+                    {section.items.map((item, itemIndex) => (
+                      <Collapsible key={itemIndex}>
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-xs text-muted-foreground hover:text-foreground p-2"
+                          >
+                            <span className="text-left">{item.question}</span>
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="px-2 py-1">
+                          <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 leading-relaxed">
+                            {item.answer}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
             </CollapsibleContent>
           </Collapsible>
