@@ -74,7 +74,7 @@ export default function PremiumChat() {
     }
   };
 
-  const initializePremiumConversation = (address: string, project: string) => {
+  const initializePremiumConversation = async (address: string, project: string) => {
     let welcomeMessage = `Welcome to your Premium Property Development Assessment for **${address}**! I'm your expert AI advisor with enhanced capabilities.
 
 🎯 **Your Project:** ${project}
@@ -87,7 +87,7 @@ export default function PremiumChat() {
 • Document generation and download capabilities
 • Priority regulatory guidance with citations
 
-I'll provide comprehensive analysis including specific costs, timelines, and detailed regulatory requirements for your property development project. What specific aspect would you like to explore first?`;
+I'll provide comprehensive analysis including specific costs, timelines, and detailed regulatory requirements for your property development project. Let me analyze your specific situation...`;
     
     setConversation([{
       id: Date.now().toString(),
@@ -101,6 +101,55 @@ I'll provide comprehensive analysis including specific costs, timelines, and det
         hasRegulations: true
       }
     }]);
+
+    // Automatically generate detailed report using RAG system
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/premium-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: `Generate a comprehensive building consent assessment for: ${project} at ${address}. Include specific requirements, costs, timelines, and regulatory compliance for this exact project and location.`,
+          conversationHistory: [],
+          propertyAddress: address,
+          projectDescription: project
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        const reportMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'agent' as const,
+          content: data.message,
+          timestamp: new Date(),
+          features: {
+            hasDocuments: true,
+            hasCalculations: true,
+            hasTimeline: true,
+            hasRegulations: true
+          }
+        };
+
+        setConversation(prev => [...prev, reportMessage]);
+      }
+    } catch (error) {
+      console.error('Error generating automatic report:', error);
+      
+      const errorMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'agent' as const,
+        content: "I'm preparing your detailed assessment. Please give me a moment to analyze the specific requirements for your project.",
+        timestamp: new Date()
+      };
+      
+      setConversation(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
