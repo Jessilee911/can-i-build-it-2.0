@@ -120,21 +120,29 @@ I'll provide comprehensive analysis including specific costs, timelines, and det
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Premium chat response:', data); // Debug log
         
-        const reportMessage = {
-          id: (Date.now() + 1).toString(),
-          type: 'agent' as const,
-          content: data.message,
-          timestamp: new Date(),
-          features: {
-            hasDocuments: true,
-            hasCalculations: true,
-            hasTimeline: true,
-            hasRegulations: true
-          }
-        };
+        // Handle different response formats from the server
+        const responseContent = data.message || data.response || data.content || "Analysis complete. Please ask me any specific questions about your project.";
+        
+        if (responseContent.trim()) {
+          const reportMessage = {
+            id: (Date.now() + 1).toString(),
+            type: 'agent' as const,
+            content: responseContent,
+            timestamp: new Date(),
+            features: {
+              hasDocuments: true,
+              hasCalculations: true,
+              hasTimeline: true,
+              hasRegulations: true
+            }
+          };
 
-        setConversation(prev => [...prev, reportMessage]);
+          setConversation(prev => [...prev, reportMessage]);
+        }
+      } else {
+        console.error('Premium chat API error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error generating automatic report:', error);
