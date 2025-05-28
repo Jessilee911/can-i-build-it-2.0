@@ -198,13 +198,22 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             
             When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
             
-            When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays.`
+            When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays.
+            
+            CRITICAL FORMATTING REQUIREMENT:
+            - Write responses in plain text only
+            - Do NOT use hashtag symbols (#, ##, ###, ####) for headings
+            - Do NOT use asterisk symbols (**, *) for bold or italic text
+            - Use simple line breaks and colons for section organization
+            - Write in natural, conversational language without markdown formatting`
           },
           {
             role: 'user',
             content: `${query}
 
-Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Include practical guidance about next steps and mention key legislation or standards that apply.`
+Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Include practical guidance about next steps and mention key legislation or standards that apply.
+
+IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
           }
         ],
         max_tokens: 600,
