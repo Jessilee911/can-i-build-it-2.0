@@ -958,16 +958,26 @@ Provide specific, actionable guidance based on current New Zealand building regu
   try {
     const response = await generateRAGResponse(enhancedQuery);
     
+    // Clean up markdown formatting symbols
+    const cleanResponse = response
+      .replace(/#{1,6}\s*/g, '') // Remove # hashtags
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold formatting
+      .replace(/\*(.*?)\*/g, '$1') // Remove * italic formatting
+      .replace(/^### /gm, '') // Remove ### at start of lines
+      .replace(/^#### /gm, '') // Remove #### at start of lines
+      .replace(/^\*\*/gm, '') // Remove ** at start of lines
+      .trim();
+    
     // Analyze response to determine features used
     const features = {
-      hasCalculations: response.includes('$') || response.includes('cost') || response.includes('budget'),
-      hasTimeline: response.includes('week') || response.includes('month') || response.includes('timeline'),
-      hasRegulations: response.includes('consent') || response.includes('code') || response.includes('regulation'),
+      hasCalculations: cleanResponse.includes('$') || cleanResponse.includes('cost') || cleanResponse.includes('budget'),
+      hasTimeline: cleanResponse.includes('week') || cleanResponse.includes('month') || cleanResponse.includes('timeline'),
+      hasRegulations: cleanResponse.includes('consent') || cleanResponse.includes('code') || cleanResponse.includes('regulation'),
       hasDocuments: true // Premium always includes documentation capability
     };
     
     return {
-      content: response,
+      content: cleanResponse,
       features
     };
   } catch (error) {
@@ -1094,8 +1104,18 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     // Use RAG system for informed responses
     const response = await generateRAGResponse(enhancedQuery);
     
+    // Clean up markdown formatting symbols
+    const cleanResponse = response
+      .replace(/#{1,6}\s*/g, '') // Remove # hashtags
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold formatting
+      .replace(/\*(.*?)\*/g, '$1') // Remove * italic formatting
+      .replace(/^### /gm, '') // Remove ### at start of lines
+      .replace(/^#### /gm, '') // Remove #### at start of lines
+      .replace(/^\*\*/gm, '') // Remove ** at start of lines
+      .trim();
+    
     // Return comprehensive free guidance
-    return response;
+    return cleanResponse;
   } catch (error) {
     console.error('Error generating response:', error);
     return "I'm here to help with your property development questions. Could you tell me more about what specific aspect of your property development you'd like guidance on?";
