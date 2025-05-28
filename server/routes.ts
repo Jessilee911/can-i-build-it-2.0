@@ -897,7 +897,13 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     6. **Professional Recommendations** - Next steps and expert guidance
     
     Format responses with clear sections and specific actionable information.
-    Always include relevant calculations, timelines, and professional recommendations.`;
+    Always include relevant calculations, timelines, and professional recommendations.
+    
+    FORMATTING RULES:
+    - Use simple, clean formatting without excessive symbols
+    - Avoid using # hashtags or ** asterisks unless grammatically necessary
+    - Use clear section headings and bullet points for readability
+    - Focus on content over formatting symbols`;
 
   let enhancedQuery = `${premiumSystemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide detailed premium analysis.`;
   
@@ -1068,6 +1074,12 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     
     Be thorough and helpful. This is a free service designed to provide maximum value to property owners.
     Focus on actionable advice and clear explanations of New Zealand building regulations.
+    
+    FORMATTING RULES:
+    - Use simple, clean formatting without excessive symbols
+    - Avoid using # hashtags or ** asterisks unless grammatically necessary
+    - Use clear section headings and bullet points for readability
+    - Focus on content over formatting symbols
     
     If the user needs a comprehensive written report, suggest they use the "Generate Report" feature which creates a detailed PDF document.`;
 
