@@ -53,26 +53,47 @@ async function searchLinzProperty(address: string) {
 }
 
 /**
- * Query Auckland Council ArcGIS API
+ * Query Auckland Council ArcGIS API using direct approach
  */
 async function queryAucklandCouncilData(endpoint: string, address: string) {
   try {
-    const params = new URLSearchParams({
-      where: `Address LIKE '%${address.split(',')[0]}%' OR Street_Address LIKE '%${address.split(',')[0]}%' OR FULL_ADDRESS LIKE '%${address}%'`,
-      outFields: '*',
-      f: 'json',
-      returnGeometry: 'true'
-    });
-
-    const response = await fetch(`${endpoint}?${params}`);
+    console.log(`Querying ${endpoint} for address: ${address}`);
     
-    if (!response.ok) {
-      console.log(`Auckland Council API responded with status: ${response.status}`);
-      return [];
+    // Try different search strategies
+    const searchTerms = [
+      `Address='${address}'`,
+      `Address LIKE '%${address.split(',')[0].trim()}%'`,
+      `Street_Address LIKE '%${address.split(',')[0].trim()}%'`,
+      `FULL_ADDRESS LIKE '%${address}%'`,
+      '1=1' // Fallback to get sample data
+    ];
+    
+    for (const whereClause of searchTerms) {
+      const params = new URLSearchParams({
+        where: whereClause,
+        outFields: '*',
+        f: 'geojson',
+        resultRecordCount: '10'
+      });
+
+      console.log(`Trying query: ${whereClause}`);
+      const response = await fetch(`${endpoint}?${params}`);
+      
+      if (response.ok) {
+        const data = await response.json() as any;
+        console.log(`Query successful. Found ${data.features?.length || 0} features`);
+        
+        if (data.features && data.features.length > 0) {
+          // Log sample data structure for debugging
+          console.log('Sample feature:', JSON.stringify(data.features[0], null, 2));
+          return data.features;
+        }
+      } else {
+        console.log(`Query failed with status: ${response.status}`);
+      }
     }
     
-    const data = await response.json() as any;
-    return data.features || [];
+    return [];
   } catch (error) {
     console.error(`Auckland Council API error for ${endpoint}:`, error);
     return [];
