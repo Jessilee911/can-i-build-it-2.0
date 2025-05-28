@@ -184,7 +184,6 @@ export async function researchProperty(address: string): Promise<PropertyResearc
     // Natural Hazards
     const hazardData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.naturalHazards, address);
     result.naturalHazards = hazardData.map((f: any) => f.attributes?.HAZARD_TYPE || f.attributes?.TYPE || 'Natural hazard identified');
-    }
 
     // Step 3: Search for additional information using Serper
     console.log('Searching for additional property information...');
@@ -231,9 +230,11 @@ export async function researchProperty(address: string): Promise<PropertyResearc
     result.buildingCodeRequirements = generateBuildingCodeRequirements(result);
     result.consentRequirements = generateConsentRequirements(result);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Property research error:', error);
-    result.additionalResearch.push(`Research error: ${error.message}`);
+    if (result) {
+      result.additionalResearch.push(`Research error: ${error.message}`);
+    }
   }
 
   return result;
