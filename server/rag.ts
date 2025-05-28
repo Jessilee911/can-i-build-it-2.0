@@ -226,7 +226,14 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Do NOT use hashtag symbols (#, ##, ###, ####) for headings
             - Do NOT use asterisk symbols (**, *) for bold or italic text
             - Use simple line breaks and colons for section organization
-            - Write in natural, conversational language without markdown formatting`
+            - Write in natural, conversational language without markdown formatting
+            
+            CITATION REQUIREMENTS:
+            - Always include specific source references for building regulations
+            - Cite official government websites like building.govt.nz
+            - Reference specific Building Act sections and Building Code clauses
+            - Include links to relevant MBIE guidance documents
+            - Mention specific council planning documents when applicable`
           },
           {
             role: 'user',

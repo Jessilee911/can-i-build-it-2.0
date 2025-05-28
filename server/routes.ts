@@ -895,7 +895,15 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     - Write section titles as plain text followed by a colon
     - Use simple dashes (-) for bullet points when needed
     - Focus on clear, readable content without formatting symbols
-    - Write in the same conversational style as the basic agent`;
+    - Write in the same conversational style as the basic agent
+    
+    CITATION REQUIREMENTS:
+    - Always include specific source references for all building regulations mentioned
+    - Cite official websites like building.govt.nz, aucklandcouncil.govt.nz
+    - Reference specific Building Act 2004 sections and Building Code clauses
+    - Include links to MBIE guidance documents where relevant
+    - Mention specific council planning documents and zones when applicable
+    - Format citations naturally within the text, not as a separate section`;
 
   let enhancedQuery = `${premiumSystemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide detailed premium analysis.`;
   
@@ -903,46 +911,12 @@ async function generatePremiumResponse(message: string, conversationHistory: any
   if (message.includes("comprehensive building consent assessment") && propertyAddress && projectDescription) {
     enhancedQuery = `${premiumSystemPrompt}
 
-AUTOMATIC COMPREHENSIVE ASSESSMENT REQUEST:
 Property: ${propertyAddress}
 Project: ${projectDescription}
 
-Generate a detailed professional report covering:
+Provide comprehensive guidance covering building consent requirements, costs, timelines, regulatory compliance, and professional recommendations for this specific project and location. Include specific references to relevant Building Act 2004 sections, Building Code clauses, and official government sources like building.govt.nz and council websites.
 
-1. **BUILDING CONSENT ANALYSIS**
-   - Determine if building consent is required for this specific project
-   - List all applicable building code requirements
-   - Identify any exemptions or permitted activities
-
-2. **COST BREAKDOWN** (with current NZ pricing)
-   - Council consent fees
-   - Professional fees (architect, engineer, etc.)
-   - Inspection costs
-   - Total estimated project costs
-
-3. **TIMELINE & PROCESS**
-   - Pre-application requirements
-   - Application processing timeframes
-   - Construction phases and inspections
-   - Completion certificate process
-
-4. **REGULATORY COMPLIANCE**
-   - Specific Building Code clauses
-   - Auckland Council requirements (if applicable)
-   - Resource consent considerations
-   - Heritage or special zone requirements
-
-5. **RISK ASSESSMENT**
-   - Common compliance issues
-   - Potential delays or complications
-   - Mitigation strategies
-
-6. **PROFESSIONAL RECOMMENDATIONS**
-   - Required consultants or professionals
-   - Next immediate steps
-   - Documentation needed
-
-Provide specific, actionable guidance based on current New Zealand building regulations and this exact property location.`;
+Write in a conversational, helpful tone without structured headers or sections. Include all regulatory citations and official source links naturally within the response text.`;
   }
 
   try {
