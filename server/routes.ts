@@ -958,16 +958,24 @@ Provide specific, actionable guidance based on current New Zealand building regu
   try {
     const response = await generateRAGResponse(enhancedQuery);
     
-    // Clean up markdown formatting symbols and convert to bullet points
-    const cleanResponse = response
-      .replace(/#{1,6}\s*/g, '') // Remove # hashtags
-      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold formatting
-      .replace(/\*(.*?)\*/g, '$1') // Remove * italic formatting
-      .replace(/^### /gm, '• ') // Convert ### to bullet points
-      .replace(/^#### /gm, '  - ') // Convert #### to sub-bullet points
-      .replace(/^\*\*/gm, '• ') // Convert ** at start of lines to bullet points
-      .replace(/\n\n#### /g, '\n\n  - ') // Convert mid-text #### to sub-bullets
-      .replace(/\n\n### /g, '\n\n• ') // Convert mid-text ### to bullets
+    // Comprehensive cleanup of all markdown formatting symbols
+    let cleanResponse = response
+      // First pass: Convert headers to bullet points
+      .replace(/^###\s+/gm, '• ')
+      .replace(/^####\s+/gm, '  - ')
+      .replace(/\n###\s+/g, '\n• ')
+      .replace(/\n####\s+/g, '\n  - ')
+      // Second pass: Remove all remaining # symbols
+      .replace(/#{1,6}\s*/g, '')
+      // Third pass: Handle bold formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      // Fourth pass: Convert any remaining ** at line starts
+      .replace(/^\*\*(.+)/gm, '• $1')
+      .replace(/\n\*\*(.+)/g, '\n• $1')
+      // Final cleanup: Remove any orphaned symbols
+      .replace(/\*{1,2}/g, '')
+      .replace(/#{1,6}/g, '')
       .trim();
     
     // Analyze response to determine features used
@@ -1106,16 +1114,24 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     // Use RAG system for informed responses
     const response = await generateRAGResponse(enhancedQuery);
     
-    // Clean up markdown formatting symbols and convert to bullet points
-    const cleanResponse = response
-      .replace(/#{1,6}\s*/g, '') // Remove # hashtags
-      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold formatting
-      .replace(/\*(.*?)\*/g, '$1') // Remove * italic formatting
-      .replace(/^### /gm, '• ') // Convert ### to bullet points
-      .replace(/^#### /gm, '  - ') // Convert #### to sub-bullet points
-      .replace(/^\*\*/gm, '• ') // Convert ** at start of lines to bullet points
-      .replace(/\n\n#### /g, '\n\n  - ') // Convert mid-text #### to sub-bullets
-      .replace(/\n\n### /g, '\n\n• ') // Convert mid-text ### to bullets
+    // Comprehensive cleanup of all markdown formatting symbols
+    let cleanResponse = response
+      // First pass: Convert headers to bullet points
+      .replace(/^###\s+/gm, '• ')
+      .replace(/^####\s+/gm, '  - ')
+      .replace(/\n###\s+/g, '\n• ')
+      .replace(/\n####\s+/g, '\n  - ')
+      // Second pass: Remove all remaining # symbols
+      .replace(/#{1,6}\s*/g, '')
+      // Third pass: Handle bold formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      // Fourth pass: Convert any remaining ** at line starts
+      .replace(/^\*\*(.+)/gm, '• $1')
+      .replace(/\n\*\*(.+)/g, '\n• $1')
+      // Final cleanup: Remove any orphaned symbols
+      .replace(/\*{1,2}/g, '')
+      .replace(/#{1,6}/g, '')
       .trim();
     
     // Return comprehensive free guidance
