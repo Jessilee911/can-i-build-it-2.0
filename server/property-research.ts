@@ -55,25 +55,23 @@ async function searchLinzProperty(address: string) {
 /**
  * Query Auckland Council ArcGIS API
  */
-async function queryAucklandCouncilData(endpoint: string, geometry: any, searchField: string = 'geometry') {
+async function queryAucklandCouncilData(endpoint: string, address: string) {
   try {
     const params = new URLSearchParams({
-      where: '1=1',
+      where: `Address LIKE '%${address.split(',')[0]}%' OR Street_Address LIKE '%${address.split(',')[0]}%' OR FULL_ADDRESS LIKE '%${address}%'`,
       outFields: '*',
-      f: 'geojson',
-      geometryType: 'esriGeometryPoint',
-      spatialRel: 'esriSpatialRelIntersects',
-      geometry: JSON.stringify(geometry),
-      inSR: '4326'
+      f: 'json',
+      returnGeometry: 'true'
     });
 
     const response = await fetch(`${endpoint}?${params}`);
     
     if (!response.ok) {
-      throw new Error(`Auckland Council API error: ${response.status}`);
+      console.log(`Auckland Council API responded with status: ${response.status}`);
+      return [];
     }
     
-    const data = await response.json();
+    const data = await response.json() as any;
     return data.features || [];
   } catch (error) {
     console.error(`Auckland Council API error for ${endpoint}:`, error);
@@ -160,30 +158,32 @@ export async function researchProperty(address: string): Promise<PropertyResearc
         y: geometry.coordinates[0][0][1]
       };
 
-      // Step 2: Query Auckland Council APIs
-      console.log('Querying Auckland Council APIs...');
-      
-      // Planning Zone
-      const zoneData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.baseZone, centroid);
-      if (zoneData.length > 0) {
-        result.districtPlanningZone = zoneData[0].properties?.Zone || zoneData[0].properties?.ZONE_NAME || 'Unknown';
-      }
+    }
 
-      // Special Character Areas
-      const specialCharData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.specialCharacterAreas, centroid);
-      result.specialCharacterOverlays = specialCharData.map(f => f.properties?.NAME || f.properties?.OVERLAY_NAME || 'Unknown');
+    // Step 2: Query Auckland Council APIs directly with address search
+    console.log('Querying Auckland Council APIs for property-specific data...');
+    
+    // Planning Zone
+    const zoneData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.baseZone, address);
+    if (zoneData.length > 0) {
+      result.districtPlanningZone = zoneData[0].attributes?.Zone || zoneData[0].attributes?.ZONE_NAME || 'Unknown';
+    }
 
-      // Flood Plains
-      const floodData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.floodPlains, centroid);
-      result.floodHazards = floodData.map(f => f.properties?.FLOOD_TYPE || f.properties?.TYPE || 'Flood risk identified');
+    // Special Character Areas
+    const specialCharData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.specialCharacterAreas, address);
+    result.specialCharacterOverlays = specialCharData.map((f: any) => f.attributes?.NAME || f.attributes?.OVERLAY_NAME || 'Unknown');
 
-      // Overland Flow Paths
-      const flowData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.overlandFlowPaths, centroid);
-      result.overlandFlowPaths = flowData.map(f => f.properties?.FLOW_TYPE || f.properties?.TYPE || 'Overland flow path identified');
+    // Flood Plains
+    const floodData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.floodPlains, address);
+    result.floodHazards = floodData.map((f: any) => f.attributes?.FLOOD_TYPE || f.attributes?.TYPE || 'Flood risk identified');
 
-      // Natural Hazards
-      const hazardData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.naturalHazards, centroid);
-      result.naturalHazards = hazardData.map(f => f.properties?.HAZARD_TYPE || f.properties?.TYPE || 'Natural hazard identified');
+    // Overland Flow Paths
+    const flowData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.overlandFlowPaths, address);
+    result.overlandFlowPaths = flowData.map((f: any) => f.attributes?.FLOW_TYPE || f.attributes?.TYPE || 'Overland flow path identified');
+
+    // Natural Hazards
+    const hazardData = await queryAucklandCouncilData(AUCKLAND_COUNCIL_ENDPOINTS.naturalHazards, address);
+    result.naturalHazards = hazardData.map((f: any) => f.attributes?.HAZARD_TYPE || f.attributes?.TYPE || 'Natural hazard identified');
     }
 
     // Step 3: Search for additional information using Serper
