@@ -958,14 +958,16 @@ Provide specific, actionable guidance based on current New Zealand building regu
   try {
     const response = await generateRAGResponse(enhancedQuery);
     
-    // Clean up markdown formatting symbols
+    // Clean up markdown formatting symbols and convert to bullet points
     const cleanResponse = response
       .replace(/#{1,6}\s*/g, '') // Remove # hashtags
       .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold formatting
       .replace(/\*(.*?)\*/g, '$1') // Remove * italic formatting
-      .replace(/^### /gm, '') // Remove ### at start of lines
-      .replace(/^#### /gm, '') // Remove #### at start of lines
-      .replace(/^\*\*/gm, '') // Remove ** at start of lines
+      .replace(/^### /gm, '• ') // Convert ### to bullet points
+      .replace(/^#### /gm, '  - ') // Convert #### to sub-bullet points
+      .replace(/^\*\*/gm, '• ') // Convert ** at start of lines to bullet points
+      .replace(/\n\n#### /g, '\n\n  - ') // Convert mid-text #### to sub-bullets
+      .replace(/\n\n### /g, '\n\n• ') // Convert mid-text ### to bullets
       .trim();
     
     // Analyze response to determine features used
@@ -1104,14 +1106,16 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     // Use RAG system for informed responses
     const response = await generateRAGResponse(enhancedQuery);
     
-    // Clean up markdown formatting symbols
+    // Clean up markdown formatting symbols and convert to bullet points
     const cleanResponse = response
       .replace(/#{1,6}\s*/g, '') // Remove # hashtags
       .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold formatting
       .replace(/\*(.*?)\*/g, '$1') // Remove * italic formatting
-      .replace(/^### /gm, '') // Remove ### at start of lines
-      .replace(/^#### /gm, '') // Remove #### at start of lines
-      .replace(/^\*\*/gm, '') // Remove ** at start of lines
+      .replace(/^### /gm, '• ') // Convert ### to bullet points
+      .replace(/^#### /gm, '  - ') // Convert #### to sub-bullet points
+      .replace(/^\*\*/gm, '• ') // Convert ** at start of lines to bullet points
+      .replace(/\n\n#### /g, '\n\n  - ') // Convert mid-text #### to sub-bullets
+      .replace(/\n\n### /g, '\n\n• ') // Convert mid-text ### to bullets
       .trim();
     
     // Return comprehensive free guidance
