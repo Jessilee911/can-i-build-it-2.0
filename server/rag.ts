@@ -132,6 +132,27 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     source: 'Resource Management Act 1991',
     category: 'resource_consent',
     lastUpdated: new Date()
+  },
+  {
+    id: 'legal_001',
+    content: 'Starting building work that requires consent without obtaining it first is illegal under the Building Act 2004. Penalties include stop-work notices, fines up to $200,000, and potential prosecution. Unauthorized work must be brought into compliance or removed at the owner\'s expense.',
+    source: 'Building Act 2004 - Sections 40, 229-238',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'legal_002',
+    content: 'Building work performed without required consent can affect property sales, insurance claims, and mortgage approvals. Banks and insurers may refuse to cover properties with unauthorized building work.',
+    source: 'Building Act 2004 - Compliance Schedules',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'legal_003',
+    content: 'Councils have enforcement powers including stop-work notices, compliance orders, and prosecution for building work done without consent. Owners are responsible for ensuring all work complies with consent requirements.',
+    source: 'Building Act 2004 - Part 3 Compliance and Enforcement',
+    category: 'building_consent',
+    lastUpdated: new Date()
   }
 ];
 
