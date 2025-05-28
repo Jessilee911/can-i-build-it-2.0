@@ -900,10 +900,12 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     Always include relevant calculations, timelines, and professional recommendations.
     
     FORMATTING RULES:
-    - Use simple, clean formatting without excessive symbols
-    - Avoid using # hashtags or ** asterisks unless grammatically necessary
-    - Use clear section headings and bullet points for readability
-    - Focus on content over formatting symbols`;
+    - Write in clear, natural language without markdown formatting
+    - Do not use # hashtags, ## headings, #### subheadings, or ** bold formatting
+    - Use simple text with line breaks for section separation
+    - Write section titles as plain text followed by a colon
+    - Use simple dashes (-) for bullet points when needed
+    - Focus on clear, readable content without formatting symbols`;
 
   let enhancedQuery = `${premiumSystemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide detailed premium analysis.`;
   
@@ -1076,10 +1078,12 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     Focus on actionable advice and clear explanations of New Zealand building regulations.
     
     FORMATTING RULES:
-    - Use simple, clean formatting without excessive symbols
-    - Avoid using # hashtags or ** asterisks unless grammatically necessary
-    - Use clear section headings and bullet points for readability
-    - Focus on content over formatting symbols
+    - Write in clear, natural language without markdown formatting
+    - Do not use # hashtags, ## headings, #### subheadings, or ** bold formatting
+    - Use simple text with line breaks for section separation
+    - Write section titles as plain text followed by a colon
+    - Use simple dashes (-) for bullet points when needed
+    - Focus on clear, readable content without formatting symbols
     
     If the user needs a comprehensive written report, suggest they use the "Generate Report" feature which creates a detailed PDF document.`;
 
