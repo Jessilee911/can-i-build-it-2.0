@@ -183,7 +183,9 @@ I'll provide comprehensive analysis including specific costs, timelines, and det
         },
         body: JSON.stringify({
           message: message.trim(),
-          conversationHistory: conversation
+          conversationHistory: conversation,
+          propertyAddress: propertyAddress,
+          projectDescription: projectDescription
         }),
       });
 
