@@ -192,14 +192,14 @@ Let me help you understand the building regulations, consent requirements, and d
         />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto p-4">
+      <div className="relative z-10 max-w-4xl mx-auto p-2 md:p-4">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 mb-6">
-          <div className="p-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 mb-4 md:mb-6">
+          <div className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Property Assessment Chat</h1>
-                <p className="text-gray-600">Your AI-powered property development advisor</p>
+                <h1 className="text-lg md:text-2xl font-bold text-gray-900">Property Assessment Chat</h1>
+                <p className="text-sm md:text-base text-gray-600">Your AI-powered property development advisor</p>
               </div>
               
               {userPlan && (
@@ -215,14 +215,14 @@ Let me help you understand the building regulations, consent requirements, and d
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
           
           {/* Messages */}
-          <div className="h-96 overflow-y-auto p-6 space-y-4">
+          <div className="h-80 md:h-96 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4">
             {conversation.length === 0 && (
-              <div className="text-center py-8">
-                <Bot className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+              <div className="text-center py-4 md:py-8">
+                <Bot className="w-8 h-8 md:w-12 md:h-12 text-blue-600 mx-auto mb-3 md:mb-4" />
                 <div className="text-left max-w-md mx-auto">
-                  <p className="text-gray-800 font-medium mb-3">Hi! I'm your AI property advisor for New Zealand.</p>
-                  <p className="text-gray-600 mb-4">I provide comprehensive, free guidance on:</p>
-                  <ul className="text-sm text-gray-600 space-y-1 mb-6">
+                  <p className="text-sm md:text-base text-gray-800 font-medium mb-2 md:mb-3">Hi! I'm your AI property advisor for New Zealand.</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">I provide comprehensive, free guidance on:</p>
+                  <ul className="text-xs md:text-sm text-gray-600 space-y-1 mb-4 md:mb-6">
                     <li>• Building consent requirements and processes</li>
                     <li>• Detailed zoning information and compliance</li>
                     <li>• Building code requirements and interpretation</li>
@@ -230,32 +230,32 @@ Let me help you understand the building regulations, consent requirements, and d
                     <li>• Development potential assessment</li>
                     <li>• Cost estimates and timeline planning</li>
                   </ul>
-                  <p className="text-gray-700">What's your property address and what type of development are you planning?</p>
+                  <p className="text-xs md:text-sm text-gray-700">What's your property address and what type of development are you planning?</p>
                 </div>
               </div>
             )}
 
             {conversation.map((msg) => (
               <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`flex max-w-3xl ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    msg.type === 'user' ? 'bg-blue-600 ml-3' : 'bg-green-600 mr-3'
+                <div className={`flex max-w-full md:max-w-3xl ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
+                    msg.type === 'user' ? 'bg-blue-600 ml-2 md:ml-3' : 'bg-green-600 mr-2 md:mr-3'
                   }`}>
                     {msg.type === 'user' ? (
-                      <User className="w-4 h-4 text-white" />
+                      <User className="w-3 h-3 md:w-4 md:h-4 text-white" />
                     ) : (
-                      <Bot className="w-4 h-4 text-white" />
+                      <Bot className="w-3 h-3 md:w-4 md:h-4 text-white" />
                     )}
                   </div>
                   
-                  <div className={`px-4 py-3 rounded-2xl ${
+                  <div className={`px-3 md:px-4 py-2 md:py-3 rounded-2xl ${
                     msg.type === 'user' 
                       ? 'bg-blue-600 text-white' 
                       : 'bg-gray-100 text-gray-900'
                   }`}>
                     {msg.type === 'agent' ? (
                       <div>
-                        <div className="whitespace-pre-wrap">
+                        <div className="whitespace-pre-wrap text-xs md:text-sm">
                           {renderMessageWithUpgradeButtons(msg.content)}
                         </div>
                         <div className="text-xs opacity-70 mt-1">
@@ -264,7 +264,7 @@ Let me help you understand the building regulations, consent requirements, and d
                       </div>
                     ) : (
                       <div>
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <p className="whitespace-pre-wrap text-xs md:text-sm">{msg.content}</p>
                         <div className="text-xs opacity-70 mt-1">
                           {msg.timestamp.toLocaleTimeString()}
                         </div>

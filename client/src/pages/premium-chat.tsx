@@ -317,11 +317,11 @@ I'll provide comprehensive analysis including specific costs, timelines, and det
           <div className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold flex items-center text-gray-900">
-                  <Bot className="mr-3 h-8 w-8 text-blue-600" />
+                <h1 className="text-xl md:text-3xl font-bold flex items-center text-gray-900">
+                  <Bot className="mr-2 md:mr-3 h-6 w-6 md:h-8 md:w-8 text-blue-600" />
                   Premium Property Assessment
                 </h1>
-                <p className="text-gray-600 mt-2">Expert AI advisor with advanced development analysis</p>
+                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Expert AI advisor with advanced development analysis</p>
               </div>
               
               <div className="text-right">
@@ -337,43 +337,43 @@ I'll provide comprehensive analysis including specific costs, timelines, and det
         </div>
 
         {/* Premium Feature Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
           <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
-            <CardContent className="p-4 text-center">
-              <Calculator className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-sm font-medium text-gray-800">Cost Analysis</div>
-              <div className="text-xs text-gray-600">Detailed breakdowns</div>
+            <CardContent className="p-2 md:p-4 text-center">
+              <Calculator className="h-5 w-5 md:h-8 md:w-8 text-blue-600 mx-auto mb-1 md:mb-2" />
+              <div className="text-xs md:text-sm font-medium text-gray-800">Cost Analysis</div>
+              <div className="text-xs text-gray-600 hidden md:block">Detailed breakdowns</div>
             </CardContent>
           </Card>
           
           <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
-            <CardContent className="p-4 text-center">
-              <Clock className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-sm font-medium text-gray-800">Timeline Planning</div>
-              <div className="text-xs text-gray-600">Milestone tracking</div>
+            <CardContent className="p-2 md:p-4 text-center">
+              <Clock className="h-5 w-5 md:h-8 md:w-8 text-green-600 mx-auto mb-1 md:mb-2" />
+              <div className="text-xs md:text-sm font-medium text-gray-800">Timeline Planning</div>
+              <div className="text-xs text-gray-600 hidden md:block">Milestone tracking</div>
             </CardContent>
           </Card>
           
           <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
-            <CardContent className="p-4 text-center">
-              <AlertTriangle className="h-8 w-8 text-blue-700 mx-auto mb-2" />
-              <div className="text-sm font-medium text-gray-800">Risk Assessment</div>
-              <div className="text-xs text-gray-600">Mitigation strategies</div>
+            <CardContent className="p-2 md:p-4 text-center">
+              <AlertTriangle className="h-5 w-5 md:h-8 md:w-8 text-blue-700 mx-auto mb-1 md:mb-2" />
+              <div className="text-xs md:text-sm font-medium text-gray-800">Risk Assessment</div>
+              <div className="text-xs text-gray-600 hidden md:block">Mitigation strategies</div>
             </CardContent>
           </Card>
           
           <Card className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg">
-            <CardContent className="p-4 text-center">
-              <FileText className="h-8 w-8 text-green-700 mx-auto mb-2" />
-              <div className="text-sm font-medium text-gray-800">Documentation</div>
-              <div className="text-xs text-gray-600">Professional reports</div>
+            <CardContent className="p-2 md:p-4 text-center">
+              <FileText className="h-5 w-5 md:h-8 md:w-8 text-green-700 mx-auto mb-1 md:mb-2" />
+              <div className="text-xs md:text-sm font-medium text-gray-800">Documentation</div>
+              <div className="text-xs text-gray-600 hidden md:block">Professional reports</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Property Address Input Form */}
         {!hasEnteredAddress ? (
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-8">
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-4 md:p-8">
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <StarIcon className="w-8 h-8 text-white" />
@@ -498,56 +498,60 @@ I'll provide comprehensive analysis including specific costs, timelines, and det
           <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
             
             {/* Messages */}
-            <div className="h-96 overflow-y-auto p-6 space-y-4">
+            <div className="h-80 md:h-96 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4">
             {conversation.map((msg) => (
               <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`flex max-w-4xl ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <div className={`flex-shrink-0 ${msg.type === 'user' ? 'ml-3' : 'mr-3'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                <div className={`flex max-w-full md:max-w-4xl ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex-shrink-0 ${msg.type === 'user' ? 'ml-2 md:ml-3' : 'mr-2 md:mr-3'}`}>
+                    <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
                       msg.type === 'user' ? 'bg-blue-600' : 'bg-gradient-to-r from-blue-600 to-purple-600'
                     }`}>
                       {msg.type === 'user' ? (
-                        <User className="w-4 h-4 text-white" />
+                        <User className="w-3 h-3 md:w-4 md:h-4 text-white" />
                       ) : (
-                        <Bot className="w-4 h-4 text-white" />
+                        <Bot className="w-3 h-3 md:w-4 md:h-4 text-white" />
                       )}
                     </div>
                   </div>
                   <div className={`flex-1 ${msg.type === 'user' ? 'text-right' : 'text-left'}`}>
-                    <div className={`inline-block p-4 rounded-2xl max-w-full ${
+                    <div className={`inline-block p-3 md:p-4 rounded-2xl max-w-full ${
                       msg.type === 'user' 
                         ? 'bg-blue-600 text-white' 
                         : 'bg-gradient-to-r from-gray-50 to-blue-50 border border-blue-200'
                     }`}>
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                      <div className="whitespace-pre-wrap text-xs md:text-sm leading-relaxed">
                         {msg.content}
                       </div>
                       
                       {/* Premium Features Indicators */}
                       {msg.type === 'agent' && msg.features && (
-                        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-blue-200">
+                        <div className="flex flex-wrap gap-1 md:gap-2 mt-2 md:mt-3 pt-2 md:pt-3 border-t border-blue-200">
                           {msg.features.hasCalculations && (
                             <Badge variant="secondary" className="text-xs">
-                              <Calculator className="w-3 h-3 mr-1" />
-                              Cost Analysis
+                              <Calculator className="w-2 h-2 md:w-3 md:h-3 mr-1" />
+                              <span className="hidden md:inline">Cost Analysis</span>
+                              <span className="md:hidden">Cost</span>
                             </Badge>
                           )}
                           {msg.features.hasTimeline && (
                             <Badge variant="secondary" className="text-xs">
-                              <Clock className="w-3 h-3 mr-1" />
-                              Timeline
+                              <Clock className="w-2 h-2 md:w-3 md:h-3 mr-1" />
+                              <span className="hidden md:inline">Timeline</span>
+                              <span className="md:hidden">Time</span>
                             </Badge>
                           )}
                           {msg.features.hasRegulations && (
                             <Badge variant="secondary" className="text-xs">
-                              <MapPin className="w-3 h-3 mr-1" />
-                              Regulations
+                              <MapPin className="w-2 h-2 md:w-3 md:h-3 mr-1" />
+                              <span className="hidden md:inline">Regulations</span>
+                              <span className="md:hidden">Rules</span>
                             </Badge>
                           )}
                           {msg.features.hasDocuments && (
                             <Badge variant="secondary" className="text-xs">
-                              <FileText className="w-3 h-3 mr-1" />
-                              Documentation
+                              <FileText className="w-2 h-2 md:w-3 md:h-3 mr-1" />
+                              <span className="hidden md:inline">Documentation</span>
+                              <span className="md:hidden">Docs</span>
                             </Badge>
                           )}
                         </div>
