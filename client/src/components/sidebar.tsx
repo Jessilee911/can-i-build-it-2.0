@@ -19,6 +19,7 @@ import {
   BuildingIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoImage from "@assets/Logo PNG Trans.png";
 
 interface SidebarProps {
   className?: string;
@@ -150,7 +151,7 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <img 
-              src="/attached_assets/Logo PNG Trans.png" 
+              src={logoImage} 
               alt="Can I Build It Logo" 
               className="w-8 h-8"
             />
