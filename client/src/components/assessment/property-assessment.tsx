@@ -114,7 +114,7 @@ Would you like to create a personalized property report for your specific projec
               style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
             >
               <h1 className="font-bold text-gray-900 mb-4 text-[20px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
-              <p className="text-gray-600 max-w-md mx-auto">
+              <p className="text-gray-600 max-w-md mx-auto text-[12px]">
                 Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
               </p>
             </div>
