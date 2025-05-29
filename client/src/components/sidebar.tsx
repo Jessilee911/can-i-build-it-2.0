@@ -148,7 +148,14 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-lg">Can I Build It?</h2>
+          <div className="flex items-center space-x-2">
+            <img 
+              src="/attached_assets/Logo PNG Trans.png" 
+              alt="Can I Build It Logo" 
+              className="w-8 h-8"
+            />
+            <h2 className="font-semibold text-lg">Can I Build It?</h2>
+          </div>
           <Button
             variant="ghost"
             size="sm"
