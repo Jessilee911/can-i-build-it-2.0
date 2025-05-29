@@ -64,7 +64,7 @@ export function AnimatedSuggestions() {
         </div>
         
         <div 
-          className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm text-[12px]"
+          className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm text-[14px]"
           style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
         >
           <h3 className="font-medium text-gray-900 mb-2">Quick Building Tips:</h3>
