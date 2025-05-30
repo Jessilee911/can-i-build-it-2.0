@@ -126,8 +126,10 @@ export class AucklandCouncilAPI {
       const coordinates = await this.geocodeAddress(address);
       
       if (!coordinates) {
-        console.log("Could not geocode address, cannot perform spatial search");
-        return [];
+        console.log("Could not geocode address, trying text-based search");
+        // Try text search for property datasets
+        const textResults = await this.searchPropertyDatasets(address);
+        return textResults;
       }
 
       const [lat, lon] = coordinates;
@@ -140,11 +142,100 @@ export class AucklandCouncilAPI {
         return [propertyData];
       }
 
-      return [];
+      // Fallback to text search if spatial search fails
+      const textResults = await this.searchPropertyDatasets(address);
+      return textResults;
     } catch (error) {
       console.error("Property search error:", error);
       return [];
     }
+  }
+
+  async searchPropertyDatasets(address: string): Promise<PropertySearchResult[]> {
+    try {
+      console.log(`Searching for property datasets related to: ${address}`);
+      
+      // Search for property-related datasets using the queryable API
+      const searchTerms = ['property', 'parcel', 'zoning', 'rates', 'valuation'];
+      const results: PropertySearchResult[] = [];
+      
+      for (const term of searchTerms) {
+        const url = `${this.baseUrl}/collections/dataset/items`;
+        const params = new URLSearchParams({
+          q: `${term} ${address}`,
+          limit: '5'
+        });
+
+        const response = await fetch(`${url}?${params}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.features && data.features.length > 0) {
+            console.log(`Found ${data.features.length} results for "${term}"`);
+            
+            // Process results to extract property information
+            data.features.forEach((feature: any) => {
+              const props = feature.properties;
+              if (props?.title?.toLowerCase().includes('property') || 
+                  props?.title?.toLowerCase().includes('parcel') ||
+                  props?.title?.toLowerCase().includes('rates')) {
+                
+                results.push({
+                  address: address,
+                  zoning: this.extractZoningFromTitle(props.title),
+                  suburb: this.extractSuburbFromDescription(props.description),
+                  coordinates: feature.geometry?.coordinates ? 
+                    [feature.geometry.coordinates[1], feature.geometry.coordinates[0]] : undefined
+                });
+              }
+            });
+          }
+        }
+      }
+
+      // If we found results, return the first comprehensive match
+      if (results.length > 0) {
+        return [results[0]];
+      }
+
+      // Return basic property structure for RAG to populate
+      return [{
+        address: address,
+        coordinates: undefined
+      }];
+      
+    } catch (error) {
+      console.error("Error searching property datasets:", error);
+      return [{
+        address: address,
+        coordinates: undefined
+      }];
+    }
+  }
+
+  private extractZoningFromTitle(title: string): string | undefined {
+    const zoningPatterns = [
+      /residential|mixed housing|business|industrial|commercial/i,
+      /zone|zoning/i
+    ];
+    
+    for (const pattern of zoningPatterns) {
+      const match = title.match(pattern);
+      if (match) {
+        return match[0];
+      }
+    }
+    return undefined;
+  }
+
+  private extractSuburbFromDescription(description: string): string | undefined {
+    if (!description) return undefined;
+    
+    // Look for suburb names in description
+    const suburbPatterns = /Auckland|North Shore|Central|South|West/i;
+    const match = description.match(suburbPatterns);
+    return match?.[0];
   }
 
   async queryPropertyDatasets(lat: number, lon: number, address: string): Promise<PropertySearchResult | null> {
