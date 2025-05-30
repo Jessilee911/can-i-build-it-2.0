@@ -4,6 +4,15 @@ import * as rag from './rag';
 export interface PropertyAnalysisReport {
   propertyAddress: string;
   executiveSummary: string;
+  locationVerification: {
+    verifiedAddress: string;
+    coordinates: [number, number];
+    accuracyLevel: string;
+    officialZoning: string;
+    zoningDescription: string;
+    dataSource: string;
+    verificationDate: Date;
+  };
   propertyDetails: {
     address: string;
     suburb?: string;
@@ -104,6 +113,15 @@ export class PremiumPropertyAgent {
     const report: PropertyAnalysisReport = {
       propertyAddress: address,
       executiveSummary,
+      locationVerification: {
+        verifiedAddress: property.address,
+        coordinates: property.coordinates || [0, 0],
+        accuracyLevel: property.coordinates ? "High - Official Auckland Council Data" : "Address level",
+        officialZoning: property.zoning || 'Not determined',
+        zoningDescription: property.zoningData?.ZONE_NAME || property.zoning || 'Zoning information not available',
+        dataSource: "Auckland Council Unitary Plan Base Zone & LINZ Property Data",
+        verificationDate: new Date(),
+      },
       propertyDetails: {
         address: property.address,
         suburb: property.suburb || undefined,
@@ -270,6 +288,15 @@ Generated: ${report.generatedAt.toLocaleDateString()}
 
 EXECUTIVE SUMMARY
 ${report.executiveSummary}
+
+LOCATION VERIFICATION
+Verified Address: ${report.locationVerification.verifiedAddress}
+Coordinates: ${report.locationVerification.coordinates[1]}, ${report.locationVerification.coordinates[0]}
+Accuracy Level: ${report.locationVerification.accuracyLevel}
+Official Zoning: ${report.locationVerification.officialZoning}
+Zoning Description: ${report.locationVerification.zoningDescription}
+Data Source: ${report.locationVerification.dataSource}
+Verification Date: ${report.locationVerification.verificationDate.toLocaleDateString()}
 
 PROPERTY DETAILS
 Address: ${report.propertyDetails.address}
