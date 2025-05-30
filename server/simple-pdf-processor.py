@@ -37,10 +37,32 @@ class SimplePDFProcessor:
     def get_zone_pdf_urls(self) -> Dict[str, str]:
         """Auckland Council zone PDF URLs"""
         return {
+            # H - ZONES (Residential, Business, Rural)
+            "H1": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H1%20Residential%20-%20Large%20Lot%20Zone.pdf",
+            "H2": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H2%20Residential%20-%20Rural%20and%20Coastal%20Settlement%20Zone.pdf",
             "H3": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H3%20Residential%20-%20Single%20House%20Zone.pdf",
             "H4": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H4%20Residential%20-%20Mixed%20Housing%20Suburban%20Zone.pdf",
             "H5": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H5%20Residential%20-%20Mixed%20Housing%20Urban%20Zone.pdf",
             "H6": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H6%20Residential%20-%20Terrace%20Housing%20and%20Apartment%20Buildings%20Zone.pdf",
+            "H7": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H7%20Open%20Space%20zones.pdf",
+            "H8": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H8%20Business%20-%20City%20Centre%20Zone.pdf",
+            "H9": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H9%20Business%20-%20Metropolitan%20Centre%20Zone.pdf",
+            "H10": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H10%20Business%20-%20Town%20Centre%20Zone.pdf",
+            "H11": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H11%20Business%20-%20Local%20Centre%20Zone.pdf",
+            "H12": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H12%20Business%20-%20Neighbourhood%20Centre%20Zone.pdf",
+            "H13": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H13%20Business%20-%20Mixed%20Use%20Zone.pdf",
+            "H14": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H14%20Business%20-%20General%20Business%20Zone.pdf",
+            "H15": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H15%20Business%20-%20Business%20Park%20Zone.pdf",
+            "H16": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H16%20Business%20-%20Heavy%20Industry%20Zone.pdf",
+            "H17": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H17%20Business%20-%20Light%20Industry%20Zone.pdf",
+            "H18": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H18%20Future%20Urban%20Zone.pdf",
+            "H19": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20H%20Zones/H19%20Rural%20zones.pdf",
+            
+            # D - OVERLAYS (Historic Heritage and Special Character)
+            "D17": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20D%20Overlays/3.%20Built%20Heritage%20and%20Character/D17%20Historic%20Heritage%20Overlay.pdf",
+            "D18": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20D%20Overlays/3.%20Built%20Heritage%20and%20Character/D18%20Special%20Character%20Areas%20Overlay%20-%20Residential%20and%20Business.pdf",
+            "D19": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20D%20Overlays/3.%20Built%20Heritage%20and%20Character/D19%20Auckland%20War%20Memorial%20Museum%20Viewshaft%20Overlay.pdf",
+            "D20A": "https://unitaryplan.aucklandcouncil.govt.nz/images/Auckland%20Unitary%20Plan%20Operative/Chapter%20D%20Overlays/3.%20Built%20Heritage%20and%20Character/D20A%20Stockade%20Hill%20Viewshaft%20Overlay.pdf",
         }
     
     def extract_pdf_text(self, pdf_url: str) -> Optional[str]:

@@ -86,12 +86,12 @@ export class PDFPlanningProcessor {
    * Extract zone code from zoning string
    */
   extractZoneCode(zoning: string): string | null {
-    // Match patterns like "Zone 19", "H3", "I1", etc.
+    // Match patterns like "Zone 19", "H3", "D18", etc.
     const patterns = [
       /Zone (\d+)/i,
-      /\b([HI]\d+)\b/i,
+      /\b([HD]\d+[A-Z]*)\b/i,
       /\b(H\d+)\b/i,
-      /\b(I\d+)\b/i
+      /\b(D\d+[A-Z]*)\b/i
     ];
 
     for (const pattern of patterns) {
@@ -104,13 +104,25 @@ export class PDFPlanningProcessor {
           const numericCode = parseInt(code);
           // Map common Auckland zone numbers to letter codes
           const zoneMapping: { [key: number]: string } = {
-            19: 'H3', // Single House Zone
-            20: 'H4', // Mixed Housing Suburban
-            21: 'H5', // Mixed Housing Urban
-            22: 'H6', // Terrace Housing and Apartments
-            23: 'H7', // Apartment Buildings
-            24: 'H8', // Large Lot
-            25: 'H9', // Rural and Coastal Settlement
+            1: 'H1',   // Large Lot Zone
+            2: 'H2',   // Rural and Coastal Settlement
+            19: 'H3',  // Single House Zone
+            20: 'H4',  // Mixed Housing Suburban
+            21: 'H5',  // Mixed Housing Urban
+            22: 'H6',  // Terrace Housing and Apartments
+            23: 'H7',  // Open Space zones
+            24: 'H8',  // Business - City Centre
+            25: 'H9',  // Business - Metropolitan Centre
+            26: 'H10', // Business - Town Centre
+            27: 'H11', // Business - Local Centre
+            28: 'H12', // Business - Neighbourhood Centre
+            29: 'H13', // Business - Mixed Use
+            30: 'H14', // Business - General Business
+            31: 'H15', // Business - Business Park
+            32: 'H16', // Business - Heavy Industry
+            33: 'H17', // Business - Light Industry
+            34: 'H18', // Future Urban Zone
+            35: 'H19', // Rural zones
           };
           
           if (zoneMapping[numericCode]) {
