@@ -24,8 +24,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Star, Shield, FileText, Zap, Eye } from "lucide-react";
+import { Loader2, Star, Shield, FileText, Zap, Eye, MapPin } from "lucide-react";
 import { useLocation } from "wouter";
+import { LinzGeocodingMap } from "@/components/linz-geocoding-map";
 
 const premiumRequestSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -100,8 +101,57 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
   const handleClose = () => {
     setIsSubmitted(false);
     setGeneratedReport(null);
+    setShowLocationVerification(false);
+    setLocationData(null);
     form.reset();
     onClose();
+  };
+
+  const handleVerifyLocation = async () => {
+    const address = form.getValues("propertyAddress");
+    if (!address.trim()) {
+      toast({
+        title: "Address Required",
+        description: "Please enter a property address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/geocode-location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setLocationData(data.location);
+          setShowLocationVerification(true);
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Location Verification Failed",
+        description: "Unable to verify the property location. Please check the address.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLocationConfirm = (confirmed: boolean) => {
+    if (confirmed) {
+      setShowLocationVerification(false);
+      toast({
+        title: "Location Verified",
+        description: "Property location has been confirmed.",
+      });
+    } else {
+      setShowLocationVerification(false);
+      setLocationData(null);
+    }
   };
 
   if (isSubmitted) {
@@ -287,9 +337,20 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Property Address *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Example Street, Auckland" {...field} />
-                  </FormControl>
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input placeholder="123 Example Street, Auckland" {...field} />
+                    </FormControl>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleVerifyLocation}
+                      className="shrink-0"
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Confirm Location
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -344,6 +405,26 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
           Our team will review your request and contact you within 24 hours with your comprehensive property analysis.
         </div>
       </DialogContent>
+
+      {/* Location Verification Modal */}
+      {showLocationVerification && locationData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Verify Property Location
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Confirm this is the correct property location with official Auckland Council zoning data:
+            </p>
+            <LinzGeocodingMap
+              address={locationData.address}
+              coordinates={locationData.coordinates}
+              zoning={locationData.zoning}
+              onLocationConfirm={handleLocationConfirm}
+            />
+          </div>
+        </div>
+      )}
     </Dialog>
   );
 }
