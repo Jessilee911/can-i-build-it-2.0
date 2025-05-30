@@ -243,7 +243,7 @@ Would you like to create a personalized property report for your specific projec
                       </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
-                        AI sketch concept generation
+                        Upload your plans
                       </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
