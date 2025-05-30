@@ -29,6 +29,12 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
       // Add user query to conversation history
       setConversations(prev => [...prev, {type: 'query', content: query}]);
       
+      // Extract potential address from query for premium modal
+      const addressMatch = query.match(/\d+\s+[\w\s]+(street|road|avenue|drive|place|crescent|lane|way|terrace)/i);
+      if (addressMatch) {
+        setCurrentAddress(addressMatch[0]);
+      }
+      
       // Call the backend API for property assessment using real NZ data
       const response = await fetch('/api/assess-property', {
         method: 'POST',
@@ -136,10 +142,11 @@ Would you like to create a personalized property report for your specific projec
                   <div className="mt-4 pt-3 border-t border-gray-300">
                     <Button 
                       size="sm" 
-                      className="bg-blue-600 hover:bg-blue-700 text-white p-2"
-                      onClick={() => window.dispatchEvent(new CustomEvent('togglePricing'))}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => setShowPremiumModal(true)}
                     >
-                      <ArrowRight className="h-4 w-4" />
+                      Get Premium Analysis
+                      <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </div>
                 )}
@@ -194,18 +201,18 @@ Would you like to create a personalized property report for your specific projec
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Unlock Special Features</h3>
-                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                      Coming Soon
+                    <h3 className="text-lg font-semibold text-gray-900">Premium Property Analysis</h3>
+                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                      Available Now
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">Get comprehensive property reports customized to your specific build query, your property details, and zoning constraints.</p>
+                  <p className="text-sm text-gray-600">Get comprehensive property reports with official Auckland Council data, detailed zoning analysis, and expert recommendations for your specific project.</p>
                 </div>
                 <Button 
-                  onClick={() => window.dispatchEvent(new CustomEvent('togglePricing'))}
+                  onClick={() => setShowPremiumModal(true)}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
                 >
-                  {showPricing ? "Hide Plans" : "Get Your Comprehensive Report"}
+                  Get Premium Analysis
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -308,6 +315,13 @@ Would you like to create a personalized property report for your specific projec
         </div>
 
       </div>
+      
+      {/* Premium Upgrade Modal */}
+      <PremiumUpgradeModal 
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        initialAddress={currentAddress}
+      />
     </div>
   );
 }
