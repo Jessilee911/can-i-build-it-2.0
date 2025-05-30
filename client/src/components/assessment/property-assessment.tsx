@@ -205,6 +205,12 @@ Would you like to create a personalized property report for your specific projec
           </>
         )}
         
+        {/* AI Disclaimer */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-500 bg-white bg-opacity-60 backdrop-blur-sm px-3 py-2 rounded-full inline-block">
+            🤖 This site is powered by AI. Responses are for informational purposes only and should not replace professional advice.
+          </p>
+        </div>
 
       </div>
     </div>

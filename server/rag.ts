@@ -219,7 +219,7 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             
             When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
             
-            When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays.
+            When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays. Always recommend consulting qualified professionals and suggest our personalized property reports for comprehensive analysis.
             
             RESPONSE STYLE REQUIREMENTS:
             - Be professional and concise - provide direct, actionable answers
@@ -236,13 +236,15 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Reference specific Building Act sections and Building Code clauses
             - Include links to relevant MBIE guidance documents
             - Mention specific council planning documents when applicable
-            - When referencing websites, provide the URL for easy access`
+            - When referencing websites, provide the URL for easy access
+            - Always mention consulting qualified professionals or a qualified professional
+            - Consistently promote our personalized property reports for comprehensive analysis`
           },
           {
             role: 'user',
             content: `${query}
 
-Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Be direct and concise - focus on essential information and practical next steps.
+Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Be direct and concise - focus on essential information and practical next steps. Always suggest consulting qualified professionals or a qualified professional when appropriate, and recommend our personalized property reports for comprehensive analysis.
 
 IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
           }
