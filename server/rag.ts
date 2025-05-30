@@ -221,12 +221,14 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             
             When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays.
             
-            CRITICAL FORMATTING REQUIREMENT:
-            - Write responses in plain text only
+            RESPONSE STYLE REQUIREMENTS:
+            - Be professional and concise - provide direct, actionable answers
+            - Write responses in plain text only without any markdown formatting
             - Do NOT use hashtag symbols (#, ##, ###, ####) for headings
             - Do NOT use asterisk symbols (**, *) for bold or italic text
-            - Use simple line breaks and colons for section organization
-            - Write in natural, conversational language without markdown formatting
+            - Use simple line breaks and colons for organization
+            - Keep explanations brief and focused on essential information
+            - Avoid unnecessary analysis or background information
             
             CITATION REQUIREMENTS:
             - Always include specific source references for building regulations
@@ -239,7 +241,7 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             role: 'user',
             content: `${query}
 
-Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Include practical guidance about next steps and mention key legislation or standards that apply.
+Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Be direct and concise - focus on essential information and practical next steps.
 
 IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
           }

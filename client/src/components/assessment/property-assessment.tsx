@@ -47,23 +47,13 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
                                 query.toLowerCase().includes('exact') ||
                                 /\d+\s+\w+\s+(street|road|avenue|drive|place)/i.test(query);
       
-      // Add query analysis information if available
-      if (data.queryAnalysis) {
-        const analysis = data.queryAnalysis;
-        if (analysis.type !== 'general') {
-          responseText += `\n\n📋 Query Analysis: I've identified this as a ${analysis.type.replace('_', ' ')} inquiry`;
-          if (analysis.buildingType) {
-            responseText += ` regarding ${analysis.buildingType.replace('_', ' ')}`;
-          }
-          responseText += `.`;
-        }
-      }
+      // Remove query analysis display for cleaner responses
       
       // Strategic guidance toward personalized reports for property-specific questions
       const shouldShowReportCTA = isPropertySpecific || data.queryAnalysis?.type === 'new_build' || data.queryAnalysis?.type === 'subdivision' || data.needsOfficialData;
       
       if (isPropertySpecific || data.queryAnalysis?.type === 'new_build' || data.queryAnalysis?.type === 'subdivision') {
-        responseText += `\n\n🏡 **Get a Personalized Property Report**\nFor accurate, property-specific information including zoning details, consent requirements, and development potential for your exact address, I recommend getting a personalized property report. This will provide:
+        responseText += `\n\nUnlock special features\n\n🏡 Get a Personalized Property Report\nFor accurate, property-specific information including zoning details, consent requirements, and development potential for your exact address, I recommend getting a personalized property report. This will provide:
         
 • Exact zoning rules for your property
 • Building consent requirements specific to your site

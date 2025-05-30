@@ -429,11 +429,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import RAG functions
       const { generateRAGResponse, analyzeQuery } = await import('./rag');
       
-      // Analyze the query to understand what the user is asking
-      const queryAnalysis = analyzeQuery(query);
-      
       // Generate response using RAG (Retrieval Augmented Generation)
-      const ragResponse = await generateRAGResponse(query, { address, analysis: queryAnalysis });
+      const ragResponse = await generateRAGResponse(query, { address });
       
       // Check if the response mentions personalized property report
       const showReportCTA = ragResponse.includes('personalized property report') || 
@@ -442,7 +439,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       return res.json({
         message: ragResponse,
-        queryAnalysis,
         showReportCTA,
         needsOfficialData: true,
         suggestedDataSources: [
