@@ -281,81 +281,110 @@ export class PremiumPropertyAgent {
    */
   formatReportAsText(report: PropertyAnalysisReport): string {
     return `
-COMPREHENSIVE PROPERTY ANALYSIS REPORT
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                        COMPREHENSIVE PROPERTY ANALYSIS REPORT                     ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
 
-Property Address: ${report.propertyAddress}
-Generated: ${report.generatedAt.toLocaleDateString()}
+📍 Property Address: ${report.propertyAddress}
+📅 Generated: ${report.generatedAt.toLocaleDateString('en-NZ')} at ${report.generatedAt.toLocaleTimeString('en-NZ')}
 
-LOCATION VERIFICATION
-═══════════════════════
-Verified Address: ${report.locationVerification.verifiedAddress}
-Coordinates: ${report.locationVerification.coordinates[1]}, ${report.locationVerification.coordinates[0]}
-Accuracy Level: ${report.locationVerification.accuracyLevel}
-Official Zoning: ${report.locationVerification.officialZoning}
-Zoning Description: ${report.locationVerification.zoningDescription}
-Data Source: ${report.locationVerification.dataSource}
-Verification Date: ${report.locationVerification.verificationDate.toLocaleDateString()}
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              📍 LOCATION VERIFICATION                           │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-This property location has been verified using official Auckland Council Unitary Plan Base Zone data 
-and LINZ property information to ensure accuracy for your development assessment.
+✅ Verified Address: ${report.locationVerification.verifiedAddress}
+🌍 Coordinates: ${report.locationVerification.coordinates[1]}, ${report.locationVerification.coordinates[0]}
+🎯 Accuracy Level: ${report.locationVerification.accuracyLevel}
+🏘️  Official Zoning: ${report.locationVerification.officialZoning}
+📋 Zoning Description: ${report.locationVerification.zoningDescription}
+🔗 Data Source: ${report.locationVerification.dataSource}
+⏰ Verification Date: ${report.locationVerification.verificationDate.toLocaleDateString('en-NZ')}
 
-EXECUTIVE SUMMARY
+💡 This property location has been verified using official Auckland Council Unitary Plan 
+   Base Zone data and LINZ property information to ensure accuracy for your development 
+   assessment.
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              📊 EXECUTIVE SUMMARY                               │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
 ${report.executiveSummary}
 
-PROPERTY DETAILS
-Address: ${report.propertyDetails.address}
-${report.propertyDetails.suburb ? `Suburb: ${report.propertyDetails.suburb}` : ''}
-${report.propertyDetails.zoning ? `Zoning: ${report.propertyDetails.zoning}` : ''}
-${report.propertyDetails.landArea ? `Land Area: ${report.propertyDetails.landArea}m²` : ''}
-${report.propertyDetails.capitalValue ? `Capital Value: $${report.propertyDetails.capitalValue.toLocaleString()}` : ''}
-${report.propertyDetails.ratesId ? `Rates ID: ${report.propertyDetails.ratesId}` : ''}
-${report.propertyDetails.coordinates ? `Coordinates: ${report.propertyDetails.coordinates[0]}, ${report.propertyDetails.coordinates[1]}` : ''}
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              🏠 PROPERTY DETAILS                                │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-ZONING ANALYSIS
-Current Zoning: ${report.zoningAnalysis.currentZoning}
+🏡 Address: ${report.propertyDetails.address}
+${report.propertyDetails.suburb ? `🌆 Suburb: ${report.propertyDetails.suburb}` : ''}
+${report.propertyDetails.zoning ? `🏘️  Zoning: ${report.propertyDetails.zoning}` : ''}
+${report.propertyDetails.landArea ? `📐 Land Area: ${report.propertyDetails.landArea}m²` : ''}
+${report.propertyDetails.capitalValue ? `💰 Capital Value: $${report.propertyDetails.capitalValue.toLocaleString('en-NZ')}` : ''}
+${report.propertyDetails.ratesId ? `🆔 Rates ID: ${report.propertyDetails.ratesId}` : ''}
+${report.propertyDetails.coordinates ? `🌍 Coordinates: ${report.propertyDetails.coordinates[0]}, ${report.propertyDetails.coordinates[1]}` : ''}
 
-Permitted Uses:
-${report.zoningAnalysis.permittedUses.map(use => `• ${use}`).join('\n')}
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              🎯 ZONING ANALYSIS                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-Building Restrictions:
-${report.zoningAnalysis.buildingRestrictions.map(restriction => `• ${restriction}`).join('\n')}
+🏘️  Current Zoning: ${report.zoningAnalysis.currentZoning}
 
-Development Potential:
-${report.zoningAnalysis.developmentPotential}
+✅ Permitted Uses:
+${report.zoningAnalysis.permittedUses.map(use => `   • ${use}`).join('\n')}
 
-DEVELOPMENT CONSTRAINTS
+🚫 Building Restrictions:
+${report.zoningAnalysis.buildingRestrictions.map(restriction => `   • ${restriction}`).join('\n')}
 
-Infrastructure Constraints:
-${report.developmentConstraints.infrastructure.map(constraint => `• ${constraint}`).join('\n')}
+🚀 Development Potential:
+   ${report.zoningAnalysis.developmentPotential}
 
-Environmental Constraints:
-${report.developmentConstraints.environmental.map(constraint => `• ${constraint}`).join('\n')}
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                             ⚠️  DEVELOPMENT CONSTRAINTS                          │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-Planning Constraints:
-${report.developmentConstraints.planning.map(constraint => `• ${constraint}`).join('\n')}
+🔧 Infrastructure Constraints:
+${report.developmentConstraints.infrastructure.map(constraint => `   • ${constraint}`).join('\n')}
 
-CONSENT REQUIREMENTS
-Building Consent: ${report.consentRequirements.buildingConsent}
-Resource Consent: ${report.consentRequirements.resourceConsent}
+🌱 Environmental Constraints:
+${report.developmentConstraints.environmental.map(constraint => `   • ${constraint}`).join('\n')}
 
-Other Consents Required:
-${report.consentRequirements.otherConsents.map(consent => `• ${consent}`).join('\n')}
+📋 Planning Constraints:
+${report.developmentConstraints.planning.map(constraint => `   • ${constraint}`).join('\n')}
 
-RECOMMENDED NEXT STEPS
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              📋 CONSENT REQUIREMENTS                            │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+🏗️  Building Consent: ${report.consentRequirements.buildingConsent}
+🌿 Resource Consent: ${report.consentRequirements.resourceConsent}
+
+📝 Other Consents Required:
+${report.consentRequirements.otherConsents.map(consent => `   • ${consent}`).join('\n')}
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                             📋 RECOMMENDED NEXT STEPS                           │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
 ${report.recommendedNextSteps.map((step, index) => `${index + 1}. ${step}`).join('\n')}
 
-PROFESSIONAL CONTACTS
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                             👥 PROFESSIONAL CONTACTS                            │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-Planning Professionals:
-${report.professionalContacts.planners.map(contact => `• ${contact}`).join('\n')}
+🏗️  Planning Professionals:
+${report.professionalContacts.planners.map(contact => `   • ${contact}`).join('\n')}
 
-Engineering Consultants:
-${report.professionalContacts.engineers.map(contact => `• ${contact}`).join('\n')}
+⚙️  Engineering Consultants:
+${report.professionalContacts.engineers.map(contact => `   • ${contact}`).join('\n')}
 
-Architectural Services:
-${report.professionalContacts.architects.map(contact => `• ${contact}`).join('\n')}
+🏛️  Architectural Services:
+${report.professionalContacts.architects.map(contact => `   • ${contact}`).join('\n')}
 
-This report is based on available public data and should be supplemented with professional consultation for specific development projects.
+─────────────────────────────────────────────────────────────────────────────────
+
+💡 DISCLAIMER: This report is based on available public data and should be supplemented 
+   with professional consultation for specific development projects.
+
+Generated by Can I Build It? - New Zealand Property Development Platform
     `.trim();
   }
 }
