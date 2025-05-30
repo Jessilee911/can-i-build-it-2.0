@@ -233,5 +233,41 @@ export type InsertPlanningRule = z.infer<typeof insertPlanningRuleSchema>;
 export type ConsentRequirement = typeof consentRequirements.$inferSelect;
 export type InsertConsentRequirement = z.infer<typeof insertConsentRequirementSchema>;
 
+// Chat History for logged-in users
+export const chatSessions = pgTable("chat_sessions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  isActive: boolean("is_active").default(true),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => chatSessions.id),
+  role: varchar("role").notNull(), // 'user' or 'assistant'
+  content: text("content").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  metadata: jsonb("metadata"), // For storing additional context like property address
+});
+
+export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+  timestamp: true,
+});
+
 export type DocumentSource = typeof documentSources.$inferSelect;
 export type InsertDocumentSource = z.infer<typeof insertDocumentSourceSchema>;
+
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
+
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;

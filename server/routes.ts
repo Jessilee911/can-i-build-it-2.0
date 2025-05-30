@@ -49,6 +49,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+
+  // ==================== Chat History Routes ====================
+  // Get user's chat sessions
+  apiRouter.get("/api/chat-sessions", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessions = await storage.getChatSessions(userId);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching chat sessions:", error);
+      res.status(500).json({ message: "Failed to fetch chat sessions" });
+    }
+  });
+
+  // Create new chat session
+  apiRouter.post("/api/chat-sessions", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { title } = req.body;
+      
+      const session = await storage.createChatSession({
+        userId,
+        title: title || "New Chat",
+      });
+      
+      res.json(session);
+    } catch (error) {
+      console.error("Error creating chat session:", error);
+      res.status(500).json({ message: "Failed to create chat session" });
+    }
+  });
+
+  // Get messages for a chat session
+  apiRouter.get("/api/chat-sessions/:id/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const messages = await storage.getChatMessages(sessionId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ message: "Failed to fetch chat messages" });
+    }
+  });
+
+  // Add message to chat session
+  apiRouter.post("/api/chat-sessions/:id/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const { role, content, metadata } = req.body;
+      
+      const message = await storage.addChatMessage({
+        sessionId,
+        role,
+        content,
+        metadata,
+      });
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Error adding chat message:", error);
+      res.status(500).json({ message: "Failed to add chat message" });
+    }
+  });
+
+  // Delete chat session
+  apiRouter.delete("/api/chat-sessions/:id", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const success = await storage.deleteChatSession(sessionId);
+      
+      if (success) {
+        res.json({ message: "Chat session deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Chat session not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting chat session:", error);
+      res.status(500).json({ message: "Failed to delete chat session" });
+    }
+  });
   
   // ==================== Subscription/Payment Routes ====================
   // Get available pricing plans

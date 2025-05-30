@@ -17,6 +17,10 @@ import {
   InsertConsentRequirement,
   DocumentSource,
   InsertDocumentSource,
+  ChatSession,
+  InsertChatSession,
+  ChatMessage,
+  InsertChatMessage,
   dataSources,
   scrapingJobs,
   properties,
@@ -25,7 +29,9 @@ import {
   buildingCodeSections,
   planningRules,
   consentRequirements,
-  documentSources
+  documentSources,
+  chatSessions,
+  chatMessages
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and, or, SQL } from "drizzle-orm";
@@ -101,6 +107,17 @@ export interface IStorage {
   getDocumentSource(id: number): Promise<DocumentSource | undefined>;
   createDocumentSource(document: InsertDocumentSource): Promise<DocumentSource>;
   updateDocumentSource(id: number, document: Partial<InsertDocumentSource>): Promise<DocumentSource | undefined>;
+
+  // Chat History Operations
+  getChatSessions(userId: string): Promise<ChatSession[]>;
+  getChatSession(id: number): Promise<ChatSession | undefined>;
+  createChatSession(session: InsertChatSession): Promise<ChatSession>;
+  updateChatSession(id: number, updates: Partial<InsertChatSession>): Promise<ChatSession | undefined>;
+  deleteChatSession(id: number): Promise<boolean>;
+  
+  getChatMessages(sessionId: number): Promise<ChatMessage[]>;
+  addChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  updateChatMessage(id: number, content: string): Promise<ChatMessage | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -545,6 +562,61 @@ export class DatabaseStorage implements IStorage {
 
   async updateDocumentSource(id: number, document: Partial<InsertDocumentSource>): Promise<DocumentSource | undefined> {
     const result = await db.update(documentSources).set(document).where(eq(documentSources.id, id)).returning();
+    return result[0];
+  }
+
+  // Chat History Operations
+  async getChatSessions(userId: string): Promise<ChatSession[]> {
+    return await db.select().from(chatSessions)
+      .where(and(
+        eq(chatSessions.userId, userId),
+        eq(chatSessions.isActive, true)
+      ))
+      .orderBy(desc(chatSessions.updatedAt));
+  }
+
+  async getChatSession(id: number): Promise<ChatSession | undefined> {
+    const result = await db.select().from(chatSessions).where(eq(chatSessions.id, id));
+    return result[0];
+  }
+
+  async createChatSession(session: InsertChatSession): Promise<ChatSession> {
+    const result = await db.insert(chatSessions).values(session).returning();
+    return result[0];
+  }
+
+  async updateChatSession(id: number, updates: Partial<InsertChatSession>): Promise<ChatSession | undefined> {
+    const result = await db.update(chatSessions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(chatSessions.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteChatSession(id: number): Promise<boolean> {
+    const result = await db.update(chatSessions)
+      .set({ isActive: false })
+      .where(eq(chatSessions.id, id))
+      .returning();
+    return result.length > 0;
+  }
+  
+  async getChatMessages(sessionId: number): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages)
+      .where(eq(chatMessages.sessionId, sessionId))
+      .orderBy(chatMessages.timestamp);
+  }
+
+  async addChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const result = await db.insert(chatMessages).values(message).returning();
+    return result[0];
+  }
+
+  async updateChatMessage(id: number, content: string): Promise<ChatMessage | undefined> {
+    const result = await db.update(chatMessages)
+      .set({ content })
+      .where(eq(chatMessages.id, id))
+      .returning();
     return result[0];
   }
 }
