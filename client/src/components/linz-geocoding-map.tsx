@@ -71,9 +71,18 @@ export function LinzGeocodingMap({
               {coordinates && (
                 <p><strong>Coordinates:</strong> {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}</p>
               )}
-              <p className="text-amber-700 bg-amber-50 p-2 rounded text-xs">
-                <strong>Important:</strong> For accurate zoning information, please verify directly with Auckland Council using the official map services below.
-              </p>
+              {zoning && zoning.zoneName && (
+                <div className="bg-green-50 border border-green-200 p-2 rounded text-xs">
+                  <p><strong>Auckland Unitary Plan Zone:</strong></p>
+                  <p className="font-medium text-green-800">{zoning.zoneName}</p>
+                  <p className="text-green-700 mt-1 text-xs">Source: Auckland Council Official API</p>
+                </div>
+              )}
+              {!zoning?.zoneName && (
+                <p className="text-amber-700 bg-amber-50 p-2 rounded text-xs">
+                  <strong>Note:</strong> Zoning information will be retrieved from Auckland Council's official database.
+                </p>
+              )}
             </div>
           </div>
         </div>

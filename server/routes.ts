@@ -864,18 +864,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Querying zoning data: ${zoningUrl}?${zoningParams}`);
       const zoningResponse = await fetch(`${zoningUrl}?${zoningParams}`);
       
-      // Note: Zoning information requires official verification
-      // Raw API data should not be presented as authoritative without proper validation
       let zoningData = null;
       if (zoningResponse.ok) {
         const data = await zoningResponse.json();
         if (data.features && data.features.length > 0) {
-          // Store raw data for internal processing only
-          // Users should verify zoning through official Auckland Council channels
+          const rawZoning = data.features[0].attributes;
+          
+          // Import official zone lookup to interpret the zone code
+          const { formatZoneForDisplay, getZoneBuildingGuidance } = await import('./auckland-zone-lookup');
+          
           zoningData = {
-            hasZoningData: true,
-            requiresVerification: true,
-            officialSource: "Auckland Council Unitary Plan"
+            ...rawZoning,
+            zoneName: formatZoneForDisplay(rawZoning.ZONE),
+            zoneGuidance: getZoneBuildingGuidance(rawZoning.ZONE)
           };
         }
       }

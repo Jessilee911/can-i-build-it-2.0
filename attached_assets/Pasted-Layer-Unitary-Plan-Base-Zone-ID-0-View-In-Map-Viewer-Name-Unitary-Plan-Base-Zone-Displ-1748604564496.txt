@@ -1,0 +1,1076 @@
+Layer: Unitary Plan Base Zone (ID:0)
+View In:   Map Viewer
+
+Name: Unitary Plan Base Zone
+
+Display Field: ZONE
+
+Type: Feature Layer
+
+Geometry Type: esriGeometryPolygon
+
+Description: PUBLICATION.MASTER.UP_BaseZone
+
+Copyright Text:
+
+Min. Scale: 0
+
+Max. Scale: 0
+
+Default Visibility: true
+
+Max Record Count: 2000
+
+Supported query Formats: JSON, geoJSON, PBF
+
+Use Standardized Queries: True
+
+Extent:
+XMin: 1680238.5
+YMin: 5863854.09
+XMax: 1860845.43
+YMax: 6047558.475
+Spatial Reference: 2193 (2193)
+
+Drawing Info:
+{"renderer":{"type":"uniqueValue","field1":"ZONE","uniqueValueInfos":[{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[255,255,161,255],"outline":null},"value":"23","label":"Residential - Large Lot Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSBackwardDiagonal","color":[205,170,102,255],"outline":null},"value":"20","label":"Residential - Rural and Coastal Settlement Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[242,235,212,255],"outline":null},"value":"19","label":"Residential - Single House Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[255,219,110,255],"outline":null},"value":"18","label":"Residential - Mixed Housing Suburban Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[245,184,133,255],"outline":null},"value":"60","label":"Residential - Mixed Housing Urban Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[235,125,23,255],"outline":null},"value":"8","label":"Residential -Terrace Housing and Apartment Buildings Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[82,181,41,255],"outline":null},"value":"31","label":"Open Space - Conservation Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[140,191,120,255],"outline":null},"value":"32","label":"Open Space - Informal Recreation Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[211,255,190,255],"outline":null},"value":"33","label":"Open Space - Sport and Active Recreation Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[102,205,171,255],"outline":null},"value":"62","label":"Open Space - Civic Spaces Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[179,234,0,255],"outline":null},"value":"34","label":"Open Space - Community Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[212,74,117,255],"outline":null},"value":"35","label":"Business - City Centre Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSBackwardDiagonal","color":[212,74,117,255],"outline":null},"value":"10","label":"Business - Metropolitan Centre Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[252,92,148,255],"outline":null},"value":"22","label":"Business - Town Centre Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[255,110,223,255],"outline":null},"value":"7","label":"Business - Local Centre Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[255,153,176,255],"outline":null},"value":"44","label":"Business - Neighbourhood Centre Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[222,181,245,255],"outline":null},"value":"12","label":"Business - Mixed Use Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSVertical","color":[161,148,212,255],"outline":null},"value":"49","label":"Business - General Business Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[161,148,212,255],"outline":null},"value":"1","label":"Business - Business Park Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[143,61,156,255],"outline":null},"value":"5","label":"Business - Heavy Industry Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[202,82,245,255],"outline":null},"value":"17","label":"Business - Light Industry Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[230,230,0,255],"outline":null},"value":"4","label":"Future Urban Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSHorizontal","color":[157,161,92,255],"outline":null},"value":"61","label":"Green Infrastructure Corridor (Operative in some Special Housing Areas)"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[217,204,201,255],"outline":null},"value":"16","label":"Rural - Rural Production Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSBackwardDiagonal","color":[209,166,130,255],"outline":null},"value":"11","label":"Rural - Mixed Rural Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[194,153,84,255],"outline":null},"value":"46","label":"Rural - Rural Coastal Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSBackwardDiagonal","color":[157,161,92,255],"outline":null},"value":"15","label":"Rural - Rural Conservation Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[219,176,140,255],"outline":null},"value":"3","label":"Rural - Countryside Living Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[200,202,160,255],"outline":null},"value":"68","label":"Rural - Waitakere Foothills Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[169,165,97,255],"outline":null},"value":"69","label":"Rural - Waitakere Ranges Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[229,229,229,255],"outline":null},"value":"48","label":"Strategic Transport Corridor Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[229,229,229,255],"outline":null},"value":"50","label":"Strategic Transport Corridor Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[229,229,229,255],"outline":null},"value":"29","label":"Strategic Transport Corridor Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[229,229,229,255],"outline":null},"value":"26","label":"Strategic Transport Corridor Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"65","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"67","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"54","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"53","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"52","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"51","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"58","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"57","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"56","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"55","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"63","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[178,178,178,255],"outline":null},"value":"64","label":"Special Purpose Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[184,220,235,255],"outline":null},"value":"30","label":"Coastal - General Coastal Marine Zone [rcp]"},{"symbol":{"type":"esriSFS","style":"esriSFSBackwardDiagonal","color":[202,122,245,255],"outline":null},"value":"40","label":"Coastal - Marina Zone [rcp/dp]"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[115,223,255,255],"outline":null},"value":"41","label":"Coastal - Mooring Zone [rcp]"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[33,196,217,255],"outline":null},"value":"37","label":"Coastal - Minor Port Zone [rcp/dp]"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[0,148,143,255],"outline":null},"value":"45","label":"Coastal - Ferry Terminal Zone [rcp/dp]"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[158,187,215,255],"outline":null},"value":"39","label":"Coastal - Defence Zone [rcp]"},{"symbol":{"type":"esriSFS","style":"esriSFSHorizontal","color":[215,215,158,255],"outline":null},"value":"59","label":"Coastal - Coastal Transition Zone"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[224,255,255,255],"outline":null},"value":"25","label":"Water [i]"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[255,255,255,255],"outline":null},"value":"43","label":"Hauraki Gulf Islands"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[255,255,255,255],"outline":null},"value":"27","label":"Road [i]"}],"fieldDelimiter":",","authoringInfo":{"colorRamp":{"type":"multipart","colorRamps":[{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[159,235,245,255],"toColor":[159,235,245,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[224,90,117,255],"toColor":[224,90,117,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[216,245,86,255],"toColor":[216,245,86,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[61,63,161,255],"toColor":[61,63,161,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[128,119,74,255],"toColor":[128,119,74,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[234,120,245,255],"toColor":[234,120,245,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[81,232,131,255],"toColor":[81,232,131,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[54,118,150,255],"toColor":[54,118,150,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[247,167,96,255],"toColor":[247,167,96,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[143,59,122,255],"toColor":[143,59,122,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[206,224,150,255],"toColor":[206,224,150,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[174,148,227,255],"toColor":[174,148,227,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[89,156,132,255],"toColor":[89,156,132,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[242,155,200,255],"toColor":[242,155,200,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[138,71,56,255],"toColor":[138,71,56,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[99,150,54,255],"toColor":[99,150,54,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[107,172,242,255],"toColor":[107,172,242,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[94,88,140,255],"toColor":[94,88,140,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[112,224,178,255],"toColor":[112,224,178,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[250,155,150,255],"toColor":[250,155,150,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[163,100,119,255],"toColor":[163,100,119,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[134,116,237,255],"toColor":[134,116,237,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[250,230,115,255],"toColor":[250,230,115,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[247,210,151,255],"toColor":[247,210,151,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[106,250,87,255],"toColor":[106,250,87,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[171,121,68,255],"toColor":[171,121,68,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[70,182,199,255],"toColor":[70,182,199,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[163,87,189,255],"toColor":[163,87,189,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[169,207,87,255],"toColor":[169,207,87,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[111,78,222,255],"toColor":[111,78,222,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[186,140,123,255],"toColor":[186,140,123,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[134,184,118,255],"toColor":[134,184,118,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[176,164,83,255],"toColor":[176,164,83,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[51,130,72,255],"toColor":[51,130,72,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[222,84,185,255],"toColor":[222,84,185,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[83,184,101,255],"toColor":[83,184,101,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[207,118,189,255],"toColor":[207,118,189,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[99,136,224,255],"toColor":[99,136,224,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[130,209,73,255],"toColor":[130,209,73,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[158,207,240,255],"toColor":[158,207,240,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[235,110,172,255],"toColor":[235,110,172,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[193,250,150,255],"toColor":[193,250,150,255]}]}}},"scaleSymbols":true,"transparency":0,"labelingInfo":[{"labelExpression":"[NAME]","labelPlacement":"esriServerPolygonPlacementAlwaysHorizontal","multiPart":"labelPerPart","allowOverrun":true,"deconflictionStrategy":"static","repeatLabel":false,"stackLabel":true,"stackRowLength":24,"stackAlignment":"dynamic","removeDuplicates":"none","where":"ZONE = 41","useCodedValues":true,"maxScale":0,"minScale":25001,"name":"moorings","priority":17,"symbol":{"type":"esriTS","color":[0,0,0,255],"backgroundColor":null,"borderLineColor":null,"borderLineSize":null,"verticalAlignment":"bottom","horizontalAlignment":"center","rightToLeft":false,"angle":0,"xoffset":0,"yoffset":0,"kerning":true,"haloColor":null,"haloSize":null,"font":{"family":"Arial","size":8,"style":"normal","weight":"normal","decoration":"none"}}},{"labelExpression":"[NAME]","labelPlacement":"esriServerPolygonPlacementAlwaysHorizontal","multiPart":"labelPerPart","allowOverrun":true,"deconflictionStrategy":"static","repeatLabel":false,"stackLabel":true,"stackRowLength":24,"stackAlignment":"dynamic","removeDuplicates":"none","where":"ZONE in ( 51, 52 , 53 , 54 , 55 , 56 , 63 , 64 )","useCodedValues":true,"maxScale":0,"minScale":5001,"name":"special purpose","priority":34,"symbol":{"type":"esriTS","color":[0,0,0,255],"backgroundColor":null,"borderLineColor":null,"borderLineSize":null,"verticalAlignment":"bottom","horizontalAlignment":"center","rightToLeft":false,"angle":0,"xoffset":0,"yoffset":0,"kerning":true,"haloColor":null,"haloSize":null,"font":{"family":"Arial","size":8,"style":"normal","weight":"normal","decoration":"none"}}}]}
+
+HasZ: false
+
+HasM: false
+
+Has Attachments: false
+
+Has Geometry Properties: true
+
+HTML Popup Type: esriServerHTMLPopupTypeAsHTMLText
+
+Object ID Field: OBJECTID
+
+Unique ID Field:
+Name : OBJECTID
+IsSystemMaintained : True
+
+Global ID Field:
+
+Type ID Field: ZONE
+
+Fields:
+OBJECTID (type: esriFieldTypeOID, alias: ObjectID, SQL Type: sqlTypeOther, length: 0, nullable: false, editable: false)
+NAME (type: esriFieldTypeString, alias: Name, SQL Type: sqlTypeOther, length: 200, nullable: true, editable: true)
+ZONE (type: esriFieldTypeDouble, alias: Zone, SQL Type: sqlTypeOther, nullable: true, editable: true, Coded Values: [65: Ardmore Airport], [66: Ardmore Airport Residential], [1: Business - Business Park Zone], ... 53 more ...)
+GROUPZONE (type: esriFieldTypeDouble, alias: GROUPZONE, SQL Type: sqlTypeOther, nullable: true, editable: true, Coded Values: [1: Public Open Space], [2: Residential], [3: Business], ... 5 more ...)
+VALIDATIONSTATE (type: esriFieldTypeSmallInteger, alias: Validation State, SQL Type: sqlTypeOther, nullable: true, editable: false, Coded Values: [0: Not Valid], [1: Not Valid and Public], [2: Valid and Private], ... 1 more ...)
+VERSIONSTATUS (type: esriFieldTypeDouble, alias: Version Status, SQL Type: sqlTypeOther, nullable: true, editable: true, Coded Values: [4: Operative], [5: Proposed], [6: Decision], ... 11 more ...)
+Shape__Area (type: esriFieldTypeDouble, alias: Shape__Area, SQL Type: sqlTypeDouble, nullable: true, editable: false)
+Shape__Length (type: esriFieldTypeDouble, alias: Shape__Length, SQL Type: sqlTypeDouble, nullable: true, editable: false)
+
+Types:
+ID: 23
+Name: Residential - Large Lot Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Large Lot
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 23
+ID: 20
+Name: Residential - Rural and Coastal Settlement Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Rural and Coastal Settlement
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 20
+ID: 19
+Name: Residential - Single House Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Single House
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 19
+ID: 18
+Name: Residential - Mixed Housing Suburban Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Mixed Housing Suburban
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 18
+ID: 60
+Name: Residential - Mixed Housing Urban Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Mixed Housing Urban
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 60
+ID: 8
+Name: Residential -Terrace Housing and Apartment Buildings Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Terrace Housing and Apartment Buildings
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 8
+ID: 31
+Name: Open Space - Conservation Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Public Open Space - Conservation
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 31
+ID: 32
+Name: Open Space - Informal Recreation Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Public Open Space - Informal Recreation
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 32
+ID: 33
+Name: Open Space - Sport and Active Recreation Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Public Open Space - Sport and Active Recreation
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 33
+ID: 62
+Name: Open Space - Civic Spaces Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Public Open Space - Civic Spaces
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 62
+ID: 34
+Name: Open Space - Community Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Public Open Space - Community
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 34
+ID: 35
+Name: Business - City Centre Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: City Centre
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 35
+ID: 10
+Name: Business - Metropolitan Centre Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Metropolitan Centre
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 10
+ID: 22
+Name: Business - Town Centre Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Town Centre
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 22
+ID: 7
+Name: Business - Local Centre Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Local Centre
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 7
+ID: 44
+Name: Business - Neighbourhood Centre Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Neighbourhood Centre
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 44
+ID: 12
+Name: Business - Mixed Use Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Mixed Use
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 12
+ID: 49
+Name: Business - General Business Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: General Business
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 49
+ID: 1
+Name: Business - Business Park Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Business Park
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 1
+ID: 5
+Name: Business - Heavy Industry Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Heavy Industry
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 5
+ID: 17
+Name: Business - Light Industry Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Light Industry
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 17
+ID: 4
+Name: Future Urban Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Future Urban
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 4
+ID: 61
+Name: Green Infrastructure Corridor (Operative in some Special Housing Areas)
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Green Infrastructure Corridor
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 61
+ID: 16
+Name: Rural - Rural Production Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Rural Production
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 16
+ID: 11
+Name: Rural - Mixed Rural Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Mixed Rural
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 11
+ID: 46
+Name: Rural - Rural Coastal Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Rural Coastal
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 46
+ID: 15
+Name: Rural - Rural Conservation Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Rural Conservation
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 15
+ID: 3
+Name: Rural - Countryside Living Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Countryside Living
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 3
+ID: 68
+Name: Rural - Waitakere Foothills Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 68
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 68
+ID: 69
+Name: Rural - Waitakere Ranges Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 69
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 69
+ID: 48
+Name: Strategic Transport Corridor Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Strategic Transport Corridor
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 48
+ID: 50
+Name: Strategic Transport Corridor Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 50
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 50
+ID: 29
+Name: Strategic Transport Corridor Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 29
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 29
+ID: 26
+Name: Strategic Transport Corridor Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 26
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 26
+ID: 65
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 65
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 65
+ID: 67
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 67
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 67
+ID: 54
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Special Purpose
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 54
+ID: 53
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 53
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 53
+ID: 52
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 52
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 52
+ID: 51
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 51
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 51
+ID: 58
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 58
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 58
+ID: 57
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 57
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 57
+ID: 56
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 56
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 56
+ID: 55
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 55
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 55
+ID: 63
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 63
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 63
+ID: 64
+Name: Special Purpose Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: 64
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 64
+ID: 30
+Name: Coastal - General Coastal Marine Zone [rcp]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: General Coastal Marine [rcp]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 30
+ID: 40
+Name: Coastal - Marina Zone [rcp/dp]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Marina [rcp/dp]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 40
+ID: 41
+Name: Coastal - Mooring Zone [rcp]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Mooring [rcp]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 41
+ID: 37
+Name: Coastal - Minor Port Zone [rcp/dp]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Minor Port [rcp/dp]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 37
+ID: 45
+Name: Coastal - Ferry Terminal Zone [rcp/dp]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Ferry Terminal [rcp/dp]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 45
+ID: 39
+Name: Coastal - Defence Zone [rcp]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Defence [rcp/dp]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 39
+ID: 59
+Name: Coastal - Coastal Transition Zone
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Coastal Transition
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 59
+ID: 25
+Name: Water [i]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Water [i]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 25
+ID: 43
+Name: Hauraki Gulf Islands
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Hauraki Gulf Islands
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 43
+ID: 27
+Name: Road [i]
+Domains:
+Field Name: ZONE
+Inherited
+Field Name: GROUPZONE
+Inherited
+Field Name: VALIDATIONSTATE
+Inherited
+Field Name: VERSIONSTATUS
+Inherited
+Templates:
+Name: Road [i]
+Description:
+Drawing Tool: esriFeatureEditToolPolygon
+Prototype:
+Attributes:
+ZONE: 27
