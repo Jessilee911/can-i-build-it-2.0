@@ -90,17 +90,19 @@ export function PropertyChatPage() {
 
   const createSession = async (address: string) => {
     try {
-      const response = await apiRequest("/api/agent/session", {
+      const response = await fetch("/api/agent/session", {
         method: "POST",
-        body: {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           agentType: "agent_2",
           propertyAddress: address,
           title: `Property: ${address}`
-        }
+        })
       });
 
-      setCurrentSession(response);
-      return response;
+      const data = await response.json();
+      setCurrentSession(data);
+      return data;
     } catch (error: any) {
       throw new Error(error.message || "Failed to create property session");
     }
@@ -121,18 +123,21 @@ export function PropertyChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await apiRequest("/api/agent/chat", {
+      const response = await fetch("/api/agent/chat", {
         method: "POST",
-        body: {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           sessionId: currentSession.id,
           message: message
-        }
+        })
       });
+
+      const data = await response.json();
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: response.response,
+        content: data.response,
         timestamp: new Date()
       };
 
