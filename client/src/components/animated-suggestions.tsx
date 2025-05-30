@@ -8,10 +8,10 @@ const askingAboutQuestions = [
 ];
 
 const buildingTips = [
-  "Resource consent is separate from building consent",
-  "NZ Building Code sets national standards for construction", 
-  "Building inspections ensure compliance and safety",
-  "Most structural changes require consent"
+  "Free: Get instant answers about building codes and zoning rules",
+  "Free: Access comprehensive FAQ with expert guidance", 
+  "Paid Reports: Get detailed property-specific analysis and sketches",
+  "Paid Reports: Receive professional review and email consultation"
 ];
 
 export function AnimatedSuggestions() {
@@ -67,7 +67,7 @@ export function AnimatedSuggestions() {
           className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm text-[14px]"
           style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
         >
-          <h3 className="font-medium text-gray-900 mb-2">Quick Building Tips:</h3>
+          <h3 className="font-medium text-gray-900 mb-2">Site Features:</h3>
           <div 
             className={`text-gray-700 min-h-[24px] transition-opacity duration-300 ${
               tipVisible ? 'opacity-100' : 'opacity-0'
