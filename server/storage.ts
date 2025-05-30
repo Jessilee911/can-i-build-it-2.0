@@ -661,6 +661,15 @@ export class DatabaseStorage implements IStorage {
     const [request] = await db.select().from(premiumRequests).where(eq(premiumRequests.id, id));
     return request;
   }
+
+  async updatePremiumRequest(id: number, updates: Partial<PremiumRequest>): Promise<PremiumRequest | undefined> {
+    const [request] = await db
+      .update(premiumRequests)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(premiumRequests.id, id))
+      .returning();
+    return request;
+  }
 }
 
 export const storage = new DatabaseStorage();

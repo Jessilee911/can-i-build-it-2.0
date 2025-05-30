@@ -839,6 +839,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const reportText = premiumPropertyAgent.formatReportAsText(report);
         
+        // Store the report in the database for later retrieval
+        await storage.updatePremiumRequest(premiumRequest.id, {
+          reportContent: reportText,
+          reportData: JSON.stringify(report),
+          status: 'completed'
+        });
+        
         // Send the report back to user
         res.json({
           success: true,
@@ -849,6 +856,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (reportError: any) {
         console.error("Error generating property report:", reportError);
+        
+        // Update status to indicate processing
+        await storage.updatePremiumRequest(premiumRequest.id, {
+          status: 'processing'
+        });
         
         // Still save the request but return basic response
         res.json({
@@ -863,6 +875,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({
         success: false,
         message: error.message || "Failed to submit premium assessment request"
+      });
+    }
+  });
+
+  // Get premium report by ID
+  apiRouter.get("/api/premium-report/:id", async (req: Request, res: Response) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const premiumRequest = await storage.getPremiumRequestById(requestId);
+      
+      if (!premiumRequest) {
+        return res.status(404).json({
+          success: false,
+          message: "Report not found"
+        });
+      }
+
+      if (!premiumRequest.reportContent) {
+        return res.status(404).json({
+          success: false,
+          message: "Report not yet generated"
+        });
+      }
+
+      res.json({
+        success: true,
+        report: premiumRequest.reportContent,
+        reportData: premiumRequest.reportData,
+        propertyAddress: premiumRequest.propertyAddress,
+        status: premiumRequest.status
+      });
+    } catch (error: any) {
+      console.error("Error retrieving premium report:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve report"
       });
     }
   });
