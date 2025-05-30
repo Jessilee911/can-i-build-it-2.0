@@ -307,22 +307,27 @@ export class AucklandCouncilAPI {
         f: 'json',
         geometry: geometry,
         geometryType: 'esriGeometryPoint',
+        inSR: '4326',
         spatialRel: 'esriSpatialRelIntersects',
         outFields: '*',
         returnGeometry: 'false'
       });
 
+      console.log(`Querying ${serviceName} with URL: ${url}?${params}`);
       const response = await fetch(`${url}?${params}`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log(`${serviceName} response:`, JSON.stringify(data, null, 2));
         return data.features || [];
       } else {
         console.log(`Feature service query failed for ${serviceName}: ${response.status}`);
+        const errorText = await response.text();
+        console.log(`Error response: ${errorText}`);
         return [];
       }
     } catch (error) {
-      console.log(`Error querying ${serviceName}:`, error.message);
+      console.log(`Error querying ${serviceName}:`, error instanceof Error ? error.message : String(error));
       return [];
     }
   }

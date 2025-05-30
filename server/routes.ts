@@ -815,6 +815,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== Premium Chat API ====================
+  
+  // Geocode and confirm location endpoint
+  app.post('/api/geocode-location', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.body;
+      
+      if (!address) {
+        return res.status(400).json({ success: false, message: 'Address is required' });
+      }
+
+      console.log(`Geocoding address: ${address}`);
+      
+      // Use the Auckland Council API to geocode the address
+      const { aucklandCouncilAPI } = await import('./auckland-council-api');
+      const coordinates = await aucklandCouncilAPI.geocodeAddress(address);
+      
+      if (!coordinates) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Could not find location for the provided address. Please check the address and try again.' 
+        });
+      }
+
+      const [lat, lon] = coordinates;
+      
+      // Query zoning information using the exact workflow specified
+      const zoningUrl = `https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services/Unitary_Plan_Base_Zone/FeatureServer/0/query`;
+      const zoningParams = new URLSearchParams({
+        geometry: `${lon},${lat}`,
+        geometryType: 'esriGeometryPoint',
+        inSR: '4326',
+        spatialRel: 'esriSpatialRelIntersects',
+        outFields: '*',
+        f: 'json'
+      });
+
+      console.log(`Querying zoning data: ${zoningUrl}?${zoningParams}`);
+      const zoningResponse = await fetch(`${zoningUrl}?${zoningParams}`);
+      
+      let zoningData = null;
+      if (zoningResponse.ok) {
+        const data = await zoningResponse.json();
+        console.log('Zoning API response:', data);
+        if (data.features && data.features.length > 0) {
+          zoningData = data.features[0].attributes;
+          console.log('Zoning data found:', zoningData);
+        }
+      } else {
+        console.log('Zoning query failed:', zoningResponse.status);
+      }
+
+      res.json({
+        success: true,
+        location: {
+          address: address,
+          coordinates: {
+            latitude: lat,
+            longitude: lon
+          },
+          zoning: zoningData,
+          mapUrl: `https://www.google.com/maps?q=${lat},${lon}`
+        }
+      });
+
+    } catch (error) {
+      console.error('Error geocoding location:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to geocode location' 
+      });
+    }
+  });
+
   // Premium assessment request endpoint
   apiRouter.post("/api/premium-assessment-request", async (req: Request, res: Response) => {
     try {
