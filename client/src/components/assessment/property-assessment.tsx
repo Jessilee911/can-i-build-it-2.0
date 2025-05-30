@@ -198,6 +198,9 @@ Would you like to create a personalized property report for your specific projec
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
                 >
                   {showPricing ? "Hide Plans" : "Get Your Personalised Report"}
+                  <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
+                    Coming Soon
+                  </span>
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
