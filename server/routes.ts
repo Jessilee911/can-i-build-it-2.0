@@ -816,6 +816,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ==================== Premium Chat API ====================
   
+  // Check LINZ API access
+  app.get('/api/check-linz-access', async (req: Request, res: Response) => {
+    try {
+      const hasLinzKey = !!process.env.LINZ_API_KEY;
+      res.json({ hasAccess: hasLinzKey });
+    } catch (error) {
+      res.json({ hasAccess: false });
+    }
+  });
+
   // Geocode and confirm location endpoint
   app.post('/api/geocode-location', async (req: Request, res: Response) => {
     try {

@@ -6,6 +6,7 @@ import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
+import { LinzGeocodingMap } from "@/components/linz-geocoding-map";
 
 interface PropertyAssessmentProps {
   showPricing?: boolean;
@@ -162,41 +163,23 @@ Would you like to create a personalized property report for your specific projec
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">
-      {/* Location Confirmation Modal */}
+      {/* LINZ Geocoding Map Modal */}
       {showLocationConfirm && locationData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Confirm Property Location</h3>
-            <div className="space-y-3 mb-6">
-              <p><strong>Address:</strong> {locationData.address}</p>
-              <p><strong>Coordinates:</strong> {locationData.coordinates.latitude}, {locationData.coordinates.longitude}</p>
-              {locationData.zoning && (
-                <p><strong>Auckland Council Zone:</strong> Zone {locationData.zoning.ZONE}</p>
-              )}
-              <a 
-                href={locationData.mapUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline text-sm"
-              >
-                View on Google Maps to verify location
-              </a>
-            </div>
-            <div className="flex space-x-3">
-              <Button 
-                onClick={handleLocationConfirm}
-                className="flex-1"
-              >
-                Confirm Location
-              </Button>
-              <Button 
-                onClick={handleLocationReject}
-                variant="outline"
-                className="flex-1"
-              >
-                Different Address
-              </Button>
-            </div>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Verify Property Location</h3>
+            <LinzGeocodingMap
+              address={locationData.address}
+              coordinates={locationData.coordinates}
+              zoning={locationData.zoning}
+              onLocationConfirm={(confirmed) => {
+                if (confirmed) {
+                  handleLocationConfirm();
+                } else {
+                  handleLocationReject();
+                }
+              }}
+            />
           </div>
         </div>
       )}
