@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/agent/session", async (req: any, res: Response) => {
     try {
       // Temporarily allow unauthenticated access for testing
-      const userId = req.session?.user?.id || req.user?.claims?.sub || "test-user";
+      const userId = req.session?.user?.id || req.user?.claims?.sub || "63227db2-86d5-4593-9384-717965266d46";
       const { agentType, propertyAddress, userName, projectDescription, title } = req.body;
       
       // Skip auth check for testing
@@ -293,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/agent/chat", async (req: any, res: Response) => {
     try {
       // Temporarily allow unauthenticated access for testing
-      const userId = req.session?.user?.id || req.user?.claims?.sub || "test-user";
+      const userId = req.session?.user?.id || req.user?.claims?.sub || "63227db2-86d5-4593-9384-717965266d46";
       const { sessionId, message } = req.body;
       
       // Skip auth check for testing
