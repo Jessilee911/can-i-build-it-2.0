@@ -41,11 +41,11 @@ export function Sidebar({ className }: SidebarProps) {
       href: "/reports",
       icon: <FileTextIcon className="h-4 w-4" />
     },
-    {
-      title: "Premium Assessment",
-      href: "/premium-chat",
-      icon: <StarIcon className="h-4 w-4" />
-    },
+    // {
+    //   title: "Premium Assessment",
+    //   href: "/premium-chat",
+    //   icon: <StarIcon className="h-4 w-4" />
+    // },
     {
       title: "Chat Assistant",
       href: "/chat",
