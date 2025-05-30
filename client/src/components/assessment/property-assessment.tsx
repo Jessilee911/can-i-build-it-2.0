@@ -239,7 +239,7 @@ Would you like to create a personalized property report for your specific projec
                       </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
-                        Building consent requirements
+                        Custom building consent requirements
                       </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
