@@ -34,6 +34,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create router for API routes
   const apiRouter = app;
   
+  // Setup knowledge base routes
+  await setupKnowledgeRoutes(app);
+  
   // ==================== Authentication Routes ====================
   // User info route - returns the current authenticated user
   apiRouter.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
