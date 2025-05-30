@@ -94,8 +94,32 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     },
   });
 
-  const onSubmit = (data: PremiumRequestData) => {
-    premiumRequestMutation.mutate(data);
+  const onSubmit = async (data: PremiumRequestData) => {
+    // First verify the location
+    try {
+      const verificationResponse = await fetch("/api/verify-location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: data.propertyAddress })
+      });
+
+      if (!verificationResponse.ok) {
+        throw new Error("Location verification failed");
+      }
+
+      const locationData = await verificationResponse.json();
+      
+      if (locationData.success) {
+        setLocationData(locationData);
+        setShowLocationVerification(true);
+      } else {
+        // If location can't be verified, still proceed with the request
+        premiumRequestMutation.mutate(data);
+      }
+    } catch (error) {
+      // If verification fails, still proceed with the request
+      premiumRequestMutation.mutate(data);
+    }
   };
 
   const handleClose = () => {
@@ -107,47 +131,13 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     onClose();
   };
 
-  const handleVerifyLocation = async () => {
-    const address = form.getValues("propertyAddress");
-    if (!address.trim()) {
-      toast({
-        title: "Address Required",
-        description: "Please enter a property address first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/geocode-location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setLocationData(data.location);
-          setShowLocationVerification(true);
-        }
-      }
-    } catch (error) {
-      toast({
-        title: "Location Verification Failed",
-        description: "Unable to verify the property location. Please check the address.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleLocationConfirm = (confirmed: boolean) => {
     if (confirmed) {
       setShowLocationVerification(false);
-      toast({
-        title: "Location Verified",
-        description: "Property location has been confirmed.",
-      });
+      // Submit the premium request with verified location
+      const formData = form.getValues();
+      premiumRequestMutation.mutate(formData);
+      setLocationData(null);
     } else {
       setShowLocationVerification(false);
       setLocationData(null);
@@ -337,20 +327,9 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Property Address *</FormLabel>
-                  <div className="flex gap-2">
-                    <FormControl>
-                      <Input placeholder="123 Example Street, Auckland" {...field} />
-                    </FormControl>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={handleVerifyLocation}
-                      className="shrink-0"
-                    >
-                      <MapPin className="h-4 w-4 mr-2" />
-                      Confirm Location
-                    </Button>
-                  </div>
+                  <FormControl>
+                    <Input placeholder="123 Example Street, Auckland" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
