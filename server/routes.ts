@@ -185,6 +185,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { firstName, lastName, email, password } = req.body;
       
+      console.log("Registration attempt for:", email);
+      
       if (!firstName || !lastName || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
       }
@@ -193,8 +195,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Password must be at least 8 characters long" });
       }
 
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Please enter a valid email address" });
+      }
+
       const { registerUser } = await import("./auth");
       const result = await registerUser({ firstName, lastName, email, password });
+      
+      console.log("Registration result:", result);
       
       if (result.success) {
         res.status(201).json({ message: result.message, user: result.user });
@@ -202,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(400).json({ message: result.message });
       }
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Registration error details:", error);
       res.status(500).json({ message: "Registration failed. Please try again." });
     }
   });

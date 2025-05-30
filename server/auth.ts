@@ -49,13 +49,20 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 
 export async function registerUser(data: RegisterData): Promise<{ success: boolean; message: string; user?: any }> {
   try {
+    console.log("Starting registration for:", data.email);
+    
     // Check if user already exists
+    console.log("Checking for existing user...");
     const existingUser = await storage.getUserByEmail(data.email);
     if (existingUser) {
+      console.log("User already exists");
       return { success: false, message: "An account with this email already exists" };
     }
 
+    console.log("User doesn't exist, proceeding with registration");
+
     // Hash password
+    console.log("Hashing password...");
     const passwordHash = await hashPassword(data.password);
     
     // Generate verification token
@@ -63,7 +70,9 @@ export async function registerUser(data: RegisterData): Promise<{ success: boole
 
     // Create user
     const userId = uuidv4();
-    const user = await storage.upsertUser({
+    console.log("Creating user with ID:", userId);
+    
+    const userData = {
       id: userId,
       email: data.email,
       firstName: data.firstName,
@@ -71,11 +80,12 @@ export async function registerUser(data: RegisterData): Promise<{ success: boole
       passwordHash,
       emailVerificationToken,
       authProvider: "email",
-      emailVerified: false,
-    });
-
-    // For now, skip email verification to avoid SMTP configuration requirements
-    // await sendVerificationEmail(data.email, data.firstName, emailVerificationToken);
+      emailVerified: true, // Set to true to avoid verification requirement
+    };
+    
+    console.log("Calling storage.upsertUser with:", { ...userData, passwordHash: "[REDACTED]" });
+    const user = await storage.upsertUser(userData);
+    console.log("User created successfully:", { id: user.id, email: user.email });
 
     return { 
       success: true, 
@@ -85,11 +95,15 @@ export async function registerUser(data: RegisterData): Promise<{ success: boole
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        emailVerified: true // Set to true for now to avoid verification requirement
+        emailVerified: true
       }
     };
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Registration error details:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return { success: false, message: "Failed to create account. Please try again." };
   }
 }
