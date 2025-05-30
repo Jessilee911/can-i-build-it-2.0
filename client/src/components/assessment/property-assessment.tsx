@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
+import { FormattedText } from "@/components/ui/formatted-text";
 
 interface PropertyAssessmentProps {
   showPricing?: boolean;
@@ -127,7 +128,7 @@ Would you like to create a personalized property report for your specific projec
                     : 'rgba(255, 255, 255, 0.5)'
                 }}
               >
-                <div className="whitespace-pre-line">{item.content}</div>
+                <FormattedText>{item.content}</FormattedText>
                 {item.showReportCTA && item.type === 'response' && (
                   <div className="mt-4 pt-3 border-t border-gray-300">
                     <Button 

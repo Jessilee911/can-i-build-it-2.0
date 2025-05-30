@@ -235,7 +235,8 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Cite official government websites like building.govt.nz
             - Reference specific Building Act sections and Building Code clauses
             - Include links to relevant MBIE guidance documents
-            - Mention specific council planning documents when applicable`
+            - Mention specific council planning documents when applicable
+            - When referencing websites, provide the URL for easy access`
           },
           {
             role: 'user',
