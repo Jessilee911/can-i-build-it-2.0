@@ -286,10 +286,8 @@ COMPREHENSIVE PROPERTY ANALYSIS REPORT
 Property Address: ${report.propertyAddress}
 Generated: ${report.generatedAt.toLocaleDateString()}
 
-EXECUTIVE SUMMARY
-${report.executiveSummary}
-
 LOCATION VERIFICATION
+═══════════════════════
 Verified Address: ${report.locationVerification.verifiedAddress}
 Coordinates: ${report.locationVerification.coordinates[1]}, ${report.locationVerification.coordinates[0]}
 Accuracy Level: ${report.locationVerification.accuracyLevel}
@@ -297,6 +295,12 @@ Official Zoning: ${report.locationVerification.officialZoning}
 Zoning Description: ${report.locationVerification.zoningDescription}
 Data Source: ${report.locationVerification.dataSource}
 Verification Date: ${report.locationVerification.verificationDate.toLocaleDateString()}
+
+This property location has been verified using official Auckland Council Unitary Plan Base Zone data 
+and LINZ property information to ensure accuracy for your development assessment.
+
+EXECUTIVE SUMMARY
+${report.executiveSummary}
 
 PROPERTY DETAILS
 Address: ${report.propertyDetails.address}
