@@ -9,11 +9,23 @@ import {
   InsertActivity,
   User,
   UpsertUser,
+  BuildingCodeSection,
+  InsertBuildingCodeSection,
+  PlanningRule,
+  InsertPlanningRule,
+  ConsentRequirement,
+  InsertConsentRequirement,
+  DocumentSource,
+  InsertDocumentSource,
   dataSources,
   scrapingJobs,
   properties,
   activities,
-  users
+  users,
+  buildingCodeSections,
+  planningRules,
+  consentRequirements,
+  documentSources
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and, or, SQL } from "drizzle-orm";
@@ -61,6 +73,34 @@ export interface IStorage {
   getTotalScans(): Promise<number>;
   getTotalRecords(): Promise<number>;
   getTotalDataSources(): Promise<number>;
+
+  // Knowledge Base Operations
+  // Building Code Sections
+  getBuildingCodeSections(filters?: { category?: string; code?: string }): Promise<BuildingCodeSection[]>;
+  getBuildingCodeSection(id: number): Promise<BuildingCodeSection | undefined>;
+  createBuildingCodeSection(section: InsertBuildingCodeSection): Promise<BuildingCodeSection>;
+  updateBuildingCodeSection(id: number, section: Partial<InsertBuildingCodeSection>): Promise<BuildingCodeSection | undefined>;
+  searchBuildingCodeSections(query: string): Promise<BuildingCodeSection[]>;
+
+  // Planning Rules
+  getPlanningRules(filters?: { region?: string; zone?: string; council?: string }): Promise<PlanningRule[]>;
+  getPlanningRule(id: number): Promise<PlanningRule | undefined>;
+  createPlanningRule(rule: InsertPlanningRule): Promise<PlanningRule>;
+  updatePlanningRule(id: number, rule: Partial<InsertPlanningRule>): Promise<PlanningRule | undefined>;
+  searchPlanningRules(query: string, region?: string): Promise<PlanningRule[]>;
+
+  // Consent Requirements
+  getConsentRequirements(filters?: { activityType?: string; region?: string }): Promise<ConsentRequirement[]>;
+  getConsentRequirement(id: number): Promise<ConsentRequirement | undefined>;
+  createConsentRequirement(requirement: InsertConsentRequirement): Promise<ConsentRequirement>;
+  updateConsentRequirement(id: number, requirement: Partial<InsertConsentRequirement>): Promise<ConsentRequirement | undefined>;
+  searchConsentRequirements(activityType: string): Promise<ConsentRequirement[]>;
+
+  // Document Sources
+  getDocumentSources(): Promise<DocumentSource[]>;
+  getDocumentSource(id: number): Promise<DocumentSource | undefined>;
+  createDocumentSource(document: InsertDocumentSource): Promise<DocumentSource>;
+  updateDocumentSource(id: number, document: Partial<InsertDocumentSource>): Promise<DocumentSource | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -349,6 +389,163 @@ export class DatabaseStorage implements IStorage {
   async getTotalDataSources(): Promise<number> {
     const result = await db.select({ count: dataSources }).from(dataSources);
     return result.length;
+  }
+
+  // Building Code Sections
+  async getBuildingCodeSections(filters?: { category?: string; code?: string }): Promise<BuildingCodeSection[]> {
+    let query = db.select().from(buildingCodeSections).where(eq(buildingCodeSections.isActive, true));
+    
+    if (filters?.category) {
+      query = query.where(eq(buildingCodeSections.category, filters.category));
+    }
+    if (filters?.code) {
+      query = query.where(eq(buildingCodeSections.code, filters.code));
+    }
+    
+    return await query;
+  }
+
+  async getBuildingCodeSection(id: number): Promise<BuildingCodeSection | undefined> {
+    const result = await db.select().from(buildingCodeSections).where(eq(buildingCodeSections.id, id));
+    return result[0];
+  }
+
+  async createBuildingCodeSection(section: InsertBuildingCodeSection): Promise<BuildingCodeSection> {
+    const result = await db.insert(buildingCodeSections).values(section).returning();
+    return result[0];
+  }
+
+  async updateBuildingCodeSection(id: number, section: Partial<InsertBuildingCodeSection>): Promise<BuildingCodeSection | undefined> {
+    const result = await db.update(buildingCodeSections).set(section).where(eq(buildingCodeSections.id, id)).returning();
+    return result[0];
+  }
+
+  async searchBuildingCodeSections(query: string): Promise<BuildingCodeSection[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    return await db.select().from(buildingCodeSections)
+      .where(
+        and(
+          eq(buildingCodeSections.isActive, true),
+          or(
+            like(buildingCodeSections.title, searchTerm),
+            like(buildingCodeSections.content, searchTerm),
+            like(buildingCodeSections.code, searchTerm)
+          )
+        )
+      );
+  }
+
+  // Planning Rules
+  async getPlanningRules(filters?: { region?: string; zone?: string; council?: string }): Promise<PlanningRule[]> {
+    let query = db.select().from(planningRules).where(eq(planningRules.isActive, true));
+    
+    if (filters?.region) {
+      query = query.where(eq(planningRules.region, filters.region));
+    }
+    if (filters?.zone) {
+      query = query.where(eq(planningRules.zone, filters.zone));
+    }
+    if (filters?.council) {
+      query = query.where(eq(planningRules.council, filters.council));
+    }
+    
+    return await query;
+  }
+
+  async getPlanningRule(id: number): Promise<PlanningRule | undefined> {
+    const result = await db.select().from(planningRules).where(eq(planningRules.id, id));
+    return result[0];
+  }
+
+  async createPlanningRule(rule: InsertPlanningRule): Promise<PlanningRule> {
+    const result = await db.insert(planningRules).values(rule).returning();
+    return result[0];
+  }
+
+  async updatePlanningRule(id: number, rule: Partial<InsertPlanningRule>): Promise<PlanningRule | undefined> {
+    const result = await db.update(planningRules).set(rule).where(eq(planningRules.id, id)).returning();
+    return result[0];
+  }
+
+  async searchPlanningRules(query: string, region?: string): Promise<PlanningRule[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    let whereConditions = and(
+      eq(planningRules.isActive, true),
+      or(
+        like(planningRules.ruleTitle, searchTerm),
+        like(planningRules.zone, searchTerm),
+        like(planningRules.ruleNumber, searchTerm)
+      )
+    );
+
+    if (region) {
+      whereConditions = and(whereConditions, eq(planningRules.region, region));
+    }
+
+    return await db.select().from(planningRules).where(whereConditions);
+  }
+
+  // Consent Requirements
+  async getConsentRequirements(filters?: { activityType?: string; region?: string }): Promise<ConsentRequirement[]> {
+    let query = db.select().from(consentRequirements).where(eq(consentRequirements.isActive, true));
+    
+    if (filters?.activityType) {
+      query = query.where(eq(consentRequirements.activityType, filters.activityType));
+    }
+    if (filters?.region) {
+      query = query.where(eq(consentRequirements.region, filters.region));
+    }
+    
+    return await query;
+  }
+
+  async getConsentRequirement(id: number): Promise<ConsentRequirement | undefined> {
+    const result = await db.select().from(consentRequirements).where(eq(consentRequirements.id, id));
+    return result[0];
+  }
+
+  async createConsentRequirement(requirement: InsertConsentRequirement): Promise<ConsentRequirement> {
+    const result = await db.insert(consentRequirements).values(requirement).returning();
+    return result[0];
+  }
+
+  async updateConsentRequirement(id: number, requirement: Partial<InsertConsentRequirement>): Promise<ConsentRequirement | undefined> {
+    const result = await db.update(consentRequirements).set(requirement).where(eq(consentRequirements.id, id)).returning();
+    return result[0];
+  }
+
+  async searchConsentRequirements(activityType: string): Promise<ConsentRequirement[]> {
+    const searchTerm = `%${activityType.toLowerCase()}%`;
+    return await db.select().from(consentRequirements)
+      .where(
+        and(
+          eq(consentRequirements.isActive, true),
+          or(
+            like(consentRequirements.activityType, searchTerm),
+            like(consentRequirements.description, searchTerm)
+          )
+        )
+      );
+  }
+
+  // Document Sources
+  async getDocumentSources(): Promise<DocumentSource[]> {
+    return await db.select().from(documentSources).where(eq(documentSources.isActive, true));
+  }
+
+  async getDocumentSource(id: number): Promise<DocumentSource | undefined> {
+    const result = await db.select().from(documentSources).where(eq(documentSources.id, id));
+    return result[0];
+  }
+
+  async createDocumentSource(document: InsertDocumentSource): Promise<DocumentSource> {
+    const result = await db.insert(documentSources).values(document).returning();
+    return result[0];
+  }
+
+  async updateDocumentSource(id: number, document: Partial<InsertDocumentSource>): Promise<DocumentSource | undefined> {
+    const result = await db.update(documentSources).set(document).where(eq(documentSources.id, id)).returning();
+    return result[0];
   }
 }
 
