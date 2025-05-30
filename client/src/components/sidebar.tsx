@@ -19,7 +19,8 @@ import {
   BuildingIcon,
   LogInIcon,
   LogOutIcon,
-  UserIcon
+  UserIcon,
+  InfoIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImage from "@assets/Logo PNG Trans.png";
@@ -33,6 +34,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
   const [faqOpen, setFaqOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const { user, isAuthenticated, isLoading } = useAuth();
 
   const navigationItems = [
@@ -191,8 +193,43 @@ export function Sidebar({ className }: SidebarProps) {
           ))}
         </div>
 
-        {/* FAQ Section */}
+        {/* About the Creator Section */}
         <div className="mt-6">
+          <Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between">
+                <div className="flex items-center">
+                  <InfoIcon className="h-4 w-4" />
+                  <span className="ml-2">About the Creator</span>
+                </div>
+                {aboutOpen ? (
+                  <ChevronDownIcon className="h-4 w-4" />
+                ) : (
+                  <ChevronRightIcon className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-2 mt-2 px-2">
+              <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 leading-relaxed">
+                <p className="mb-2">
+                  <strong>Can I Build It?</strong> was created to simplify New Zealand's complex building and planning regulations.
+                </p>
+                <p className="mb-2">
+                  Built by a team passionate about making property development accessible to everyone, from first-time renovators to experienced developers.
+                </p>
+                <p className="mb-2">
+                  Our AI-powered platform combines official building codes, council requirements, and industry expertise to provide instant, reliable guidance.
+                </p>
+                <p>
+                  Have feedback or suggestions? We'd love to hear from you as we continue improving this platform for the New Zealand building community.
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="mt-4">
           <Collapsible open={faqOpen} onOpenChange={setFaqOpen}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" className="w-full justify-between">
