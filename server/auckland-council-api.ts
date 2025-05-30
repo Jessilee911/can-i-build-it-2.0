@@ -114,30 +114,29 @@ export class AucklandCouncilAPI {
       
       const results: PropertySearchResult[] = [];
       
-      // Search property parcels collection if available
-      if (this.collections.property_parcels) {
-        const propertyData = await this.searchCollection(
-          this.collections.property_parcels,
-          address,
-          coordinates
-        );
-        
-        if (propertyData && propertyData.length > 0) {
-          results.push(...propertyData.map(item => ({
-            address: item.properties?.FULL_ADDRESS || address,
-            suburb: item.properties?.SUBURB,
-            ratesId: item.properties?.RATES_ID,
-            landArea: item.properties?.LAND_AREA,
-            capitalValue: item.properties?.CAPITAL_VALUE,
-            coordinates: coordinates || undefined
-          })));
-        }
-      }
+      // Try multiple search strategies with the available collections
+      const searchMethods = [
+        () => this.searchCollection('dataset', address, coordinates),
+        () => this.searchCollection('all', address, coordinates),
+        () => this.generalSearch(address)
+      ];
 
-      // If no results from property parcels, try a general search
-      if (results.length === 0) {
-        const generalResults = await this.generalSearch(address);
-        results.push(...generalResults);
+      for (const searchMethod of searchMethods) {
+        try {
+          const searchResults = await searchMethod();
+          
+          if (searchResults && searchResults.length > 0) {
+            // Process and format the results
+            const formattedResults = searchResults.map(item => this.formatSearchResult(item, address, coordinates));
+            results.push(...formattedResults.filter(result => result !== null));
+            
+            if (results.length > 0) {
+              break; // Stop if we found valid results
+            }
+          }
+        } catch (searchError) {
+          console.log(`Search method failed, trying next method:`, searchError.message);
+        }
       }
 
       return results;

@@ -45,11 +45,17 @@ export class PremiumPropertyAgent {
     console.log(`Generating comprehensive report for: ${address}`);
     
     // Search Auckland Council data
-    const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
-    const property = properties[0]; // Take the best match
+    let property;
+    try {
+      const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
+      property = properties[0]; // Take the best match
+    } catch (error) {
+      console.log("Auckland Council API search failed, generating report with available data");
+    }
     
+    // If no property data found, we cannot generate an accurate report
     if (!property) {
-      throw new Error(`No property data found for address: ${address}`);
+      throw new Error(`Unable to retrieve official property data for address: ${address}. Please verify the address is correct and try again, or contact Auckland Council directly for property information.`);
     }
 
     // Generate zoning analysis
@@ -77,10 +83,10 @@ export class PremiumPropertyAgent {
         address: property.address,
         suburb: property.suburb,
         zoning: property.zoning,
-        landArea: property.landArea,
-        capitalValue: property.capitalValue,
-        ratesId: property.ratesId,
-        coordinates: property.coordinates,
+        landArea: property.landArea || undefined,
+        capitalValue: property.capitalValue || undefined,
+        ratesId: property.ratesId || undefined,
+        coordinates: property.coordinates || undefined,
       },
       zoningAnalysis,
       developmentConstraints: constraints,
