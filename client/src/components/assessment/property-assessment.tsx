@@ -235,7 +235,7 @@ Would you like to create a personalized property report for your specific projec
                       </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
-                        Detailed zone analysis
+                        Detailed zone analysis for your property
                       </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
