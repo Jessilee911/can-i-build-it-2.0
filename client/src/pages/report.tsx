@@ -1,17 +1,69 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Download, ArrowLeft, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Download, ArrowLeft, Clock, CheckCircle, AlertCircle, MapPin } from "lucide-react";
 import { Link } from "wouter";
+import { LinzGeocodingMap } from "@/components/linz-geocoding-map";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ReportPage() {
   const { id } = useParams<{ id: string }>();
+  const [showLocationVerification, setShowLocationVerification] = useState(false);
+  const [locationData, setLocationData] = useState<any>(null);
+  const { toast } = useToast();
 
   const { data: reportData, isLoading, error } = useQuery({
     queryKey: [`/api/premium-report/${id}`],
     enabled: !!id,
   });
+
+  const handleVerifyLocation = async () => {
+    if (!reportData?.report?.propertyAddress) {
+      toast({
+        title: "Address Not Found",
+        description: "No property address available for verification.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/geocode-location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: reportData.report.propertyAddress }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setLocationData(data.location);
+          setShowLocationVerification(true);
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Location Verification Failed",
+        description: "Unable to verify the property location. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLocationConfirm = (confirmed: boolean) => {
+    if (confirmed) {
+      setShowLocationVerification(false);
+      toast({
+        title: "Location Verified",
+        description: "Property location has been confirmed with official Auckland Council data.",
+      });
+    } else {
+      setShowLocationVerification(false);
+      setLocationData(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -142,6 +194,13 @@ export default function ReportPage() {
                   }}
                 >
                   Share Report
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={handleVerifyLocation}
+                >
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Confirm Location
                 </Button>
               </div>
               
