@@ -231,7 +231,7 @@ Would you like to create a personalized property report for your specific projec
                     <ul className="space-y-2 mb-4">
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
-                        Everything in Basic
+                        Chat with our premium AI agent
                       </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
