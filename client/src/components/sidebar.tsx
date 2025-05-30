@@ -198,7 +198,7 @@ export function Sidebar({ className }: SidebarProps) {
               <Button variant="ghost" className="w-full justify-between">
                 <div className="flex items-center">
                   <HelpCircleIcon className="h-4 w-4" />
-                  <span className="ml-2">Building FAQ</span>
+                  <span className="ml-2">Building FAQ's</span>
                 </div>
                 {faqOpen ? (
                   <ChevronDownIcon className="h-4 w-4" />
