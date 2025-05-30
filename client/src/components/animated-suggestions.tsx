@@ -9,9 +9,13 @@ const askingAboutQuestions = [
 
 const buildingTips = [
   "Free: Get instant answers about building codes and zoning rules",
-  "Free: Access comprehensive FAQ with expert guidance", 
+  "Free: Access comprehensive FAQ with expert guidance",
+  "Free: Search official New Zealand building regulations database", 
+  "Free: Check consent requirements for common building projects",
+  "Free: Understand district plan zoning for any NZ property",
   "Paid Reports: Get detailed property-specific analysis and sketches",
-  "Paid Reports: Receive professional review and email consultation"
+  "Paid Reports: Receive professional review and email consultation",
+  "Paid Reports: Upload plans for expert assessment within 48 hours"
 ];
 
 export function AnimatedSuggestions() {
