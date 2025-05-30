@@ -182,10 +182,127 @@ Would you like to create a personalized property report for your specific projec
           </form>
         </div>
         
-        {/* Show suggestion boxes only when no conversations */}
+        {/* Show suggestion boxes and unlock features only when no conversations */}
         {conversations.length === 0 && (
           <>
             <AnimatedSuggestions />
+            
+            <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
+              <div className="flex flex-col sm:flex-row items-center justify-between">
+                <div className="mb-4 sm:mb-0">
+                  <h3 className="text-lg font-semibold text-gray-900">Unlock Special Features</h3>
+                  <p className="text-sm text-gray-600">Get comprehensive property reports customized to your specific build query, your property details, and zoning constraints.</p>
+                </div>
+                <Button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('togglePricing'))}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                >
+                  {showPricing ? "Hide Plans" : "Get Your Comprehensive Report"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Pricing Plans - Show when showPricing is true */}
+            {showPricing && (
+              <div className="mt-4 bg-white bg-opacity-90 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Choose Your Plan</h3>
+                  <p className="text-gray-600">Get detailed property reports and expert guidance</p>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Basic Plan */}
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <h4 className="font-bold text-lg mb-2">Basic Report</h4>
+                    <div className="text-2xl font-bold mb-2 text-blue-600">Free</div>
+                    <p className="text-sm text-gray-600 mb-4">Basic zoning and consent information</p>
+                    <ul className="space-y-2 mb-4">
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Basic zoning information
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Building consent yes/no
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        General development guidelines
+                      </li>
+                    </ul>
+                    <Button variant="outline" className="w-full">
+                      Start Free
+                    </Button>
+                  </div>
+                  
+                  {/* Comprehensive Plan */}
+                  <div className="bg-white p-4 rounded-lg border-2 border-blue-500 shadow-lg relative">
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-blue-500 text-white px-3 py-1 text-xs font-medium rounded-full">
+                        Most Popular
+                      </span>
+                    </div>
+                    <h4 className="font-bold text-lg mb-2">Comprehensive</h4>
+                    <div className="text-2xl font-bold mb-2 text-blue-600">$29</div>
+                    <p className="text-sm text-gray-600 mb-4">Full assessment with AI insights</p>
+                    <ul className="space-y-2 mb-4">
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Everything in Basic
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Detailed zone analysis
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Building consent requirements
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        AI sketch concept generation
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Site constraints analysis
+                      </li>
+                    </ul>
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      Get Comprehensive Report
+                    </Button>
+                  </div>
+                  
+                  {/* Expert Plan */}
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <h4 className="font-bold text-lg mb-2">Expert Review</h4>
+                    <div className="text-2xl font-bold mb-2 text-blue-600">$79</div>
+                    <p className="text-sm text-gray-600 mb-4">Human expert verification</p>
+                    <ul className="space-y-2 mb-4">
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Everything in Comprehensive
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Licensed designer review
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Professional insights
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Email consultation
+                      </li>
+                    </ul>
+                    <Button variant="outline" className="w-full">
+                      Get Expert Review
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
         
