@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { scraper } from "./scraper";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { generateRAGResponse } from "./rag";
+import { setupKnowledgeRoutes } from "./routes-knowledge";
 import Stripe from "stripe";
 import {
   createCheckoutSession,

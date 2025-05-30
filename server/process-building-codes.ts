@@ -1,7 +1,7 @@
 import { pdfProcessor } from './pdf-processor';
 import { storage } from './storage';
 
-async function processBuildingCodeDocuments() {
+export async function processBuildingCodeDocuments() {
   console.log('Starting to process Building Code documents...');
 
   try {
@@ -17,7 +17,43 @@ async function processBuildingCodeDocuments() {
     // Process C/AS Protection from Fire - fire safety requirements
     await processCASProtectionFromFire();
 
-    console.log('Building Code processing completed successfully');
+    // Process G6 Airborne and Impact Sound
+    await processG6AirborneAndImpactSound();
+
+    // Process G7 Natural Light
+    await processG7NaturalLight();
+
+    // Process G8 Artificial Light
+    await processG8ArtificialLight();
+
+    // Process G10 Piped Services
+    await processG10PipedServices();
+
+    // Process G11 Gas as Energy Source
+    await processG11GasEnergySource();
+
+    // Process G12 Water Supplies
+    await processG12WaterSupplies();
+
+    // Process G13 Foul Water
+    await processG13FoulWater();
+
+    // Process H1 Energy Efficiency
+    await processH1EnergyEfficiency();
+
+    // Process NZS 3604 Timber-framed buildings
+    await processNZS3604TimberFramed();
+
+    // Process NZS 4229 Concrete Masonry Buildings
+    await processNZS4229ConcreteMasonry();
+
+    // Process BRANZ Plumbing and Drainage Guide
+    await processBRANZPlumbingGuide();
+
+    // Process NZ Metal Roof and Wall Cladding Code
+    await processMetalRoofingCode();
+
+    console.log('All Building Code documents processed successfully!');
     
   } catch (error) {
     console.error('Error processing Building Code documents:', error);
@@ -317,5 +353,134 @@ OUTBUILDING REQUIREMENTS:
   });
 }
 
-// Export the main processing function
-export { processBuildingCodeDocuments };
+async function processG6AirborneAndImpactSound() {
+  console.log('Processing G6 Airborne and Impact Sound...');
+  
+  await pdfProcessor.processPDF('attached_assets/g6-airborne-and-impact-sound-1st-edition-amendment-2.pdf', {
+    title: 'G6 Airborne and Impact Sound - 1st Edition Amendment 2',
+    authority: 'Department of Building and Housing',
+    documentType: 'building_code',
+    version: '1st Edition Amendment 2'
+  });
+}
+
+async function processG7NaturalLight() {
+  console.log('Processing G7 Natural Light...');
+  
+  await pdfProcessor.processPDF('attached_assets/g7-natural-light-as1-2nd-edition.pdf', {
+    title: 'G7 Natural Light Acceptable Solution G7/AS1 - 2nd Edition',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '2nd Edition'
+  });
+}
+
+async function processG8ArtificialLight() {
+  console.log('Processing G8 Artificial Light...');
+  
+  await pdfProcessor.processPDF('attached_assets/G8-artificial-light-1st-edition-amendment-2.pdf', {
+    title: 'G8 Artificial Light - 1st Edition Amendment 2',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition Amendment 2'
+  });
+}
+
+async function processG10PipedServices() {
+  console.log('Processing G10 Piped Services...');
+  
+  await pdfProcessor.processPDF('attached_assets/g10-piped-services-1st-edition-amendment8.pdf', {
+    title: 'G10 Piped Services - 1st Edition Amendment 8',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition Amendment 8'
+  });
+}
+
+async function processG11GasEnergySource() {
+  console.log('Processing G11 Gas as Energy Source...');
+  
+  await pdfProcessor.processPDF('attached_assets/G11 Gas- Energy Source 1st Edition Amendment 6.pdf', {
+    title: 'G11 Gas as Energy Source - 1st Edition Amendment 6',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition Amendment 6'
+  });
+}
+
+async function processG12WaterSupplies() {
+  console.log('Processing G12 Water Supplies...');
+  
+  await pdfProcessor.processPDF('attached_assets/g12-water-supplies-3rd-edition-amendment-14.pdf', {
+    title: 'G12 Water Supplies - 3rd Edition Amendment 14',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '3rd Edition Amendment 14'
+  });
+}
+
+async function processG13FoulWater() {
+  console.log('Processing G13 Foul Water...');
+  
+  await pdfProcessor.processPDF('attached_assets/G13 Foul Water 2nd Edition Amendment 9.pdf', {
+    title: 'G13 Foul Water - 2nd Edition Amendment 9',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '2nd Edition Amendment 9'
+  });
+}
+
+async function processH1EnergyEfficiency() {
+  console.log('Processing H1 Energy Efficiency...');
+  
+  await pdfProcessor.processPDF('attached_assets/H1_VM 1 Energy Efficiency 5th Edition.pdf', {
+    title: 'H1 Energy Efficiency Verification Method H1/VM1 - 5th Edition',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '5th Edition'
+  });
+}
+
+async function processNZS3604TimberFramed() {
+  console.log('Processing NZS 3604 Timber-framed buildings...');
+  
+  await pdfProcessor.processPDF('attached_assets/NZS 3604-2011 New.pdf', {
+    title: 'NZS 3604:2011 Timber-framed buildings',
+    authority: 'Standards New Zealand',
+    documentType: 'standard',
+    version: '2011'
+  });
+}
+
+async function processNZS4229ConcreteMasonry() {
+  console.log('Processing NZS 4229 Concrete Masonry Buildings...');
+  
+  await pdfProcessor.processPDF('attached_assets/NZS 4229 - 2013 Concrete Masonry Buildings.pdf', {
+    title: 'NZS 4229:2013 Concrete masonry buildings not requiring specific engineering design',
+    authority: 'Standards New Zealand',
+    documentType: 'standard',
+    version: '2013'
+  });
+}
+
+async function processBRANZPlumbingGuide() {
+  console.log('Processing BRANZ Plumbing and Drainage Guide...');
+  
+  await pdfProcessor.processPDF('attached_assets/Plumbing and Drainage Guide BRANZ 2024.pdf', {
+    title: 'BRANZ Plumbing and Drainage Guide - 3rd Edition',
+    authority: 'BRANZ',
+    documentType: 'guide',
+    version: '3rd Edition 2024'
+  });
+}
+
+async function processMetalRoofingCode() {
+  console.log('Processing NZ Metal Roof and Wall Cladding Code...');
+  
+  await pdfProcessor.processPDF('attached_assets/Roofing COP.pdf', {
+    title: 'NZ Metal Roof and Wall Cladding Code of Practice',
+    authority: 'Industry',
+    documentType: 'code_of_practice',
+    version: 'Version 3.0 May 2019'
+  });
+}
