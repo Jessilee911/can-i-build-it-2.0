@@ -135,7 +135,7 @@ export class AucklandCouncilAPI {
             }
           }
         } catch (searchError) {
-          console.log(`Search method failed, trying next method:`, searchError.message);
+          console.log(`Search method failed, trying next method:`, searchError instanceof Error ? searchError.message : String(searchError));
         }
       }
 
@@ -205,6 +205,27 @@ export class AucklandCouncilAPI {
     } catch (error) {
       console.error("General search error:", error);
       return [];
+    }
+  }
+
+  private formatSearchResult(item: any, originalAddress: string, coordinates?: [number, number] | null): PropertySearchResult | null {
+    try {
+      // Extract property information from various possible data structures
+      const properties = item.properties || item.attributes || item;
+      
+      return {
+        address: properties?.FULL_ADDRESS || properties?.ADDRESS || properties?.address || originalAddress,
+        suburb: properties?.SUBURB || properties?.suburb,
+        zoning: properties?.ZONING || properties?.zone || properties?.ZONE,
+        landArea: properties?.LAND_AREA || properties?.land_area || properties?.AREA,
+        capitalValue: properties?.CAPITAL_VALUE || properties?.capital_value || properties?.CV,
+        ratesId: properties?.RATES_ID || properties?.rates_id,
+        coordinates: coordinates || (item.geometry?.coordinates ? 
+          [item.geometry.coordinates[1], item.geometry.coordinates[0]] : undefined)
+      };
+    } catch (error) {
+      console.log("Error formatting search result:", error);
+      return null;
     }
   }
 
