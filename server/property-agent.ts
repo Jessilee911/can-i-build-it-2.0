@@ -13,6 +13,8 @@ export interface PropertyAgentContext {
   zoning?: string;
   coordinates?: [number, number];
   verificationStatus?: string;
+  userName?: string;
+  projectDescription?: string;
 }
 
 export class PropertyAgent {
@@ -90,7 +92,13 @@ export class PropertyAgent {
    * Build comprehensive property context for AI
    */
   private async buildPropertyContext(context: PropertyAgentContext): Promise<string> {
-    let propertyInfo = `Property Address: ${context.propertyAddress}\n\n`;
+    let propertyInfo = `Client Name: ${context.userName || 'Client'}\n`;
+    propertyInfo += `Property Address: ${context.propertyAddress}\n`;
+    if (context.projectDescription) {
+      propertyInfo += `Project Description: ${context.projectDescription}\n\n`;
+    } else {
+      propertyInfo += '\n';
+    }
 
     if (context.verificationStatus === "not_found") {
       propertyInfo += "⚠️ Property Status: Could not locate this property in Auckland Council records.\n";
