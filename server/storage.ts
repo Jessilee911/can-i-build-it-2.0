@@ -33,7 +33,8 @@ import {
   consentRequirements,
   documentSources,
   chatSessions,
-  chatMessages
+  chatMessages,
+  premiumRequests
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and, or, SQL } from "drizzle-orm";

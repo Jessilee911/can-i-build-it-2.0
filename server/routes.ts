@@ -815,6 +815,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== Premium Chat API ====================
+  // Premium assessment request endpoint
+  apiRouter.post("/api/premium-assessment-request", async (req: Request, res: Response) => {
+    try {
+      const { insertPremiumRequestSchema } = await import("@shared/schema");
+      const requestData = insertPremiumRequestSchema.parse(req.body);
+      
+      const premiumRequest = await storage.createPremiumRequest(requestData);
+      
+      console.log("Premium assessment request created:", {
+        id: premiumRequest.id,
+        email: premiumRequest.email,
+        propertyAddress: premiumRequest.propertyAddress
+      });
+
+      res.json({
+        success: true,
+        message: "Premium assessment request submitted successfully",
+        requestId: premiumRequest.id
+      });
+    } catch (error: any) {
+      console.error("Error creating premium assessment request:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to submit premium assessment request"
+      });
+    }
+  });
+
   apiRouter.post("/api/premium-chat", async (req: Request, res: Response) => {
     try {
       const { message, conversationHistory = [], propertyAddress, projectDescription } = req.body;

@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
+import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
 
 interface PropertyAssessmentProps {
   showPricing?: boolean;
@@ -14,6 +15,8 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [currentAddress, setCurrentAddress] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
