@@ -4,7 +4,7 @@ interface KnowledgeBase {
   id: string;
   content: string;
   source: string;
-  category: 'zoning' | 'building_consent' | 'resource_consent' | 'building_code' | 'planning';
+  category: 'zoning' | 'building_consent' | 'resource_consent' | 'building_code' | 'planning' | 'infrastructure';
   region?: string;
   lastUpdated: Date;
 }
@@ -45,6 +45,32 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     content: 'Internal walls and doorways in existing buildings can be altered without consent provided they are not structural or affect fire safety systems.',
     source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
     category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  
+  // Critical Infrastructure Constraints - Watercare
+  {
+    id: 'infra_001',
+    content: 'HIBISCUS COAST DEVELOPMENT MORATORIUM: Watercare has imposed significant growth constraints in the Hibiscus Coast area including Orewa, Silverdale, Whangaparaoa, and surrounding areas. New development connections may be restricted or subject to lengthy delays due to wastewater treatment capacity limitations at the Rosedale plant. Minor dwellings, granny flats, and secondary units may be affected by these constraints. Developers must consult with Watercare early in the planning process.',
+    source: 'Watercare Services Limited - Hibiscus Coast Growth Constraints',
+    category: 'infrastructure',
+    region: 'Auckland - Hibiscus Coast',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'infra_002',
+    content: 'All new residential developments in Hibiscus Coast requiring additional wastewater connections must receive approval from Watercare before building consent can be granted. This includes minor dwellings, granny flats, sleep-outs with bathrooms, and any structure requiring wastewater discharge. Current processing times may exceed standard timeframes.',
+    source: 'Watercare Services Limited - Development Services',
+    category: 'infrastructure',
+    region: 'Auckland - Hibiscus Coast',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'infra_003',
+    content: 'Water supply capacity in Hibiscus Coast may also be constrained during peak summer periods. New connections requiring increased water demand should be discussed with Watercare infrastructure planning team before proceeding with building applications.',
+    source: 'Watercare Services Limited - Water Supply Planning',
+    category: 'infrastructure',
+    region: 'Auckland - Hibiscus Coast',
     lastUpdated: new Date()
   },
   {
@@ -219,6 +245,12 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             
             When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
             
+            CRITICAL INFRASTRUCTURE CONSTRAINTS:
+            - For Hibiscus Coast area (Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay): ALWAYS mention Watercare growth constraints affecting new developments due to wastewater treatment capacity limitations at Rosedale plant
+            - Minor dwellings, granny flats, and secondary units in Hibiscus Coast may face significant delays or restrictions
+            - All new wastewater connections in this area require early consultation with Watercare Services
+            - Reference: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
+            
             When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays. Always recommend consulting qualified professionals and suggest our personalized property reports for comprehensive analysis.
             
             RESPONSE STYLE REQUIREMENTS:
@@ -300,6 +332,20 @@ export function analyzeQuery(query: string): {
   let type: any = 'general';
   let buildingType: any;
   let urgency: any = 'planning';
+  let location: string | undefined;
+  
+  // Determine location - prioritize specific areas with known constraints
+  if (queryLower.includes('hibiscus coast') || queryLower.includes('orewa') || 
+      queryLower.includes('silverdale') || queryLower.includes('whangaparaoa') ||
+      queryLower.includes('red beach') || queryLower.includes('stanmore bay')) {
+    location = 'Auckland - Hibiscus Coast';
+  } else if (queryLower.includes('auckland')) {
+    location = 'Auckland';
+  } else if (queryLower.includes('wellington')) {
+    location = 'Wellington';
+  } else if (queryLower.includes('christchurch')) {
+    location = 'Christchurch';
+  }
   
   // Determine query type
   if (queryLower.includes('build') || queryLower.includes('new') || queryLower.includes('construct')) {
@@ -317,7 +363,8 @@ export function analyzeQuery(query: string): {
   // Determine building type
   if (queryLower.includes('house') || queryLower.includes('home') || queryLower.includes('dwelling')) {
     buildingType = 'house';
-  } else if (queryLower.includes('granny flat') || queryLower.includes('minor dwelling') || queryLower.includes('secondary')) {
+  } else if (queryLower.includes('granny flat') || queryLower.includes('minor dwelling') || 
+             queryLower.includes('secondary') || queryLower.includes('sleep-out')) {
     buildingType = 'minor_dwelling';
   } else if (queryLower.includes('commercial') || queryLower.includes('office') || queryLower.includes('retail')) {
     buildingType = 'commercial';
@@ -332,5 +379,5 @@ export function analyzeQuery(query: string): {
     urgency = 'future';
   }
   
-  return { type, buildingType, urgency };
+  return { type, buildingType, location, urgency };
 }
