@@ -212,7 +212,12 @@ Would you like to create a personalized property report for your specific projec
             {showPricing && (
               <div className="mt-4 bg-white bg-opacity-90 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg">
                 <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Choose Your Plan</h3>
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900">Choose Your Plan</h3>
+                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                      Coming Soon
+                    </span>
+                  </div>
                   <p className="text-gray-600">Get detailed property reports and expert guidance</p>
                 </div>
                 
