@@ -394,7 +394,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
                     Submitting...
                   </>
                 ) : (
-                  "Request Premium Analysis"
+                  "Start Premium Report"
                 )}
               </Button>
             </div>
