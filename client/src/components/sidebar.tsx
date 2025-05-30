@@ -214,9 +214,7 @@ export function Sidebar({ className }: SidebarProps) {
                 <p className="mb-2">
                   <strong>Can I Build It?</strong> was created to simplify New Zealand's complex building and planning regulations.
                 </p>
-                <p className="mb-2">
-                  Built by a team passionate about making property development accessible to everyone, from first-time renovators to experienced developers.
-                </p>
+                <p className="mb-2">Built by a licensed building practitioner who's passionate about making property development accessible to everyone, from first-time renovators to experienced developers.</p>
                 <p className="mb-2">
                   Our AI-powered platform combines official building codes, council requirements, and industry expertise to provide instant, reliable guidance.
                 </p>
