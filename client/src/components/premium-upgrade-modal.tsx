@@ -360,14 +360,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
                 disabled={false}
                 className="flex-1"
               >
-                {premiumRequestMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Start Premium Report"
-                )}
+                Start Premium Report
               </Button>
             </div>
           </form>
