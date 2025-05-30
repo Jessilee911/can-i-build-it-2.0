@@ -108,6 +108,105 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
   id: true,
 });
 
+// Building Code Knowledge Base
+export const buildingCodeSections = pgTable("building_code_sections", {
+  id: serial("id").primaryKey(),
+  code: varchar("code").notNull(), // e.g., "B1", "E2", "G12"
+  title: text("title").notNull(),
+  section: varchar("section"), // e.g., "3.1.2", "4.5"
+  content: text("content").notNull(),
+  category: varchar("category").notNull(), // structural, fire, weathertightness, etc.
+  subcategory: varchar("subcategory"), // specific area within category
+  applicableTo: text("applicable_to").array(), // residential, commercial, industrial
+  requirements: text("requirements").array(), // specific requirements
+  acceptableSolutions: text("acceptable_solutions").array(),
+  verificationMethods: text("verification_methods").array(),
+  sourceDocument: text("source_document").notNull(),
+  documentVersion: varchar("document_version"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertBuildingCodeSchema = createInsertSchema(buildingCodeSections).omit({
+  id: true,
+  lastUpdated: true,
+});
+
+// Regional Planning Rules
+export const planningRules = pgTable("planning_rules", {
+  id: serial("id").primaryKey(),
+  region: varchar("region").notNull(), // Auckland, Wellington, Canterbury, etc.
+  council: varchar("council").notNull(), // Auckland Council, Wellington City Council
+  planName: text("plan_name").notNull(), // Auckland Unitary Plan, Wellington District Plan
+  zone: varchar("zone").notNull(), // Residential - Single House, Mixed Housing Urban
+  ruleNumber: varchar("rule_number"), // e.g., "H4.6.2"
+  ruleTitle: text("rule_title").notNull(),
+  activityStatus: varchar("activity_status").notNull(), // Permitted, Restricted Discretionary, etc.
+  standards: jsonb("standards"), // height limits, setbacks, site coverage, etc.
+  assessmentCriteria: text("assessment_criteria").array(),
+  exemptions: text("exemptions").array(),
+  relatedRules: varchar("related_rules").array(),
+  sourceDocument: text("source_document").notNull(),
+  documentSection: varchar("document_section"),
+  effectiveDate: timestamp("effective_date"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertPlanningRuleSchema = createInsertSchema(planningRules).omit({
+  id: true,
+  lastUpdated: true,
+});
+
+// Consent Requirements Database
+export const consentRequirements = pgTable("consent_requirements", {
+  id: serial("id").primaryKey(),
+  activityType: varchar("activity_type").notNull(), // new_dwelling, addition, renovation, etc.
+  buildingType: varchar("building_type"), // residential, commercial, industrial
+  description: text("description").notNull(),
+  buildingConsentRequired: boolean("building_consent_required").notNull(),
+  resourceConsentRequired: boolean("resource_consent_required").notNull(),
+  exemptionConditions: text("exemption_conditions").array(),
+  applicableZones: varchar("applicable_zones").array(),
+  region: varchar("region"), // if region-specific
+  council: varchar("council"), // if council-specific
+  estimatedCost: varchar("estimated_cost"), // fee range
+  estimatedTimeframe: varchar("estimated_timeframe"), // processing time
+  requiredDocuments: text("required_documents").array(),
+  professionalRequirements: text("professional_requirements").array(),
+  sourceReference: text("source_reference").notNull(),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertConsentRequirementSchema = createInsertSchema(consentRequirements).omit({
+  id: true,
+  lastUpdated: true,
+});
+
+// Document Sources - for tracking PDF documents and their processing
+export const documentSources = pgTable("document_sources", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  title: text("title").notNull(),
+  documentType: varchar("document_type").notNull(), // building_code, planning_rules, guidance
+  authority: varchar("authority").notNull(), // MBIE, Auckland Council, etc.
+  region: varchar("region"), // if region-specific
+  version: varchar("version"),
+  publishDate: timestamp("publish_date"),
+  uploadDate: timestamp("upload_date").defaultNow(),
+  processingStatus: varchar("processing_status").default("pending"), // pending, processing, completed, error
+  extractedSections: integer("extracted_sections").default(0),
+  filePath: text("file_path"),
+  checksum: varchar("checksum"), // for detecting document updates
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertDocumentSourceSchema = createInsertSchema(documentSources).omit({
+  id: true,
+  uploadDate: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -124,3 +223,15 @@ export type InsertProperty = z.infer<typeof insertPropertySchema>;
 
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
+
+export type BuildingCodeSection = typeof buildingCodeSections.$inferSelect;
+export type InsertBuildingCodeSection = z.infer<typeof insertBuildingCodeSchema>;
+
+export type PlanningRule = typeof planningRules.$inferSelect;
+export type InsertPlanningRule = z.infer<typeof insertPlanningRuleSchema>;
+
+export type ConsentRequirement = typeof consentRequirements.$inferSelect;
+export type InsertConsentRequirement = z.infer<typeof insertConsentRequirementSchema>;
+
+export type DocumentSource = typeof documentSources.$inferSelect;
+export type InsertDocumentSource = z.infer<typeof insertDocumentSourceSchema>;
