@@ -179,6 +179,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== Dual Agent System Routes ====================
+
+  // Analyze user query to suggest appropriate agent
+  apiRouter.post("/api/analyze-query", async (req: Request, res: Response) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      const { GeneralAgent } = await import("./general-agent");
+      const analysis = GeneralAgent.analyzeQuery(message);
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing query:", error);
+      res.status(500).json({ message: "Failed to analyze query" });
+    }
+  });
+
+  // Create new agent session (Agent 1 or Agent 2)
+  apiRouter.post("/api/agent/session", customAuth, async (req: any, res: Response) => {
+    try {
+      const userId = req.session?.user?.id || req.user?.claims?.sub;
+      const { agentType, propertyAddress, title } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      if (!agentType || !['agent_1', 'agent_2'].includes(agentType)) {
+        return res.status(400).json({ message: "Valid agent type required (agent_1 or agent_2)" });
+      }
+
+      if (agentType === 'agent_2' && !propertyAddress) {
+        return res.status(400).json({ message: "Property address required for Agent 2" });
+      }
+
+      let propertyData = null;
+      let sessionTitle = title || "New conversation";
+
+      // If Agent 2, initialize property context
+      if (agentType === 'agent_2') {
+        const { PropertyAgent } = await import("./property-agent");
+        const { propertyAgent } = await import("./property-agent");
+        
+        const context = await propertyAgent.initializePropertyContext(propertyAddress);
+        propertyData = context;
+        sessionTitle = title || `Property: ${propertyAddress}`;
+      }
+
+      const session = await storage.createChatSession({
+        userId,
+        agentType,
+        title: sessionTitle,
+        propertyAddress: agentType === 'agent_2' ? propertyAddress : null,
+        propertyData: propertyData ? JSON.stringify(propertyData) : null,
+      });
+
+      res.json(session);
+    } catch (error) {
+      console.error("Error creating agent session:", error);
+      res.status(500).json({ message: "Failed to create agent session" });
+    }
+  });
+
+  // Send message to agent (Agent 1 or Agent 2)
+  apiRouter.post("/api/agent/chat", customAuth, async (req: any, res: Response) => {
+    try {
+      const userId = req.session?.user?.id || req.user?.claims?.sub;
+      const { sessionId, message } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      if (!sessionId || !message) {
+        return res.status(400).json({ message: "Session ID and message are required" });
+      }
+
+      // Get session details
+      const session = await storage.getChatSession(sessionId);
+      if (!session || session.userId !== userId) {
+        return res.status(404).json({ message: "Session not found or access denied" });
+      }
+
+      // Get conversation history
+      const messages = await storage.getChatMessages(sessionId);
+      const conversationHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      let response: string;
+
+      // Route to appropriate agent
+      if (session.agentType === 'agent_2') {
+        // Agent 2: Property-specific
+        const { propertyAgent } = await import("./property-agent");
+        
+        let propertyContext = {
+          propertyAddress: session.propertyAddress || '',
+          verificationStatus: 'unknown'
+        };
+
+        if (session.propertyData) {
+          try {
+            propertyContext = JSON.parse(session.propertyData as string);
+          } catch (e) {
+            console.error("Error parsing property data:", e);
+          }
+        }
+
+        response = await propertyAgent.generatePropertyResponse(
+          message,
+          propertyContext,
+          conversationHistory
+        );
+      } else {
+        // Agent 1: General planning
+        const { generalAgent } = await import("./general-agent");
+        response = await generalAgent.generateGeneralResponse(message, conversationHistory);
+      }
+
+      // Save user message
+      await storage.addChatMessage({
+        sessionId,
+        role: "user",
+        content: message,
+      });
+
+      // Save agent response
+      await storage.addChatMessage({
+        sessionId,
+        role: "assistant",
+        content: response,
+      });
+
+      res.json({ 
+        response,
+        agentType: session.agentType,
+        propertyAddress: session.propertyAddress 
+      });
+    } catch (error) {
+      console.error("Error processing agent chat:", error);
+      res.status(500).json({ message: "Failed to process chat message" });
+    }
+  });
+
+  // Initialize Agent 2 with property validation
+  apiRouter.post("/api/agent/validate-property", async (req: Request, res: Response) => {
+    try {
+      const { propertyAddress } = req.body;
+      
+      if (!propertyAddress) {
+        return res.status(400).json({ message: "Property address is required" });
+      }
+
+      const { PropertyAgent } = await import("./property-agent");
+      const validation = PropertyAgent.validatePropertyAddress(propertyAddress);
+      
+      if (!validation.isValid) {
+        return res.status(400).json({ message: validation.message });
+      }
+
+      const { propertyAgent } = await import("./property-agent");
+      const context = await propertyAgent.initializePropertyContext(propertyAddress);
+      
+      res.json({
+        valid: true,
+        context,
+        message: validation.message
+      });
+    } catch (error) {
+      console.error("Error validating property:", error);
+      res.status(500).json({ message: "Failed to validate property address" });
+    }
+  });
+
   // ==================== Email/Password Authentication Routes ====================
   // User registration
   apiRouter.post("/api/auth/register", async (req: Request, res: Response) => {
