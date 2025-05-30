@@ -45,6 +45,7 @@ interface PremiumUpgradeModalProps {
 export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: PremiumUpgradeModalProps) {
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState<string | null>(null);
 
   const form = useForm<PremiumRequestData>({
     resolver: zodResolver(premiumRequestSchema),
@@ -64,10 +65,18 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     },
     onSuccess: (data) => {
       setIsSubmitted(true);
-      toast({
-        title: "Request Submitted Successfully!",
-        description: "Our premium property expert will contact you within 24 hours with your comprehensive analysis.",
-      });
+      if (data.report) {
+        setGeneratedReport(data.report);
+        toast({
+          title: "Report Generated Successfully!",
+          description: "Your comprehensive property analysis is ready for review.",
+        });
+      } else {
+        toast({
+          title: "Request Submitted Successfully!",
+          description: "Your detailed report will be provided within 24 hours.",
+        });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -84,6 +93,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
 
   const handleClose = () => {
     setIsSubmitted(false);
+    setGeneratedReport(null);
     form.reset();
     onClose();
   };
@@ -91,35 +101,76 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
   if (isSubmitted) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-md">
-          <div className="text-center py-6">
-            <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
-              <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          {generatedReport ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-green-600" />
+                  Comprehensive Property Analysis Report
+                </DialogTitle>
+                <DialogDescription>
+                  Your detailed property analysis using official Auckland Council data
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 my-4">
+                <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 dark:text-gray-200 leading-relaxed">
+                  {generatedReport}
+                </pre>
+              </div>
+              
+              <div className="flex gap-3 pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    const blob = new Blob([generatedReport], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'property-analysis-report.txt';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="flex-1"
+                >
+                  Download Report
+                </Button>
+                <Button onClick={handleClose} className="flex-1">
+                  Close
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-6">
+              <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
+                <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <DialogTitle className="text-xl font-semibold mb-2">
+                Request Submitted Successfully!
+              </DialogTitle>
+              <DialogDescription className="text-base mb-6">
+                Your detailed report will be provided within 24 hours including:
+              </DialogDescription>
+              <div className="text-left space-y-2 mb-6">
+                <div className="flex items-center text-sm">
+                  <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                  Official property reports and zoning analysis
+                </div>
+                <div className="flex items-center text-sm">
+                  <Shield className="h-4 w-4 mr-2 text-green-500" />
+                  Detailed consent requirement assessment
+                </div>
+                <div className="flex items-center text-sm">
+                  <Zap className="h-4 w-4 mr-2 text-yellow-500" />
+                  Project-specific recommendations
+                </div>
+              </div>
+              <Button onClick={handleClose} className="w-full">
+                Close
+              </Button>
             </div>
-            <DialogTitle className="text-xl font-semibold mb-2">
-              Request Submitted Successfully!
-            </DialogTitle>
-            <DialogDescription className="text-base mb-6">
-              Our premium property expert will contact you within 24 hours with your comprehensive analysis including:
-            </DialogDescription>
-            <div className="text-left space-y-2 mb-6">
-              <div className="flex items-center text-sm">
-                <FileText className="h-4 w-4 mr-2 text-blue-500" />
-                Official property reports and zoning analysis
-              </div>
-              <div className="flex items-center text-sm">
-                <Shield className="h-4 w-4 mr-2 text-green-500" />
-                Detailed consent requirement assessment
-              </div>
-              <div className="flex items-center text-sm">
-                <Zap className="h-4 w-4 mr-2 text-yellow-500" />
-                Project-specific recommendations
-              </div>
-            </div>
-            <Button onClick={handleClose} className="w-full">
-              Close
-            </Button>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
     );
