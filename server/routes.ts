@@ -129,6 +129,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete chat session" });
     }
   });
+
+  // ==================== Email/Password Authentication Routes ====================
+  // User registration
+  apiRouter.post("/api/auth/register", async (req: Request, res: Response) => {
+    try {
+      const { firstName, lastName, email, password } = req.body;
+      
+      if (!firstName || !lastName || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      const { registerUser } = await import("./auth");
+      const result = await registerUser({ firstName, lastName, email, password });
+      
+      if (result.success) {
+        res.status(201).json({ message: result.message, user: result.user });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Registration failed. Please try again." });
+    }
+  });
+
+  // User login
+  apiRouter.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      const { loginUser } = await import("./auth");
+      const result = await loginUser({ email, password });
+      
+      if (result.success && result.user) {
+        // Set user session
+        req.session.user = result.user;
+        res.json({ message: result.message, user: result.user });
+      } else {
+        res.status(401).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed. Please try again." });
+    }
+  });
+
+  // Email verification
+  apiRouter.get("/api/auth/verify-email", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== "string") {
+        return res.status(400).json({ message: "Invalid verification token" });
+      }
+
+      const { verifyEmail } = await import("./auth");
+      const result = await verifyEmail(token);
+      
+      if (result.success) {
+        res.json({ message: result.message });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "Email verification failed. Please try again." });
+    }
+  });
+
+  // Password reset request
+  apiRouter.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const { requestPasswordReset } = await import("./auth");
+      const result = await requestPasswordReset(email);
+      
+      res.json({ message: result.message });
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      res.status(500).json({ message: "Password reset request failed. Please try again." });
+    }
+  });
+
+  // Password reset
+  apiRouter.post("/api/auth/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, password } = req.body;
+      
+      if (!token || !password) {
+        return res.status(400).json({ message: "Token and password are required" });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      const { resetPassword } = await import("./auth");
+      const result = await resetPassword(token, password);
+      
+      if (result.success) {
+        res.json({ message: result.message });
+      } else {
+        res.status(400).json({ message: result.message });
+      }
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: "Password reset failed. Please try again." });
+    }
+  });
+
+  // User logout
+  apiRouter.post("/api/auth/logout", async (req: Request, res: Response) => {
+    try {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res.status(500).json({ message: "Logout failed" });
+        }
+        res.json({ message: "Logged out successfully" });
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Logout failed. Please try again." });
+    }
+  });
+
+  // Update user profile
+  apiRouter.put("/api/auth/profile", async (req: any, res: Response) => {
+    try {
+      // Check if user is authenticated (simple session check)
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { firstName, lastName, email } = req.body;
+      const userId = req.session.user.id;
+
+      // Update user in database
+      const updatedUser = await storage.updateUser(userId, {
+        firstName,
+        lastName,
+        email,
+      });
+
+      if (updatedUser) {
+        // Update session
+        req.session.user = {
+          ...req.session.user,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          email: updatedUser.email,
+        };
+        
+        res.json({ 
+          message: "Profile updated successfully", 
+          user: {
+            id: updatedUser.id,
+            firstName: updatedUser.firstName,
+            lastName: updatedUser.lastName,
+            email: updatedUser.email,
+            emailVerified: updatedUser.emailVerified,
+            profileImageUrl: updatedUser.profileImageUrl,
+          }
+        });
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    } catch (error) {
+      console.error("Profile update error:", error);
+      res.status(500).json({ message: "Profile update failed. Please try again." });
+    }
+  });
+
+  // Get current user (for session-based auth)
+  apiRouter.get("/api/auth/me", async (req: any, res: Response) => {
+    try {
+      if (!req.session?.user?.id) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get fresh user data from database
+      const user = await storage.getUser(req.session.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        profileImageUrl: user.profileImageUrl,
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user data" });
+    }
+  });
   
   // ==================== Subscription/Payment Routes ====================
   // Get available pricing plans
