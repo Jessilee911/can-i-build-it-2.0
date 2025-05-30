@@ -64,35 +64,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     },
   });
 
-  const premiumRequestMutation = useMutation({
-    mutationFn: async (data: PremiumRequestData) => {
-      const response = await apiRequest("/api/premium-assessment-request", "POST", data);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setIsSubmitted(true);
-      setRequestId(data.requestId);
-      if (data.report) {
-        setGeneratedReport(data.report);
-        toast({
-          title: "Report Generated Successfully!",
-          description: "Your comprehensive property analysis is ready for review.",
-        });
-      } else {
-        toast({
-          title: "Request Submitted Successfully!",
-          description: "Your detailed report will be provided within 24 hours.",
-        });
-      }
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Submission Failed",
-        description: error.message || "Please try again or contact support",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   const onSubmit = async (data: PremiumRequestData) => {
     // First verify the location
@@ -113,13 +85,25 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
         setLocationData(locationData);
         setShowLocationVerification(true);
       } else {
-        // If location can't be verified, still proceed with the request
-        premiumRequestMutation.mutate(data);
+        // If location can't be verified, still redirect to Property Assistant
+        redirectToPropertyAssistant(data);
       }
     } catch (error) {
-      // If verification fails, still proceed with the request
-      premiumRequestMutation.mutate(data);
+      // If verification fails, still redirect to Property Assistant
+      redirectToPropertyAssistant(data);
     }
+  };
+
+  const redirectToPropertyAssistant = (data: PremiumRequestData) => {
+    // Store form data in session storage for Property Assistant
+    sessionStorage.setItem('propertyAssistantData', JSON.stringify({
+      userName: data.fullName,
+      propertyAddress: data.propertyAddress,
+      projectDescription: data.projectDescription
+    }));
+    
+    // Redirect to Property Assistant
+    window.location.href = '/property-chat';
   };
 
   const handleClose = () => {
@@ -134,9 +118,18 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
   const handleLocationConfirm = (confirmed: boolean) => {
     if (confirmed) {
       setShowLocationVerification(false);
-      // Submit the premium request with verified location
+      // Redirect to Property Assistant (Agent 2) with form data
       const formData = form.getValues();
-      premiumRequestMutation.mutate(formData);
+      
+      // Store form data in session storage for Property Assistant
+      sessionStorage.setItem('propertyAssistantData', JSON.stringify({
+        userName: formData.fullName,
+        propertyAddress: formData.propertyAddress,
+        projectDescription: formData.projectDescription
+      }));
+      
+      // Redirect to Property Assistant
+      window.location.href = '/property-chat';
       setLocationData(null);
     } else {
       setShowLocationVerification(false);
@@ -364,7 +357,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               </Button>
               <Button 
                 type="submit" 
-                disabled={premiumRequestMutation.isPending}
+                disabled={false}
                 className="flex-1"
               >
                 {premiumRequestMutation.isPending ? (

@@ -48,6 +48,23 @@ export function PropertyChatPage() {
   const [userName, setUserName] = useState("");
   const [propertyAddress, setPropertyAddress] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
+
+  // Auto-populate form if arriving from premium upgrade modal
+  useEffect(() => {
+    const savedData = sessionStorage.getItem('propertyAssistantData');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        setUserName(data.userName || "");
+        setPropertyAddress(data.propertyAddress || "");
+        setProjectDescription(data.projectDescription || "");
+        // Clear the saved data
+        sessionStorage.removeItem('propertyAssistantData');
+      } catch (error) {
+        console.error("Error parsing saved Property Assistant data:", error);
+      }
+    }
+  }, []);
   const [propertyContext, setPropertyContext] = useState<PropertyContext | null>(null);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -206,26 +223,15 @@ export function PropertyChatPage() {
       setCurrentSession(sessionData);
       setPropertyContext(sessionData.propertyData ? JSON.parse(sessionData.propertyData) : null);
       
-      // If we received a comprehensive property report, redirect to report view
-      if (sessionData.propertyReport && !sessionData.propertyReport.error) {
-        // Store report in session storage for the report page
-        sessionStorage.setItem('propertyReport', JSON.stringify(sessionData.propertyReport));
-        sessionStorage.setItem('reportMeta', JSON.stringify({
-          userName,
-          propertyAddress,
-          projectDescription,
-          generatedAt: new Date().toISOString()
-        }));
-        
-        // Redirect to report page
-        window.location.href = '/report';
-        return;
-      }
-      
-      // Handle report generation error
-      if (sessionData.propertyReport?.error) {
-        setValidationError(sessionData.propertyReport.message || "Failed to generate property report");
-        return;
+      // Add the AI-generated welcome message if available
+      if (sessionData.initialMessage) {
+        const welcomeMessage: ChatMessage = {
+          id: "welcome",
+          role: "assistant",
+          content: sessionData.initialMessage.content,
+          timestamp: new Date(sessionData.initialMessage.timestamp)
+        };
+        setMessages([welcomeMessage]);
       }
 
     } catch (error: any) {
