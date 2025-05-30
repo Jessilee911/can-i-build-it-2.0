@@ -14,6 +14,10 @@ interface PropertySearchResult {
   suburb?: string;
   ratesId?: string;
   coordinates?: [number, number];
+  overlays?: Array<{
+    type: string;
+    data: any;
+  }>;
 }
 
 export class AucklandCouncilAPI {
