@@ -337,19 +337,9 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Property Address *</FormLabel>
-                  <div className="flex gap-2">
-                    <FormControl>
-                      <Input placeholder="123 Example Street, Auckland" {...field} />
-                    </FormControl>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={handleVerifyLocation}
-                      className="shrink-0"
-                    >
-                      Verify Location
-                    </Button>
-                  </div>
+                  <FormControl>
+                    <Input placeholder="123 Example Street, Auckland" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -383,6 +373,15 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
                 Cancel
               </Button>
               <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleVerifyLocation}
+                className="flex-1"
+                disabled={!form.getValues("propertyAddress")?.trim()}
+              >
+                Verify Location
+              </Button>
+              <Button 
                 type="submit" 
                 disabled={premiumRequestMutation.isPending}
                 className="flex-1"
@@ -393,7 +392,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
                     Submitting...
                   </>
                 ) : (
-                  "Request Premium Analysis"
+                  "Submit Request"
                 )}
               </Button>
             </div>
