@@ -24,7 +24,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Star, Shield, FileText, Zap } from "lucide-react";
+import { Loader2, Star, Shield, FileText, Zap, Eye } from "lucide-react";
+import { useLocation } from "wouter";
 
 const premiumRequestSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -44,8 +45,10 @@ interface PremiumUpgradeModalProps {
 
 export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: PremiumUpgradeModalProps) {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<number | null>(null);
 
   const form = useForm<PremiumRequestData>({
     resolver: zodResolver(premiumRequestSchema),
@@ -65,6 +68,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     },
     onSuccess: (data) => {
       setIsSubmitted(true);
+      setRequestId(data.requestId);
       if (data.report) {
         setGeneratedReport(data.report);
         toast({
@@ -121,6 +125,19 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               </div>
               
               <div className="flex gap-3 pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    if (requestId) {
+                      navigate(`/report/${requestId}`);
+                      handleClose();
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Report
+                </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => {
