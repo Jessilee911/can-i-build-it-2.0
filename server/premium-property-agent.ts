@@ -58,8 +58,8 @@ export class PremiumPropertyAgent {
       throw new Error(`Unable to retrieve official property data for address: ${address}. Please verify the address is correct and try again, or contact Auckland Council directly for property information.`);
     }
 
-    // Generate zoning analysis
-    const zoningAnalysis = this.analyzeZoning(property.zoning || "Unknown");
+    // Generate comprehensive zoning analysis using RAG
+    const zoningAnalysis = await this.analyzeZoningWithRAG(property, projectDescription);
     
     // Analyze development constraints
     const constraints = await this.analyzeDevelopmentConstraints(property);
@@ -99,7 +99,64 @@ export class PremiumPropertyAgent {
     return report;
   }
 
-  private analyzeZoning(zoning: string): PropertyAnalysisReport['zoningAnalysis'] {
+  private async analyzeZoningWithRAG(property: any, projectDescription?: string): Promise<PropertyAnalysisReport['zoningAnalysis']> {
+    // Use RAG to get comprehensive zoning analysis from our building code knowledge base
+    const zoningQuery = `What are the zoning rules, permitted uses, building restrictions, and development potential for a property ${property.zoning ? `zoned as ${property.zoning}` : `located at ${property.address}`} in Auckland? Include specific building consent requirements and planning controls. ${projectDescription ? `The proposed project is: ${projectDescription}` : ''}`;
+    
+    try {
+      // Import the RAG system
+      const { generateRAGResponse } = await import('./rag');
+      const ragResponse = await generateRAGResponse(zoningQuery, { 
+        propertyAddress: property.address,
+        zoning: property.zoning,
+        coordinates: property.coordinates,
+        overlays: property.overlays
+      });
+
+      // Parse the RAG response to extract structured information
+      const structuredAnalysis = await this.parseZoningAnalysis(ragResponse, property.zoning);
+      return structuredAnalysis;
+    } catch (error) {
+      console.log("RAG analysis failed, using fallback zoning analysis");
+      return this.analyzeFallbackZoning(property.zoning || 'Unknown');
+    }
+  }
+
+  private async parseZoningAnalysis(ragResponse: string, zoning?: string): Promise<PropertyAnalysisReport['zoningAnalysis']> {
+    // Use OpenAI to structure the RAG response into the required format
+    try {
+      const openai = await import('openai');
+      const client = new openai.default({ apiKey: process.env.OPENAI_API_KEY });
+
+      const structuredResponse = await client.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: "You are a New Zealand planning expert. Parse the provided zoning analysis and format it as JSON with the following structure: {\"currentZoning\": string, \"permittedUses\": string[], \"buildingRestrictions\": string[], \"developmentPotential\": string}. Be specific and accurate based on Auckland Unitary Plan rules and New Zealand Building Code requirements."
+          },
+          {
+            role: "user",
+            content: `Parse this zoning analysis into structured format:\n\n${ragResponse}\n\nCurrent zoning: ${zoning || 'To be determined through official zoning investigation'}`
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const parsed = JSON.parse(structuredResponse.choices[0].message.content || '{}');
+      return {
+        currentZoning: parsed.currentZoning || zoning || 'Requires official zoning determination',
+        permittedUses: parsed.permittedUses || ['Requires professional planning assessment'],
+        buildingRestrictions: parsed.buildingRestrictions || ['Refer to Auckland Unitary Plan for specific requirements'],
+        developmentPotential: parsed.developmentPotential || 'Professional planning assessment required'
+      };
+    } catch (error) {
+      console.log("Failed to parse zoning analysis with OpenAI:", error);
+      return this.analyzeFallbackZoning(zoning || 'Unknown');
+    }
+  }
+
+  private analyzeFallbackZoning(zoning: string): PropertyAnalysisReport['zoningAnalysis'] {
     // Simplified zoning analysis - in production this would be much more detailed
     const zoningRules: Record<string, any> = {
       'Residential - Single House': {
