@@ -17,6 +17,8 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentAddress, setCurrentAddress] = useState("");
+  const [locationData, setLocationData] = useState<any>(null);
+  const [showLocationConfirm, setShowLocationConfirm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,10 +31,33 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
       // Add user query to conversation history
       setConversations(prev => [...prev, {type: 'query', content: query}]);
       
-      // Extract potential address from query for premium modal
-      const addressMatch = query.match(/\d+\s+[\w\s]+(street|road|avenue|drive|place|crescent|lane|way|terrace)/i);
+      // Extract potential address from query for location confirmation
+      const addressMatch = query.match(/\d+\s+[\w\s]+(street|road|avenue|drive|place|crescent|lane|way|terrace|heights)/i);
       if (addressMatch) {
         setCurrentAddress(addressMatch[0]);
+        
+        // Try to geocode the address for location confirmation
+        try {
+          const locationResponse = await fetch('/api/geocode-location', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address: addressMatch[0] }),
+          });
+          
+          if (locationResponse.ok) {
+            const locationResult = await locationResponse.json();
+            if (locationResult.success) {
+              setLocationData(locationResult.location);
+              setShowLocationConfirm(true);
+              setIsLoading(false);
+              return;
+            }
+          }
+        } catch (error) {
+          console.log('Location lookup failed, proceeding with standard assessment');
+        }
       }
       
       // Call the backend API for property assessment using real NZ data
@@ -92,8 +117,90 @@ Would you like to create a personalized property report for your specific projec
     }
   };
 
+  const handleLocationConfirm = async () => {
+    setShowLocationConfirm(false);
+    setIsLoading(true);
+    
+    // Proceed with assessment using confirmed location data
+    try {
+      const response = await fetch('/api/assess-property', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          query,
+          locationData 
+        }),
+      });
+      
+      const data = await response.json();
+      let responseText = data.message;
+      
+      // Add location-confirmed response
+      setConversations(prev => [...prev, {
+        type: 'response', 
+        content: `Location confirmed: ${locationData.address}\nCoordinates: ${locationData.coordinates.latitude}, ${locationData.coordinates.longitude}\nZoning: Zone ${locationData.zoning?.ZONE || 'Information available'}\n\n${responseText}`,
+        showReportCTA: true
+      }]);
+      
+      setQuery("");
+    } catch (error) {
+      console.error("Error with location-confirmed assessment:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLocationReject = () => {
+    setShowLocationConfirm(false);
+    setLocationData(null);
+    
+    // Proceed with standard assessment without location data
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center relative">
+      {/* Location Confirmation Modal */}
+      {showLocationConfirm && locationData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Confirm Property Location</h3>
+            <div className="space-y-3 mb-6">
+              <p><strong>Address:</strong> {locationData.address}</p>
+              <p><strong>Coordinates:</strong> {locationData.coordinates.latitude}, {locationData.coordinates.longitude}</p>
+              {locationData.zoning && (
+                <p><strong>Auckland Council Zone:</strong> Zone {locationData.zoning.ZONE}</p>
+              )}
+              <a 
+                href={locationData.mapUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline text-sm"
+              >
+                View on Google Maps to verify location
+              </a>
+            </div>
+            <div className="flex space-x-3">
+              <Button 
+                onClick={handleLocationConfirm}
+                className="flex-1"
+              >
+                Confirm Location
+              </Button>
+              <Button 
+                onClick={handleLocationReject}
+                variant="outline"
+                className="flex-1"
+              >
+                Different Address
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* NZ Map Watermark Background */}
       <div 
         className="fixed inset-0 z-0 opacity-30 pointer-events-none"
