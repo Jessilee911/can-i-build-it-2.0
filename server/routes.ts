@@ -864,16 +864,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Querying zoning data: ${zoningUrl}?${zoningParams}`);
       const zoningResponse = await fetch(`${zoningUrl}?${zoningParams}`);
       
+      // Note: Zoning information requires official verification
+      // Raw API data should not be presented as authoritative without proper validation
       let zoningData = null;
       if (zoningResponse.ok) {
         const data = await zoningResponse.json();
-        console.log('Zoning API response:', data);
         if (data.features && data.features.length > 0) {
-          zoningData = data.features[0].attributes;
-          console.log('Zoning data found:', zoningData);
+          // Store raw data for internal processing only
+          // Users should verify zoning through official Auckland Council channels
+          zoningData = {
+            hasZoningData: true,
+            requiresVerification: true,
+            officialSource: "Auckland Council Unitary Plan"
+          };
         }
-      } else {
-        console.log('Zoning query failed:', zoningResponse.status);
       }
 
       res.json({

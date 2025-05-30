@@ -71,9 +71,9 @@ export function LinzGeocodingMap({
               {coordinates && (
                 <p><strong>Coordinates:</strong> {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}</p>
               )}
-              {zoning && zoning.ZONE && (
-                <p><strong>Auckland Council Zone:</strong> Zone {zoning.ZONE}</p>
-              )}
+              <p className="text-amber-700 bg-amber-50 p-2 rounded text-xs">
+                <strong>Important:</strong> For accurate zoning information, please verify directly with Auckland Council using the official map services below.
+              </p>
             </div>
           </div>
         </div>
