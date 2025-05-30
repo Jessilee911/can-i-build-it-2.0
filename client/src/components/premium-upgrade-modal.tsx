@@ -183,9 +183,24 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
                   Project-specific recommendations
                 </div>
               </div>
-              <Button onClick={handleClose} className="w-full">
-                Close
-              </Button>
+              <div className="flex gap-3">
+                {requestId && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      navigate(`/report/${requestId}`);
+                      handleClose();
+                    }}
+                    className="flex-1"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Report Status
+                  </Button>
+                )}
+                <Button onClick={handleClose} className="flex-1">
+                  Close
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
