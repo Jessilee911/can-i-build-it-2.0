@@ -48,7 +48,15 @@ export class PropertyAgent {
         max_tokens: 1000,
       });
 
-      return response.choices[0].message.content || "I apologize, but I couldn't generate a response. Please try again.";
+      const rawResponse = response.choices[0].message.content || "I apologize, but I couldn't generate a response. Please try again.";
+      
+      // Clean up markdown formatting
+      const cleanResponse = rawResponse
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove **bold** formatting
+        .replace(/\*(.*?)\*/g, '$1')     // Remove *italic* formatting
+        .replace(/_{2,}(.*?)_{2,}/g, '$1'); // Remove __underline__ formatting
+      
+      return cleanResponse;
     } catch (error) {
       console.error("Error generating property response:", error);
       return "I'm experiencing technical difficulties. Please try again in a moment.";
@@ -177,6 +185,9 @@ RESPONSE GUIDELINES:
 • Include specific building standards (height, coverage, setbacks) when applicable
 • Suggest appropriate professionals if specialized advice is needed
 • Be conversational but authoritative, using verified data to support recommendations
+• Use clean formatting without markdown asterisks or bold text markers
+• Use numbered lists (1. 2. 3.) and bullet points (•) for organization
+• Keep text readable and professional without special formatting characters
 
 IMPORTANT:
 • Only provide advice based on the verified property data provided
