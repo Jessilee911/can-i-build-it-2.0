@@ -190,7 +190,12 @@ Would you like to create a personalized property report for your specific projec
             <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
-                  <h3 className="text-lg font-semibold text-gray-900">Unlock Special Features</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">Unlock Special Features</h3>
+                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                      Coming Soon
+                    </span>
+                  </div>
                   <p className="text-sm text-gray-600">Get comprehensive property reports customized to your specific build query, your property details, and zoning constraints.</p>
                 </div>
                 <Button 
