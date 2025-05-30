@@ -109,75 +109,7 @@ const PropertyData = () => {
           {/* Main search component */}
           <PropertyAssessment showPricing={showPricing} />
           
-          {showPricing && (
-            <div className="mt-4 pt-4">{/* Reduced spacing to move closer to search bar */}
-              
-              <div className="mb-6">
-                <div className="flex justify-center space-x-2 mb-6">
-                  <Button 
-                    variant={pricingType === "onetime" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => setPricingType("onetime")}
-                    className="opacity-80"
-                  >
-                    One-Time Purchase
-                  </Button>
-                  <Button 
-                    variant={pricingType === "subscription" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => setPricingType("subscription")}
-                    className="opacity-80"
-                  >
-                    Subscription
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {activePlans.map((plan, index) => (
-                    <div 
-                      key={index} 
-                      className={`bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border ${plan.highlight ? 'border-blue-500 shadow-lg' : 'border-gray-200'} flex flex-col h-full`}
-                    >
-                      <div className="mb-4">
-                        <h3 className="font-bold text-lg">{plan.title}</h3>
-                        <div className="text-2xl font-bold my-2">{plan.price}</div>
-                        <p className="text-sm text-gray-600">{plan.description}</p>
-                      </div>
-                      <div className="flex-grow">
-                        <ul className="space-y-2">
-                          {plan.features.map((feature, i) => (
-                            <li key={i} className="flex text-sm">
-                              <span className="text-green-500 mr-2">✓</span>
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="mt-4">
-                        <Button 
-                          variant={plan.highlight ? "default" : "outline"} 
-                          className="w-full"
-                          onClick={() => {
-                            if (plan.price === "Free") {
-                              // For free plan, go directly to questions
-                              window.location.href = `/report-questions?plan=free`;
-                            } else {
-                              // For paid plans, go to checkout
-                              const amount = plan.price.replace('$', '').replace('/mo', '');
-                              const planId = plan.title.toLowerCase().replace(/\s+/g, '-');
-                              window.location.href = `/checkout?plan=${planId}&name=${encodeURIComponent(plan.title)}&amount=${amount}`;
-                            }
-                          }}
-                        >
-                          {plan.price === "Free" ? "Start Free" : `Buy Now`}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
       
