@@ -48,27 +48,27 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     lastUpdated: new Date()
   },
   
-  // Critical Infrastructure Constraints - Watercare
+  // Critical Infrastructure Constraints - Watercare Hibiscus Coast
   {
     id: 'infra_001',
-    content: 'HIBISCUS COAST DEVELOPMENT MORATORIUM: Watercare has imposed significant growth constraints in the Hibiscus Coast area including Orewa, Silverdale, Whangaparaoa, and surrounding areas. New development connections may be restricted or subject to lengthy delays due to wastewater treatment capacity limitations at the Rosedale plant. Minor dwellings, granny flats, and secondary units may be affected by these constraints. Developers must consult with Watercare early in the planning process.',
-    source: 'Watercare Services Limited - Hibiscus Coast Growth Constraints',
+    content: 'HIBISCUS COAST WASTEWATER MORATORIUM - DEFINITIVE POLICY: Anyone with a building consent granted before 15 November 2024 will be able to connect when ready. If you have a resource consent issued before 15 November 2024 but no building consent yet, contact Watercare for case-by-case assessment of remaining Army Bay Treatment Plant capacity. Anyone applying for NEW resource consent to build homes or businesses in Hibiscus Coast will have a condition preventing connection to public wastewater network until Army Bay Wastewater Treatment Plant upgrade is completed (scheduled 2031, but exploring faster alternatives). Use Watercare online tool to check if your project is impacted.',
+    source: 'https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast',
     category: 'infrastructure',
     region: 'Auckland - Hibiscus Coast',
     lastUpdated: new Date()
   },
   {
     id: 'infra_002',
-    content: 'All new residential developments in Hibiscus Coast requiring additional wastewater connections must receive approval from Watercare before building consent can be granted. This includes minor dwellings, granny flats, sleep-outs with bathrooms, and any structure requiring wastewater discharge. Current processing times may exceed standard timeframes.',
-    source: 'Watercare Services Limited - Development Services',
+    content: 'HIBISCUS COAST DEVELOPMENT FREEZE: Covers Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay, and surrounding areas. Minor dwellings, granny flats, and any new wastewater connections are subject to the same restrictions. No new wastewater connections permitted until infrastructure upgrade completed. This directly affects building consent applications as wastewater connection is typically required for habitable buildings.',
+    source: 'https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast',
     category: 'infrastructure',
     region: 'Auckland - Hibiscus Coast',
     lastUpdated: new Date()
   },
   {
     id: 'infra_003',
-    content: 'Water supply capacity in Hibiscus Coast may also be constrained during peak summer periods. New connections requiring increased water demand should be discussed with Watercare infrastructure planning team before proceeding with building applications.',
-    source: 'Watercare Services Limited - Water Supply Planning',
+    content: 'ALTERNATIVE OPTIONS FOR HIBISCUS COAST: Properties may need to consider alternative wastewater solutions such as onsite treatment systems during the moratorium period. Auckland Council may have specific requirements for alternative systems. Contact Auckland Council building consent team and Watercare development services before proceeding with any building plans in this area.',
+    source: 'https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast',
     category: 'infrastructure',
     region: 'Auckland - Hibiscus Coast',
     lastUpdated: new Date()
@@ -199,16 +199,51 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
     );
   });
   
-  // Sort by relevance (simple scoring based on term matches)
-  results = results.sort((a, b) => {
-    const scoreA = searchTerms.reduce((score, term) => 
-      score + (a.content.toLowerCase().split(term).length - 1), 0);
-    const scoreB = searchTerms.reduce((score, term) => 
-      score + (b.content.toLowerCase().split(term).length - 1), 0);
-    return scoreB - scoreA;
-  });
+  // Enhanced scoring system with infrastructure priority
+  const analysis = analyzeQuery(query);
   
-  return results.slice(0, 5); // Return top 5 most relevant
+  results = results.map(item => {
+    const content = item.content.toLowerCase();
+    let score = 0;
+    
+    // CRITICAL: High priority for infrastructure constraints in specific locations
+    if (item.category === 'infrastructure' && analysis.location) {
+      if (item.region === analysis.location) {
+        score += 1000; // Very high priority for location-specific infrastructure
+      }
+    }
+    
+    // High priority for Hibiscus Coast infrastructure regardless of location detection
+    if (item.category === 'infrastructure' && 
+        (query.toLowerCase().includes('hibiscus') || query.toLowerCase().includes('orewa') || 
+         query.toLowerCase().includes('silverdale') || query.toLowerCase().includes('whangaparaoa'))) {
+      score += 1000;
+    }
+    
+    // Score based on term matches
+    searchTerms.forEach(term => {
+      if (content.includes(term)) {
+        score += 10;
+      }
+    });
+    
+    // Boost for exact query matches
+    if (content.includes(query.toLowerCase())) {
+      score += 50;
+    }
+    
+    // Boost for building type matches
+    if (analysis.buildingType === 'minor_dwelling' && 
+        (content.includes('minor dwelling') || content.includes('granny flat') || content.includes('secondary'))) {
+      score += 30;
+    }
+    
+    return { ...item, score };
+  })
+  .filter(item => item.score > 0)
+  .sort((a, b) => b.score - a.score);
+  
+  return results.slice(0, 8); // Return top 8 most relevant
 }
 
 /**
@@ -245,22 +280,30 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             
             When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
             
-            CRITICAL INFRASTRUCTURE CONSTRAINTS:
-            - For Hibiscus Coast area (Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay): ALWAYS mention Watercare growth constraints affecting new developments due to wastewater treatment capacity limitations at Rosedale plant
-            - Minor dwellings, granny flats, and secondary units in Hibiscus Coast may face significant delays or restrictions
-            - All new wastewater connections in this area require early consultation with Watercare Services
-            - Reference: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
+            CRITICAL INFRASTRUCTURE CONSTRAINTS - PROVIDE EXACT DETAILS:
+            - For Hibiscus Coast area (Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay): ALWAYS provide the specific Watercare policy details:
+              * Building consents granted before 15 November 2024 can connect when ready
+              * Resource consents issued before 15 November 2024 without building consent: contact Watercare for case-by-case assessment
+              * NEW resource consent applications will have condition preventing wastewater connection until Army Bay Treatment Plant upgrade (scheduled 2031)
+              * This applies to ALL new buildings including minor dwellings and granny flats
+              * Alternative wastewater solutions may be required during moratorium
+            - ALWAYS include this exact link: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
+            - Direct users to use Watercare's online tool to check if their project is impacted
             
             When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays. Always recommend consulting qualified professionals and suggest our personalized property reports for comprehensive analysis.
             
             RESPONSE STYLE REQUIREMENTS:
-            - Be professional and concise - provide direct, actionable answers
+            - Provide DEFINITIVE, SPECIFIC answers with exact details from official sources
+            - Lead with the most critical information first (especially infrastructure constraints)
+            - Include specific dates, deadlines, and policy details when available
+            - Always provide exact website links for verification
+            - State clear YES/NO answers where possible rather than general advice
+            - Quote specific policy text when relevant
             - Write responses in plain text only without any markdown formatting
             - Do NOT use hashtag symbols (#, ##, ###, ####) for headings
             - Do NOT use asterisk symbols (**, *) for bold or italic text
             - Use simple line breaks and colons for organization
-            - Keep explanations brief and focused on essential information
-            - Avoid unnecessary analysis or background information
+            - Prioritize actionable next steps over general explanations
             
             CITATION REQUIREMENTS:
             - Always include specific source references for building regulations
