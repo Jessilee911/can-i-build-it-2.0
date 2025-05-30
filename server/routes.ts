@@ -244,7 +244,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         propertyData: propertyData ? JSON.stringify(propertyData) : null,
       });
 
-      res.json(session);
+      // For Agent 2, generate an immediate welcome response
+      let initialMessage = null;
+      if (agentType === 'agent_2' && propertyData) {
+        try {
+          const { propertyAgent } = await import("./property-agent");
+          const welcomeMessage = `Hello ${userName || 'there'}! I've successfully located your property at ${propertyAddress} and gathered the relevant zoning and planning information. Based on your project to ${projectDescription || 'develop this property'}, I'm ready to provide you with specific guidance. What questions do you have about your project?`;
+          
+          const response = await propertyAgent.generatePropertyResponse(
+            welcomeMessage,
+            propertyData
+          );
+
+          // Store the initial assistant message
+          await storage.addChatMessage({
+            sessionId: session.id,
+            role: 'assistant',
+            content: response,
+            metadata: { 
+              propertyAddress, 
+              userName, 
+              projectDescription,
+              isWelcomeMessage: true 
+            }
+          });
+
+          initialMessage = {
+            role: 'assistant',
+            content: response,
+            timestamp: new Date()
+          };
+        } catch (error) {
+          console.error("Error generating initial response:", error);
+        }
+      }
+
+      res.json({
+        ...session,
+        initialMessage
+      });
     } catch (error) {
       console.error("Error creating agent session:", error);
       res.status(500).json({ message: "Failed to create agent session" });

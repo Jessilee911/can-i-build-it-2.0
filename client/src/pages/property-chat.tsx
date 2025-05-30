@@ -183,17 +183,39 @@ export function PropertyChatPage() {
       const isValid = await validateProperty(propertyAddress);
       if (!isValid) return;
 
-      // Create session with all user information
-      await createSession(userName, propertyAddress, projectDescription);
+      // Create session with all user information and get initial AI response
+      const session = await fetch("/api/agent/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          agentType: "agent_2",
+          propertyAddress,
+          userName,
+          projectDescription,
+          title: `${userName} - ${propertyAddress}`
+        }),
+      });
 
-      // Add personalized welcome message
-      const welcomeMessage: ChatMessage = {
-        id: "welcome",
-        role: "assistant",
-        content: `Hello ${userName}! I'm Agent 2, your property-specific assistant. I've verified the location for **${propertyAddress}** and retrieved the official property data for your ${projectDescription} project. I can now provide tailored advice about building regulations, zoning rules, and development opportunities specific to this property and your project needs. What would you like to know first?`,
-        timestamp: new Date()
-      };
-      setMessages([welcomeMessage]);
+      if (!session.ok) {
+        throw new Error("Failed to create session");
+      }
+
+      const sessionData = await session.json();
+      setCurrentSession(sessionData);
+      setPropertyContext(sessionData.propertyData ? JSON.parse(sessionData.propertyData) : null);
+      
+      // Add the AI-generated welcome message if available
+      if (sessionData.initialMessage) {
+        const welcomeMessage: ChatMessage = {
+          id: "welcome",
+          role: "assistant",
+          content: sessionData.initialMessage.content,
+          timestamp: new Date(sessionData.initialMessage.timestamp)
+        };
+        setMessages([welcomeMessage]);
+      }
 
     } catch (error: any) {
       setValidationError(error.message || "Failed to start property session");
