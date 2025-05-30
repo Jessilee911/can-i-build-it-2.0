@@ -28,7 +28,25 @@ import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication
+  // Setup session management for email/password authentication
+  const session = (await import("express-session")).default;
+  const MemoryStore = (await import("memorystore")).default(session);
+  
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'development-secret-key-change-in-production',
+    store: new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Setup Replit authentication
   await setupAuth(app);
   
   // Create router for API routes
