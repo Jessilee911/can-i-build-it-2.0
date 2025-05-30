@@ -55,13 +55,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup knowledge base routes
   await setupKnowledgeRoutes(app);
   
+  // Custom authentication middleware that handles both Replit auth and email/password auth
+  const customAuth = async (req: any, res: Response, next: any) => {
+    // Check for session-based authentication (email/password)
+    if (req.session?.user) {
+      req.user = req.session.user;
+      return next();
+    }
+    
+    // Fall back to Replit authentication
+    return isAuthenticated(req, res, next);
+  };
+
   // ==================== Authentication Routes ====================
   // User info route - returns the current authenticated user
-  apiRouter.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
+  apiRouter.get("/api/auth/user", customAuth, async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      // Handle session-based user (email/password auth)
+      if (req.session?.user) {
+        return res.json(req.session.user);
+      }
+      
+      // Handle Replit authenticated user
+      const userId = req.user.claims?.sub;
+      if (userId) {
+        const user = await storage.getUser(userId);
+        return res.json(user);
+      }
+      
+      res.status(401).json({ message: "Not authenticated" });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -70,9 +92,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ==================== Chat History Routes ====================
   // Get user's chat sessions
-  apiRouter.get("/api/chat-sessions", isAuthenticated, async (req: any, res: Response) => {
+  apiRouter.get("/api/chat-sessions", customAuth, async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      // Get user ID from either session-based auth or Replit auth
+      const userId = req.session?.user?.id || req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "User ID not found" });
+      }
+      
       const sessions = await storage.getChatSessions(userId);
       res.json(sessions);
     } catch (error) {
@@ -82,10 +109,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new chat session
-  apiRouter.post("/api/chat-sessions", isAuthenticated, async (req: any, res: Response) => {
+  apiRouter.post("/api/chat-sessions", customAuth, async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session?.user?.id || req.user?.claims?.sub;
       const { title } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User ID not found" });
+      }
       
       const session = await storage.createChatSession({
         userId,
@@ -190,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (result.success && result.user) {
         // Set user session
-        req.session.user = result.user;
+        (req.session as any).user = result.user;
         res.json({ message: result.message, user: result.user });
       } else {
         res.status(401).json({ message: result.message });
