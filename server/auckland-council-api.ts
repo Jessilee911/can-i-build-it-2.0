@@ -33,6 +33,7 @@ export class AucklandCouncilAPI {
     flood_sensitive_areas: "Flood_Sensitive_Areas",
     notable_trees: "Notable_Trees_Overlay",
     heritage_overlay: "Historic_Heritage_Overlay_Extent_of_Place",
+    special_character_areas: "Special_Character_Areas_Overlay_Residential_and_Business",
     aircraft_noise: "Aircraft_Noise_Overlay",
     ridgeline_protection: "Ridgeline_Protection_Overlay",
     coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise"
@@ -269,6 +270,7 @@ export class AucklandCouncilAPI {
         this.queryFeatureService(this.keyDatasets.flood_sensitive_areas, lat, lon),
         this.queryFeatureService(this.keyDatasets.notable_trees, lat, lon),
         this.queryFeatureService(this.keyDatasets.heritage_overlay, lat, lon),
+        this.queryFeatureService(this.keyDatasets.special_character_areas, lat, lon),
         this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon)
       ]);
 
@@ -441,6 +443,37 @@ export class AucklandCouncilAPI {
     
     if (property.coordinates) {
       report += `Coordinates: ${property.coordinates[0].toFixed(6)}, ${property.coordinates[1].toFixed(6)}\n`;
+    }
+    
+    // Add overlay information
+    if (property.overlays && property.overlays.length > 0) {
+      report += `\nProperty Overlays and Constraints:\n`;
+      report += `=====================================\n`;
+      
+      property.overlays.forEach(overlay => {
+        if (overlay.type === 'special_character_areas') {
+          const data = overlay.data[0]?.attributes;
+          if (data) {
+            report += `\nSpecial Character Area:\n`;
+            if (data.NAME) report += `  Name: ${data.NAME}\n`;
+            if (data.TYPE) report += `  Type: ${data.TYPE}\n`;
+            if (data.SCHEDULE) report += `  Schedule: ${data.SCHEDULE}\n`;
+            if (data.DocumentURL) report += `  Documentation: ${data.DocumentURL}\n`;
+          }
+        } else if (overlay.type === 'heritage_overlay') {
+          report += `\nHeritage Overlay: Present\n`;
+        } else if (overlay.type === 'liquefaction_vulnerability') {
+          report += `\nLiquefaction Risk: Present\n`;
+        } else if (overlay.type === 'flood_sensitive_areas') {
+          report += `\nFlood Sensitive Area: Present\n`;
+        } else if (overlay.type === 'notable_trees') {
+          report += `\nNotable Trees: Present\n`;
+        } else if (overlay.type === 'geotechnical_reports') {
+          report += `\nGeotechnical Reports Available: Yes\n`;
+        } else if (overlay.type === 'aircraft_noise') {
+          report += `\nAircraft Noise Overlay: Present\n`;
+        }
+      });
     }
     
     return report;
