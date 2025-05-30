@@ -7,18 +7,17 @@ import tempfile
 import os
 import json
 import sys
+import re
 from typing import List, Dict, Optional
 
 try:
     from langchain_community.document_loaders import PyPDFLoader
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    from langchain_community.vectorstores import FAISS
-    from langchain.chains import RetrievalQA
     from langchain_openai import OpenAI
-except ImportError:
-    print("LangChain dependencies not available, using fallback mode")
-    PyPDFLoader = None
+    import PyPDF2
+    LANGCHAIN_AVAILABLE = True
+except ImportError as e:
+    print(f"LangChain dependencies not available: {e}")
+    LANGCHAIN_AVAILABLE = False
 
 class AucklandCouncilPDFProcessor:
     """
@@ -34,18 +33,18 @@ class AucklandCouncilPDFProcessor:
             return
             
         try:
-            self.embeddings = HuggingFaceEmbeddings(
-                model_name="sentence-transformers/all-MiniLM-L6-v2"
-            )
             self.text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=1000,
                 chunk_overlap=200,
                 length_function=len,
             )
-            self.vector_stores = {}
+            self.pdf_content = {}  # Store extracted content
             
             if openai_api_key:
-                self.llm = OpenAI(temperature=0, openai_api_key=openai_api_key)
+                self.llm = OpenAI(
+                    temperature=0,
+                    api_key=openai_api_key
+                )
             else:
                 self.llm = None
                 

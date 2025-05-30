@@ -15,7 +15,7 @@ export class PDFPlanningProcessor {
    */
   async queryZonePlanningRules(zoneCode: string, query: string): Promise<string | null> {
     try {
-      const pythonScript = path.join(__dirname, 'langchain-pdf-rag.py');
+      const pythonScript = path.join(__dirname, 'simple-pdf-processor.py');
       
       return new Promise((resolve, reject) => {
         const python = spawn('python3', [pythonScript, zoneCode, query], {
