@@ -155,6 +155,36 @@ export class PropertyAgent {
         propertyInfo += `Coordinates: ${context.coordinates[1]}, ${context.coordinates[0]}\n`;
       }
       
+      // Add overlay information
+      if (context.propertyData.overlays && context.propertyData.overlays.length > 0) {
+        propertyInfo += `\nProperty Overlays and Constraints:\n`;
+        context.propertyData.overlays.forEach(overlay => {
+          if (overlay.type === 'special_character_areas') {
+            const data = overlay.data[0]?.attributes;
+            if (data) {
+              propertyInfo += `• Special Character Area: ${data.NAME || 'Present'}\n`;
+              if (data.TYPE) propertyInfo += `  - Type: ${data.TYPE}\n`;
+              if (data.SCHEDULE) propertyInfo += `  - Schedule: ${data.SCHEDULE}\n`;
+              if (data.DocumentURL) propertyInfo += `  - Documentation: ${data.DocumentURL}\n`;
+            }
+          } else if (overlay.type === 'heritage_overlay') {
+            propertyInfo += `• Heritage Overlay: Present\n`;
+          } else if (overlay.type === 'liquefaction_vulnerability') {
+            propertyInfo += `• Liquefaction Risk: Present\n`;
+          } else if (overlay.type === 'flood_sensitive_areas') {
+            propertyInfo += `• Flood Sensitive Area: Present\n`;
+          } else if (overlay.type === 'notable_trees') {
+            propertyInfo += `• Notable Trees: Present\n`;
+          } else if (overlay.type === 'geotechnical_reports') {
+            propertyInfo += `• Geotechnical Reports Available: Yes\n`;
+          } else if (overlay.type === 'aircraft_noise') {
+            propertyInfo += `• Aircraft Noise Overlay: Present\n`;
+          } else {
+            propertyInfo += `• ${overlay.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: Present\n`;
+          }
+        });
+      }
+      
       propertyInfo += "\n";
     }
 
@@ -181,8 +211,11 @@ RESPONSE GUIDELINES:
 • Always reference the specific property address and verified data
 • Provide concrete, actionable advice rather than general information
 • Explain how zoning rules apply specifically to this property
-• Mention relevant building consent and resource consent requirements
+• Address Special Character Areas and heritage considerations when present
+• Mention liquefaction risk and geotechnical requirements if applicable
+• Discuss flood sensitivity and stormwater management needs when relevant
 • Include specific building standards (height, coverage, setbacks) when applicable
+• Mention relevant building consent and resource consent requirements
 • Suggest appropriate professionals if specialized advice is needed
 • Be conversational but authoritative, using verified data to support recommendations
 • Use clean formatting without markdown asterisks or bold text markers
