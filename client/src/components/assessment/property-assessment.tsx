@@ -258,7 +258,7 @@ Would you like to create a personalized property report for your specific projec
                   {/* Expert Plan */}
                   <div className="bg-white p-4 rounded-lg border border-gray-200">
                     <h4 className="font-bold text-lg mb-2">Expert Review</h4>
-                    <div className="text-2xl font-bold mb-2 text-blue-600">$79</div>
+                    <div className="text-2xl font-bold mb-2 text-blue-600">$199</div>
                     <p className="text-sm text-gray-600 mb-4">Human expert verification</p>
                     <ul className="space-y-2 mb-4">
                       <li className="text-sm flex items-start">
