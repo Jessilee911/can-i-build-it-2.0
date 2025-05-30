@@ -77,8 +77,10 @@ export function AuthModal({ open, onOpenChange, defaultTab = "login" }: AuthModa
   });
 
   const registerMutation = useMutation({
-    mutationFn: (data: RegisterFormData) => 
-      apiRequest("/api/auth/register", "POST", data),
+    mutationFn: async (data: RegisterFormData) => {
+      const response = await apiRequest("/api/auth/register", "POST", data);
+      return response.json();
+    },
     onSuccess: (data) => {
       toast({
         title: "Account created successfully!",
@@ -90,15 +92,17 @@ export function AuthModal({ open, onOpenChange, defaultTab = "login" }: AuthModa
     onError: (error: any) => {
       toast({
         title: "Registration failed",
-        description: error.message,
+        description: error.message || "Failed to create account",
         variant: "destructive",
       });
     },
   });
 
   const loginMutation = useMutation({
-    mutationFn: (data: LoginFormData) => 
-      apiRequest("/api/auth/login", "POST", data),
+    mutationFn: async (data: LoginFormData) => {
+      const response = await apiRequest("/api/auth/login", "POST", data);
+      return response.json();
+    },
     onSuccess: (data) => {
       toast({
         title: "Welcome back!",
@@ -114,7 +118,7 @@ export function AuthModal({ open, onOpenChange, defaultTab = "login" }: AuthModa
     onError: (error: any) => {
       toast({
         title: "Login failed",
-        description: error.message,
+        description: error.message || "Invalid credentials",
         variant: "destructive",
       });
     },

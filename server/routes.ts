@@ -374,27 +374,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get current user (for session-based auth)
-  apiRouter.get("/api/auth/me", async (req: any, res: Response) => {
+  // Get current user (for both session-based and Replit auth)
+  apiRouter.get("/api/auth/me", customAuth, async (req: any, res: Response) => {
     try {
-      if (!req.session?.user?.id) {
-        return res.status(401).json({ message: "Not authenticated" });
+      // Handle session-based user (email/password auth)
+      if (req.session?.user) {
+        const user = await storage.getUser(req.session.user.id);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        
+        return res.json({
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          profileImageUrl: user.profileImageUrl,
+        });
       }
-
-      // Get fresh user data from database
-      const user = await storage.getUser(req.session.user.id);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      
+      // Handle Replit authenticated user
+      const userId = req.user?.claims?.sub;
+      if (userId) {
+        const user = await storage.getUser(userId);
+        if (user) {
+          return res.json(user);
+        }
       }
-
-      res.json({
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        profileImageUrl: user.profileImageUrl,
-      });
+      
+      res.status(401).json({ message: "Not authenticated" });
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Failed to get user data" });
