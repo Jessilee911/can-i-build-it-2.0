@@ -18,7 +18,21 @@ interface PropertySearchResult {
 
 export class AucklandCouncilAPI {
   private baseUrl = "https://data-aucklandcouncil.opendata.arcgis.com/api/search/v1";
+  private arcgisBaseUrl = "https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services";
   private collections: Record<string, string> = {};
+  
+  // Key datasets for property analysis
+  private keyDatasets = {
+    unitary_plan_zones: "Unitary_Plan_Base_Zone",
+    geotechnical_reports: "Geotechnical_Report_Extent", 
+    liquefaction_vulnerability: "Liquefaction_Vulnerability_Calibrated_Assessment",
+    flood_sensitive_areas: "Flood_Sensitive_Areas",
+    notable_trees: "Notable_Trees_Overlay",
+    heritage_overlay: "Historic_Heritage_Overlay_Extent_of_Place",
+    aircraft_noise: "Aircraft_Noise_Overlay",
+    ridgeline_protection: "Ridgeline_Protection_Overlay",
+    coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise"
+  };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
     try {
@@ -104,44 +118,116 @@ export class AucklandCouncilAPI {
 
   async searchPropertyByAddress(address: string): Promise<PropertySearchResult[]> {
     try {
-      // First, initialize collections if not done already
-      if (Object.keys(this.collections).length === 0) {
-        await this.initializeCollections();
-      }
-
-      // Geocode the address to get coordinates
+      // First, geocode the address to get coordinates for spatial queries
       const coordinates = await this.geocodeAddress(address);
       
-      const results: PropertySearchResult[] = [];
-      
-      // Try multiple search strategies with the available collections
-      const searchMethods = [
-        () => this.searchCollection('dataset', address, coordinates),
-        () => this.searchCollection('all', address, coordinates),
-        () => this.generalSearch(address)
-      ];
-
-      for (const searchMethod of searchMethods) {
-        try {
-          const searchResults = await searchMethod();
-          
-          if (searchResults && searchResults.length > 0) {
-            // Process and format the results
-            const formattedResults = searchResults.map(item => this.formatSearchResult(item, address, coordinates));
-            results.push(...formattedResults.filter(result => result !== null));
-            
-            if (results.length > 0) {
-              break; // Stop if we found valid results
-            }
-          }
-        } catch (searchError) {
-          console.log(`Search method failed, trying next method:`, searchError instanceof Error ? searchError.message : String(searchError));
-        }
+      if (!coordinates) {
+        console.log("Could not geocode address, cannot perform spatial search");
+        return [];
       }
 
-      return results;
+      const [lat, lon] = coordinates;
+      console.log(`Geocoded ${address} to: ${lat}, ${lon}`);
+      
+      // Query the specific Auckland Council feature services for comprehensive property data
+      const propertyData = await this.queryPropertyDatasets(lat, lon, address);
+      
+      if (propertyData) {
+        return [propertyData];
+      }
+
+      return [];
     } catch (error) {
       console.error("Property search error:", error);
+      return [];
+    }
+  }
+
+  async queryPropertyDatasets(lat: number, lon: number, address: string): Promise<PropertySearchResult | null> {
+    try {
+      console.log(`Querying Auckland Council datasets for property at ${lat}, ${lon}`);
+      
+      // Create base property result
+      const property: PropertySearchResult = {
+        address: address,
+        coordinates: [lat, lon]
+      };
+
+      // Query zoning information
+      const zoningData = await this.queryFeatureService(
+        this.keyDatasets.unitary_plan_zones,
+        lat, lon
+      );
+      
+      if (zoningData && zoningData.length > 0) {
+        const zone = zoningData[0];
+        property.zoning = zone.attributes?.Zone || zone.attributes?.ZONE_NAME || zone.attributes?.ZONING;
+        
+        // Extract suburb information if available
+        property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
+      }
+
+      // Query additional overlays and constraints
+      const overlayResults = await Promise.allSettled([
+        this.queryFeatureService(this.keyDatasets.geotechnical_reports, lat, lon),
+        this.queryFeatureService(this.keyDatasets.liquefaction_vulnerability, lat, lon),
+        this.queryFeatureService(this.keyDatasets.flood_sensitive_areas, lat, lon),
+        this.queryFeatureService(this.keyDatasets.notable_trees, lat, lon),
+        this.queryFeatureService(this.keyDatasets.heritage_overlay, lat, lon),
+        this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon)
+      ]);
+
+      // Process overlay results and add to property data
+      overlayResults.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
+          const datasetName = Object.keys(this.keyDatasets)[index + 1]; // Skip zoning which was already processed
+          console.log(`Found ${datasetName} data for property`);
+          
+          // Store overlay information in property object for report generation
+          if (!property.overlays) {
+            property.overlays = [];
+          }
+          property.overlays.push({
+            type: datasetName,
+            data: result.value[0].attributes
+          });
+        }
+      });
+
+      console.log(`Property data compiled for ${address}:`, property);
+      return property;
+      
+    } catch (error) {
+      console.error("Error querying property datasets:", error);
+      return null;
+    }
+  }
+
+  async queryFeatureService(serviceName: string, lat: number, lon: number): Promise<any[]> {
+    try {
+      const geometry = `${lon},${lat}`;
+      const url = `${this.arcgisBaseUrl}/${serviceName}/FeatureServer/0/query`;
+      
+      const params = new URLSearchParams({
+        f: 'json',
+        geometry: geometry,
+        geometryType: 'esriGeometryPoint',
+        spatialRel: 'esriSpatialRelIntersects',
+        outFields: '*',
+        returnGeometry: 'false'
+      });
+
+      const response = await fetch(`${url}?${params}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.features || [];
+      } else {
+        console.log(`Feature service query failed for ${serviceName}: ${response.status}`);
+        return [];
+      }
+    } catch (error) {
+      console.log(`Error querying ${serviceName}:`, error.message);
       return [];
     }
   }
