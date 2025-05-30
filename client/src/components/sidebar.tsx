@@ -81,22 +81,24 @@ export function Sidebar({ className }: SidebarProps) {
       title: "Home",
       href: "/",
       icon: <HomeIcon className="h-4 w-4" />
+    },
+    {
+      title: "General Planning",
+      href: "/chat",
+      icon: <MessageSquareIcon className="h-4 w-4" />,
+      subtitle: "Agent 1"
+    },
+    {
+      title: "Property Assistant",
+      href: "/property-chat",
+      icon: <BuildingIcon className="h-4 w-4" />,
+      subtitle: "Agent 2"
+    },
+    {
+      title: "Premium Reports",
+      href: "/premium",
+      icon: <StarIcon className="h-4 w-4" />
     }
-    // {
-    //   title: "Generate Report",
-    //   href: "/reports",
-    //   icon: <FileTextIcon className="h-4 w-4" />
-    // },
-    // {
-    //   title: "Premium Assessment",
-    //   href: "/premium-chat",
-    //   icon: <StarIcon className="h-4 w-4" />
-    // },
-    // {
-    //   title: "Chat Assistant",
-    //   href: "/chat",
-    //   icon: <MessageSquareIcon className="h-4 w-4" />
-    // }
   ];
 
   const faqSections = [
@@ -222,11 +224,18 @@ export function Sidebar({ className }: SidebarProps) {
             <Link key={item.href} href={item.href}>
               <Button
                 variant={location === item.href ? "secondary" : "ghost"}
-                className="w-full justify-start"
+                className="w-full justify-start h-auto p-3"
                 onClick={() => setIsOpen(false)}
               >
-                {item.icon}
-                <span className="ml-2">{item.title}</span>
+                <div className="flex items-center w-full">
+                  {item.icon}
+                  <div className="ml-2 text-left">
+                    <div className="font-medium">{item.title}</div>
+                    {item.subtitle && (
+                      <div className="text-xs text-muted-foreground">{item.subtitle}</div>
+                    )}
+                  </div>
+                </div>
               </Button>
             </Link>
           ))}
