@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { aucklandCouncilAPI } from "./auckland-council-api";
 import { searchKnowledgeBase, generateRAGResponse } from "./rag";
 import { getZoneInfo } from "./auckland-zone-lookup";
+import { pdfPlanningProcessor } from "./pdf-planning-processor";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -140,6 +141,29 @@ export class PropertyAgent {
             propertyInfo += `Zone Category: ${zoneInfo.category}\n`;
             propertyInfo += `Key Building Rules:\n${zoneInfo.buildingRules.map(rule => `• ${rule}`).join('\n')}\n`;
           }
+        }
+
+        // Fetch detailed planning rules from Auckland Council documents
+        try {
+          const extractedZoneCode = pdfPlanningProcessor.extractZoneCode(context.zoning);
+          if (extractedZoneCode) {
+            console.log(`Fetching detailed planning rules for zone ${extractedZoneCode}...`);
+            const detailedRules = await pdfPlanningProcessor.getZoneBuildingRules(extractedZoneCode);
+            if (detailedRules) {
+              propertyInfo += `\nAuckland Council Planning Document Rules:\n${detailedRules}\n`;
+            }
+            
+            // Get consent requirements for common building types
+            if (context.projectDescription?.toLowerCase().includes('garage') || 
+                context.projectDescription?.toLowerCase().includes('building')) {
+              const consentInfo = await pdfPlanningProcessor.getZoneConsentRequirements(extractedZoneCode, "garage");
+              if (consentInfo) {
+                propertyInfo += `\nConsent Requirements from Official Documents:\n${consentInfo}\n`;
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching detailed planning rules:", error);
         }
       }
       
