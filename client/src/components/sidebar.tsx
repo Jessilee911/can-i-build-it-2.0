@@ -35,22 +35,22 @@ export function Sidebar({ className }: SidebarProps) {
       title: "Home",
       href: "/",
       icon: <HomeIcon className="h-4 w-4" />
-    },
-    {
-      title: "Generate Report",
-      href: "/reports",
-      icon: <FileTextIcon className="h-4 w-4" />
-    },
+    }
+    // {
+    //   title: "Generate Report",
+    //   href: "/reports",
+    //   icon: <FileTextIcon className="h-4 w-4" />
+    // },
     // {
     //   title: "Premium Assessment",
     //   href: "/premium-chat",
     //   icon: <StarIcon className="h-4 w-4" />
     // },
-    {
-      title: "Chat Assistant",
-      href: "/chat",
-      icon: <MessageSquareIcon className="h-4 w-4" />
-    }
+    // {
+    //   title: "Chat Assistant",
+    //   href: "/chat",
+    //   icon: <MessageSquareIcon className="h-4 w-4" />
+    // }
   ];
 
   const faqSections = [
