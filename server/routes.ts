@@ -992,6 +992,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         report: premiumRequest.reportContent,
         reportData: premiumRequest.reportData,
         propertyAddress: premiumRequest.propertyAddress,
+        propertyData: premiumRequest.propertyData,
         status: premiumRequest.status
       });
     } catch (error: any) {
