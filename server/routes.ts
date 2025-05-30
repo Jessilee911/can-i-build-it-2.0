@@ -1040,6 +1040,55 @@ function performLocalAddressSearch(query: string) {
   return matches;
 }
 
+  // Auckland Council API discovery endpoint
+  apiRouter.get("/api/auckland-council/discover", async (req: Request, res: Response) => {
+    try {
+      const { aucklandCouncilAPI } = await import("./auckland-council-api");
+      const collections = await aucklandCouncilAPI.discoverCollections();
+      res.json({ collections });
+    } catch (error) {
+      console.error("Auckland Council API discovery error:", error);
+      res.status(500).json({ message: "Failed to discover Auckland Council API collections" });
+    }
+  });
+
+  // Enhanced property search using Auckland Council data
+  apiRouter.post("/api/property/search-auckland", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.body;
+      
+      if (!address || address.length < 5) {
+        return res.status(400).json({ message: "Address is required and must be at least 5 characters" });
+      }
+
+      const { aucklandCouncilAPI } = await import("./auckland-council-api");
+      const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
+      
+      if (properties.length > 0) {
+        const formattedReports = properties.map(prop => 
+          aucklandCouncilAPI.formatPropertyReport(prop)
+        );
+        
+        res.json({
+          success: true,
+          address,
+          properties,
+          reports: formattedReports
+        });
+      } else {
+        res.json({
+          success: false,
+          address,
+          message: "No properties found for this address",
+          properties: []
+        });
+      }
+    } catch (error) {
+      console.error("Auckland property search error:", error);
+      res.status(500).json({ message: "Failed to search Auckland Council property data" });
+    }
+  });
+
   // ==================== Stats Routes ====================
   apiRouter.get("/api/stats", async (req: Request, res: Response) => {
     const totalScans = await storage.getTotalScans();
