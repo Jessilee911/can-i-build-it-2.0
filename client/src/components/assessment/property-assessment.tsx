@@ -182,29 +182,10 @@ Would you like to create a personalized property report for your specific projec
           </form>
         </div>
         
-        {/* Show suggestion boxes and unlock features only when no conversations */}
+        {/* Show suggestion boxes only when no conversations */}
         {conversations.length === 0 && (
           <>
             <AnimatedSuggestions />
-            
-            <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
-              <div className="flex flex-col sm:flex-row items-center justify-between">
-                <div className="mb-4 sm:mb-0">
-                  <h3 className="text-lg font-semibold text-gray-900">Unlock Special Features</h3>
-                  <p className="text-sm text-gray-600">Get comprehensive property reports customized to your specific build query, your property details, and zoning constraints.</p>
-                </div>
-                <Button 
-                  onClick={() => window.dispatchEvent(new CustomEvent('togglePricing'))}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-                >
-                  {showPricing ? "Hide Plans" : "Get Your Personalised Report"}
-                  <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
-                    Coming Soon
-                  </span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
           </>
         )}
         
