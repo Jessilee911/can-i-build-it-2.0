@@ -282,3 +282,25 @@ export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+
+// Premium assessment requests table
+export const premiumRequests = pgTable("premium_requests", {
+  id: serial("id").primaryKey(),
+  fullName: varchar("full_name").notNull(),
+  email: varchar("email").notNull(),
+  phone: varchar("phone"),
+  propertyAddress: varchar("property_address").notNull(),
+  projectDescription: text("project_description").notNull(),
+  status: varchar("status", { enum: ["pending", "in_progress", "completed", "cancelled"] }).default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPremiumRequestSchema = createInsertSchema(premiumRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type PremiumRequest = typeof premiumRequests.$inferSelect;
+export type InsertPremiumRequest = z.infer<typeof insertPremiumRequestSchema>;

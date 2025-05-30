@@ -21,6 +21,8 @@ import {
   InsertChatSession,
   ChatMessage,
   InsertChatMessage,
+  PremiumRequest,
+  InsertPremiumRequest,
   dataSources,
   scrapingJobs,
   properties,
@@ -639,6 +641,24 @@ export class DatabaseStorage implements IStorage {
       .where(eq(chatMessages.id, id))
       .returning();
     return result[0];
+  }
+
+  // Premium request operations
+  async createPremiumRequest(requestData: InsertPremiumRequest): Promise<PremiumRequest> {
+    const [request] = await db
+      .insert(premiumRequests)
+      .values(requestData)
+      .returning();
+    return request;
+  }
+
+  async getPremiumRequests(): Promise<PremiumRequest[]> {
+    return await db.select().from(premiumRequests).orderBy(desc(premiumRequests.createdAt));
+  }
+
+  async getPremiumRequestById(id: number): Promise<PremiumRequest | undefined> {
+    const [request] = await db.select().from(premiumRequests).where(eq(premiumRequests.id, id));
+    return request;
   }
 }
 
