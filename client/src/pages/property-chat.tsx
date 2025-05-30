@@ -24,6 +24,8 @@ interface PropertyContext {
   zoning?: string;
   coordinates?: [number, number];
   verificationStatus?: string;
+  userName?: string;
+  projectDescription?: string;
 }
 
 interface ChatMessage {
@@ -43,7 +45,9 @@ interface ChatSession {
 export function PropertyChatPage() {
   const { user, isAuthenticated } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [userName, setUserName] = useState("");
   const [propertyAddress, setPropertyAddress] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
   const [propertyContext, setPropertyContext] = useState<PropertyContext | null>(null);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -88,7 +92,7 @@ export function PropertyChatPage() {
     }
   };
 
-  const createSession = async (address: string) => {
+  const createSession = async (name: string, address: string, project: string) => {
     try {
       const response = await fetch("/api/agent/session", {
         method: "POST",
@@ -96,7 +100,9 @@ export function PropertyChatPage() {
         body: JSON.stringify({
           agentType: "agent_2",
           propertyAddress: address,
-          title: `Property: ${address}`
+          userName: name,
+          projectDescription: project,
+          title: `${name} - ${address}`
         })
       });
 
@@ -156,13 +162,18 @@ export function PropertyChatPage() {
   };
 
   const startPropertySession = async () => {
-    if (!isAuthenticated) {
-      setAuthModalOpen(true);
+    if (!userName.trim()) {
+      setValidationError("Please enter your name");
       return;
     }
 
     if (!propertyAddress.trim()) {
       setValidationError("Please enter a property address");
+      return;
+    }
+
+    if (!projectDescription.trim()) {
+      setValidationError("Please describe your project");
       return;
     }
 
@@ -172,14 +183,14 @@ export function PropertyChatPage() {
       const isValid = await validateProperty(propertyAddress);
       if (!isValid) return;
 
-      // Create session
-      await createSession(propertyAddress);
+      // Create session with all user information
+      await createSession(userName, propertyAddress, projectDescription);
 
-      // Add welcome message
+      // Add personalized welcome message
       const welcomeMessage: ChatMessage = {
         id: "welcome",
         role: "assistant",
-        content: `Hello! I'm Agent 2, your property-specific assistant. I've verified the location for **${propertyAddress}** and retrieved the official property data. I can now provide tailored advice about building regulations, zoning rules, and development opportunities specific to this property. What would you like to know?`,
+        content: `Hello ${userName}! I'm Agent 2, your property-specific assistant. I've verified the location for **${propertyAddress}** and retrieved the official property data for your ${projectDescription} project. I can now provide tailored advice about building regulations, zoning rules, and development opportunities specific to this property and your project needs. What would you like to know first?`,
         timestamp: new Date()
       };
       setMessages([welcomeMessage]);
@@ -195,7 +206,9 @@ export function PropertyChatPage() {
     setCurrentSession(null);
     setMessages([]);
     setPropertyContext(null);
+    setUserName("");
     setPropertyAddress("");
+    setProjectDescription("");
     setValidationError("");
   };
 
@@ -269,33 +282,54 @@ export function PropertyChatPage() {
                 </ul>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Property Address
-                </label>
-                <div className="flex space-x-2">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="e.g., 123 Queen Street, Auckland"
-                      value={propertyAddress}
-                      onChange={(e) => setPropertyAddress(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && startPropertySession()}
-                    />
-                  </div>
-                  <Button 
-                    onClick={startPropertySession}
-                    disabled={isLoading || !propertyAddress.trim()}
-                  >
-                    {isLoading ? (
-                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                    ) : (
-                      <>
-                        <MapPinIcon className="h-4 w-4 mr-2" />
-                        Start Session
-                      </>
-                    )}
-                  </Button>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Your Name
+                  </label>
+                  <Input
+                    placeholder="e.g., John Smith"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                  />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Property Address
+                  </label>
+                  <Input
+                    placeholder="e.g., 123 Queen Street, Auckland"
+                    value={propertyAddress}
+                    onChange={(e) => setPropertyAddress(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Project Description
+                  </label>
+                  <Input
+                    placeholder="e.g., building a new garage, home extension, etc."
+                    value={projectDescription}
+                    onChange={(e) => setProjectDescription(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && startPropertySession()}
+                  />
+                </div>
+
+                <Button 
+                  onClick={startPropertySession}
+                  disabled={isLoading || !userName.trim() || !propertyAddress.trim() || !projectDescription.trim()}
+                  className="w-full"
+                >
+                  {isLoading ? (
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  ) : (
+                    <MapPinIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Start Property Session
+                </Button>
+
                 {validationError && (
                   <Alert className="mt-3" variant="destructive">
                     <AlertCircleIcon className="h-4 w-4" />

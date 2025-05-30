@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Temporarily allow unauthenticated access for testing
       const userId = req.session?.user?.id || req.user?.claims?.sub || "test-user";
-      const { agentType, propertyAddress, title } = req.body;
+      const { agentType, propertyAddress, userName, projectDescription, title } = req.body;
       
       // Skip auth check for testing
       // if (!userId) {
@@ -229,8 +229,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { propertyAgent } = await import("./property-agent");
         
         const context = await propertyAgent.initializePropertyContext(propertyAddress);
+        // Add user information to property context
+        context.userName = userName;
+        context.projectDescription = projectDescription;
         propertyData = context;
-        sessionTitle = title || `Property: ${propertyAddress}`;
+        sessionTitle = title || `${userName} - ${propertyAddress}`;
       }
 
       const session = await storage.createChatSession({
