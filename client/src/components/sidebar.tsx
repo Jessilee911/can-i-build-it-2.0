@@ -16,10 +16,14 @@ import {
   StarIcon,
   ShieldCheckIcon,
   SearchIcon,
-  BuildingIcon
+  BuildingIcon,
+  LogInIcon,
+  LogOutIcon,
+  UserIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logoImage from "@assets/Logo PNG Trans.png";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SidebarProps {
   className?: string;
@@ -29,6 +33,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
   const [faqOpen, setFaqOpen] = useState(false);
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   const navigationItems = [
     {
@@ -242,9 +247,50 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </div>
 
-      {/* Footer */}
+      {/* User Authentication Section */}
       <div className="p-4 border-t">
-        <p className="text-xs text-muted-foreground text-center">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-2">
+            <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+          </div>
+        ) : isAuthenticated && user ? (
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 p-2 bg-muted/50 rounded-lg">
+              <UserIcon className="h-4 w-4 text-muted-foreground" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {user.firstName || user.email}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => window.location.href = '/api/logout'}
+            >
+              <LogOutIcon className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full"
+              onClick={() => window.location.href = '/api/login'}
+            >
+              <LogInIcon className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          </div>
+        )}
+        
+        <p className="text-xs text-muted-foreground text-center mt-3">
           AI-powered building advice for New Zealand
         </p>
       </div>
