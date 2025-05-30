@@ -211,30 +211,7 @@ Would you like to create a personalized property report for your specific projec
                   <p className="text-gray-600">Get detailed property reports and expert guidance</p>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Basic Plan */}
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <h4 className="font-bold text-lg mb-2">Basic Report</h4>
-                    <div className="text-2xl font-bold mb-2 text-blue-600">Free</div>
-                    <p className="text-sm text-gray-600 mb-4">Basic zoning and consent information</p>
-                    <ul className="space-y-2 mb-4">
-                      <li className="text-sm flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
-                        Basic zoning information
-                      </li>
-                      <li className="text-sm flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
-                        Building consent yes/no
-                      </li>
-                      <li className="text-sm flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
-                        General development guidelines
-                      </li>
-                    </ul>
-                    <Button variant="outline" className="w-full">
-                      Start Free
-                    </Button>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
                   {/* Comprehensive Plan */}
                   <div className="bg-white p-4 rounded-lg border-2 border-blue-500 shadow-lg relative">
