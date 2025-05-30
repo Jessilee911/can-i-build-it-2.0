@@ -135,6 +135,20 @@ async function searchAdditionalInfo(address: string, searchQueries: string[]) {
 }
 
 /**
+ * Enhanced Auckland Council property search
+ */
+async function searchAucklandCouncilData(address: string) {
+  try {
+    const { aucklandCouncilAPI } = await import("./auckland-council-api");
+    const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
+    return properties;
+  } catch (error) {
+    console.error("Auckland Council search error:", error);
+    return [];
+  }
+}
+
+/**
  * Main property research function
  */
 export async function researchProperty(address: string): Promise<PropertyResearchData> {
