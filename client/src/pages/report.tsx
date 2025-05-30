@@ -201,53 +201,7 @@ export default function ReportPage() {
           </Card>
         )}
 
-        {report && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Comprehensive Analysis Report</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3 mb-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    const blob = new Blob([report], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `property-analysis-${propertyAddress.replace(/[^a-zA-Z0-9]/g, '-')}.txt`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Report
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: `Property Analysis Report - ${propertyAddress}`,
-                        text: report,
-                      });
-                    } else {
-                      navigator.clipboard.writeText(report);
-                    }
-                  }}
-                >
-                  Share Report
-                </Button>
-              </div>
-              
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 max-h-[70vh] overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 dark:text-gray-200 leading-relaxed">
-                  {report}
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+
 
         {!report && status === 'processing' && (
           <Card>
