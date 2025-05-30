@@ -257,7 +257,38 @@ export class AucklandCouncilAPI {
       
       if (zoningData && zoningData.length > 0) {
         const zone = zoningData[0];
-        property.zoning = zone.attributes?.Zone || zone.attributes?.ZONE_NAME || zone.attributes?.ZONING;
+        const zoneNumber = zone.attributes?.ZONE;
+        const zoneName = zone.attributes?.NAME;
+        
+        // Map Auckland Council zone numbers to our zone codes
+        const zoneMapping: { [key: number]: string } = {
+          19: 'H3',  // Residential - Single House Zone
+          18: 'H4',  // Residential - Mixed Housing Suburban Zone
+          60: 'H5',  // Residential - Mixed Housing Urban Zone
+          8: 'H6',   // Residential - Terrace Housing and Apartment Building Zone
+          23: 'H1',  // Residential - Large Lot Zone
+          20: 'H2',  // Residential - Rural and Coastal Settlement Zone
+          4: 'H18',  // Future Urban Zone
+          35: 'H8',  // Business - City Centre Zone
+          10: 'H9',  // Business - Metropolitan Centre Zone
+          22: 'H10', // Business - Town Centre Zone
+          7: 'H11',  // Business - Local Centre Zone
+          44: 'H12', // Business - Neighbourhood Centre Zone
+          12: 'H13', // Business - Mixed Use Zone
+          49: 'H14', // Business - General Business Zone
+          1: 'H15',  // Business - Business Park Zone
+          5: 'H16',  // Business - Heavy Industry Zone
+          17: 'H17', // Business - Light Industry Zone
+        };
+        
+        if (zoneNumber && zoneMapping[zoneNumber]) {
+          property.zoning = zoneMapping[zoneNumber];
+          console.log(`Mapped zone ${zoneNumber} to ${property.zoning}`);
+        } else if (zoneName) {
+          property.zoning = zoneName;
+        } else if (zoneNumber) {
+          property.zoning = `Zone ${zoneNumber}`;
+        }
         
         // Extract suburb information if available
         property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
