@@ -251,10 +251,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const { propertyAgent } = await import("./property-agent");
           const welcomeMessage = `Hello ${userName || 'there'}! I've successfully located your property at ${propertyAddress} and gathered the relevant zoning and planning information. Based on your project to ${projectDescription || 'develop this property'}, I'm ready to provide you with specific guidance. What questions do you have about your project?`;
           
+          console.log("Generating initial response for property:", propertyAddress);
           const response = await propertyAgent.generatePropertyResponse(
             welcomeMessage,
             propertyData
           );
+          console.log("Generated response:", response);
 
           // Store the initial assistant message
           await storage.addChatMessage({
@@ -274,8 +276,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: response,
             timestamp: new Date()
           };
+          console.log("Initial message created:", initialMessage);
         } catch (error) {
           console.error("Error generating initial response:", error);
+          // Provide a fallback message if AI generation fails
+          initialMessage = {
+            role: 'assistant',
+            content: `Hello ${userName || 'there'}! I've successfully located your property at ${propertyAddress} and gathered the relevant Auckland Council data including liquefaction vulnerability information. I'm ready to help with your ${projectDescription || 'development project'}. What would you like to know about building regulations and planning requirements for this property?`,
+            timestamp: new Date()
+          };
         }
       }
 
