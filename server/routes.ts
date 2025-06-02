@@ -1317,6 +1317,106 @@ function performLocalAddressSearch(query: string) {
     }
   });
 
+  // ==================== Property Analysis Routes ====================
+  
+  // Property analysis endpoint for Agent 2 (Property Research)
+  apiRouter.post("/api/property-analysis", async (req: Request, res: Response) => {
+    try {
+      const { address, projectType, projectDescription, budget, coordinates } = req.body;
+      
+      if (!address || !projectDescription) {
+        return res.status(400).json({ message: "Address and project description are required" });
+      }
+
+      // Import required modules
+      const { aucklandCouncilAPI } = await import("./auckland-council-api");
+      const { premiumPropertyAgent } = await import("./premium-property-agent");
+
+      // Get property data from Auckland Council API
+      const propertyData = await aucklandCouncilAPI.searchPropertyByAddress(address);
+      
+      // Generate comprehensive analysis using the premium property agent
+      const analysisReport = await premiumPropertyAgent.generatePropertyReport(address, projectDescription);
+      
+      // Format the response for the frontend
+      const analysis = `# Property Analysis Report
+
+## Property Overview
+**Address:** ${analysisReport.propertyDetails.address}
+**Project Type:** ${projectType}
+**Budget:** ${budget}
+
+## Executive Summary
+${analysisReport.executiveSummary}
+
+## Location Verification
+- **Verified Address:** ${analysisReport.locationVerification.verifiedAddress}
+- **Official Zoning:** ${analysisReport.locationVerification.officialZoning}
+- **Zoning Description:** ${analysisReport.locationVerification.zoningDescription}
+- **Data Source:** ${analysisReport.locationVerification.dataSource}
+
+## Zoning Analysis
+**Current Zoning:** ${analysisReport.zoningAnalysis.currentZoning}
+
+**Permitted Uses:**
+${analysisReport.zoningAnalysis.permittedUses.map(use => `• ${use}`).join('\n')}
+
+**Building Restrictions:**
+${analysisReport.zoningAnalysis.buildingRestrictions.map(restriction => `• ${restriction}`).join('\n')}
+
+**Development Potential:** ${analysisReport.zoningAnalysis.developmentPotential}
+
+## Development Constraints
+
+**Infrastructure Constraints:**
+${analysisReport.developmentConstraints.infrastructure.map(constraint => `• ${constraint}`).join('\n')}
+
+**Environmental Constraints:**
+${analysisReport.developmentConstraints.environmental.map(constraint => `• ${constraint}`).join('\n')}
+
+**Planning Constraints:**
+${analysisReport.developmentConstraints.planning.map(constraint => `• ${constraint}`).join('\n')}
+
+## Consent Requirements
+**Building Consent:** ${analysisReport.consentRequirements.buildingConsent}
+**Resource Consent:** ${analysisReport.consentRequirements.resourceConsent}
+
+**Other Consents Required:**
+${analysisReport.consentRequirements.otherConsents.map(consent => `• ${consent}`).join('\n')}
+
+## Recommended Next Steps
+${analysisReport.recommendedNextSteps.map(step => `• ${step}`).join('\n')}
+
+## Professional Contacts
+
+**Planners:**
+${analysisReport.professionalContacts.planners.map(planner => `• ${planner}`).join('\n')}
+
+**Engineers:**
+${analysisReport.professionalContacts.engineers.map(engineer => `• ${engineer}`).join('\n')}
+
+**Architects:**
+${analysisReport.professionalContacts.architects.map(architect => `• ${architect}`).join('\n')}
+
+---
+*This analysis was generated on ${new Date(analysisReport.generatedAt).toLocaleDateString()} using official Auckland Council data and New Zealand building regulations.*`;
+
+      res.json({
+        success: true,
+        analysis,
+        propertyData: analysisReport.propertyDetails,
+        zoning: analysisReport.zoningAnalysis
+      });
+
+    } catch (error) {
+      console.error("Property analysis error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to generate property analysis. Please try again or contact support." 
+      });
+    }
+  });
+
   // ==================== Stats Routes ====================
   apiRouter.get("/api/stats", async (req: Request, res: Response) => {
     const totalScans = await storage.getTotalScans();
