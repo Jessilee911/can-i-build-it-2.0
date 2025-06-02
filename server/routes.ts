@@ -1701,8 +1701,8 @@ function performLocalAddressSearch(query: string) {
       // Format response for AR viewer
       const arZoningData = {
         zoneName: propertyData.zoning || 'Unknown Zone',
-        zoneCode: propertyData.zoningCode || 'N/A',
-        overlays: (propertyData.overlays || []).map(overlay => ({
+        zoneCode: extractZoneCode(propertyData.zoning) || 'N/A',
+        overlays: (propertyData.overlays || []).map((overlay: any) => ({
           name: overlay.data.NAME || overlay.data.SCA_NAME || overlay.data.HERITAGE_NAME || overlay.type.replace(/_/g, ' '),
           type: overlay.type,
           restrictions: getOverlayRestrictions(overlay)
@@ -1764,6 +1764,13 @@ function performLocalAddressSearch(query: string) {
     }
     
     return restrictions;
+  }
+
+  // Helper function to extract zone code from zone name
+  function extractZoneCode(zoneName: string): string {
+    if (!zoneName) return 'N/A';
+    const match = zoneName.match(/\(Zone\s*(\d+)\)/);
+    return match ? `Zone ${match[1]}` : 'N/A';
   }
 
   // Helper function to calculate location accuracy

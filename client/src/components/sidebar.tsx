@@ -23,7 +23,8 @@ import {
   InfoIcon,
   TrashIcon,
   PlusIcon,
-  HistoryIcon
+  HistoryIcon,
+  Camera
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -86,6 +87,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: "Agent 2 - Property Research",
       href: "/property-chat",
       icon: <HomeIcon className="h-4 w-4" />
+    },
+    {
+      title: "AR Zoning Overlay Viewer",
+      href: "/ar-zoning",
+      icon: <Camera className="h-4 w-4" />
     }
   ];
 
