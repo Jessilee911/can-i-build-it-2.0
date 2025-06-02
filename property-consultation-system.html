@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Consultation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            min-height: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        .agent-header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .agent-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .agent-subtitle {
+            color: #666;
+            font-size: 1.1em;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .location-display {
+            background: linear-gradient(135deg, #f8f9ff, #e8eaff);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .chat-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e1e5e9;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 85%;
+            animation: slideIn 0.3s ease;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .agent-message {
+            background: white;
+            border: 2px solid #e1e5e9;
+            color: #333;
+        }
+
+        .agent-message.typing {
+            position: relative;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .zone-info {
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .regulation-info {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .consent-required {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .consent-not-required {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .property-summary {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chat-input {
+            flex: 1;
+        }
+
+        .send-button {
+            padding: 15px 20px;
+            white-space: nowrap;
+        }
+
+        .consent-status {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .consent-yes {
+            color: #28a745;
+        }
+
+        .consent-no {
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .agent-title {
+                font-size: 2em;
+            }
+            
+            .chat-input-area {
+                flex-direction: column;
+            }
+            
+            .send-button {
+                align-self: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Agent 1: Location Confirmation -->
+    <div id="agent1" class="container">
+        <div class="agent-header">
+            <h1 class="agent-title">Property Assistant</h1>
+            <p class="agent-subtitle">Step 1: Confirm Your Property Location</p>
+        </div>
+
+        <div class="form-group">
+            <label for="userName">Your Name:</label>
+            <input type="text" id="userName" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="propertyAddress">Property Address:</label>
+            <input type="text" id="propertyAddress" placeholder="Enter your property address" required>
+        </div>
+
+        <div id="locationDisplay" class="location-display hidden">
+            <h3>📍 Confirm This Location:</h3>
+            <p id="confirmedAddress"></p>
+            <p><strong>Coordinates:</strong> <span id="coordinates"></span></p>
+            <p><strong>Zone:</strong> <span id="baseZone"></span></p>
+        </div>
+
+        <button id="searchLocation" class="button" onclick="searchLocation()">
+            Search Location
+        </button>
+
+        <button id="confirmLocation" class="button hidden" onclick="proceedToAgent2()">
+            Confirm Location & Continue
+        </button>
+    </div>
+
+    <!-- Agent 2: Property Consultation -->
+    <div id="agent2" class="container hidden">
+        <div class="agent-header">
+            <h1 class="agent-title">Property Consultation</h1>
+            <p class="agent-subtitle">Personalized Planning & Building Code Guidance</p>
+        </div>
+
+        <div class="property-summary">
+            <h3>👋 Welcome, <span id="welcomeName"></span>!</h3>
+            <p><strong>Property:</strong> <span id="propertyLocation"></span></p>
+            <p><strong>Zone:</strong> <span id="propertyZone"></span></p>
+        </div>
+
+        <div class="form-group">
+            <label for="projectDescription">Describe your planned project:</label>
+            <textarea id="projectDescription" placeholder="Please describe the works you want to undertake at your property. Be as specific as possible (e.g., 'I want to build a 20m² carport', 'I'm planning to add a bedroom extension', etc.)"></textarea>
+        </div>
+
+        <button id="startConsultation" class="button" onclick="startConsultation()">
+            Start Property Consultation
+        </button>
+
+        <div id="chatContainer" class="chat-container hidden">
+            <div id="chatMessages"></div>
+            <div class="chat-input-area">
+                <textarea id="chatInput" class="chat-input" placeholder="Ask me anything about your project requirements..." rows="2"></textarea>
+                <button id="sendMessage" class="button send-button" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables to store user data
+        let userData = {
+            name: '',
+            address: '',
+            coordinates: '',
+            zone: '',
+            projectDescription: ''
+        };
+
+        // Building code database
+        const buildingRegulations = {
+            carport: {
+                maxAreaWithoutConsent: 40,
+                maxHeightWithoutConsent: 6,
+                setbackRequirements: "1m from boundaries",
+                consentRequired: (area, height) => area > 40 || height > 6
+            },
+            extension: {
+                maxAreaWithoutConsent: 25,
+                maxHeightWithoutConsent: 4,
+                setbackRequirements: "1m from side boundaries, 3m from rear",
+                consentRequired: (area, height) => area > 25 || height > 4
+            },
+            deck: {
+                maxAreaWithoutConsent: 30,
+                maxHeightWithoutConsent: 1.5,
+                setbackRequirements: "1m from boundaries",
+                consentRequired: (area, height) => area > 30 || height > 1.5
+            },
+            shed: {
+                maxAreaWithoutConsent: 40,
+                maxHeightWithoutConsent: 4,
+                setbackRequirements: "1m from boundaries",
+                consentRequired: (area, height) => area > 40 || height > 4
+            }
+        };
+
+        // Zone information database
+        const zoneInformation = {
+            'Residential': {
+                description: 'General residential area with standard building rules',
+                buildingCoverage: '35% maximum site coverage',
+                heightLimit: '8m maximum building height',
+                setbacks: 'Standard residential setbacks apply',
+                specialRules: 'Density controls apply for subdivisions'
+            },
+            'Commercial': {
+                description: 'Commercial and business activities permitted',
+                buildingCoverage: '80% maximum site coverage',
+                heightLimit: '12m maximum building height',
+                setbacks: 'Reduced setbacks permitted',
+                specialRules: 'Parking requirements apply'
+            },
+            'Industrial': {
+                description: 'Industrial and manufacturing activities permitted',
+                buildingCoverage: '70% maximum site coverage',
+                heightLimit: '15m maximum building height',
+                setbacks: 'Larger setbacks required for safety',
+                specialRules: 'Environmental controls apply'
+            },
+            'Rural': {
+                description: 'Rural area with agricultural and low-density residential use',
+                buildingCoverage: '10% maximum site coverage',
+                heightLimit: '10m maximum building height',
+                setbacks: 'Large setbacks required',
+                specialRules: 'Subdivision restrictions apply'
+            }
+        };
+
+        // Zone options for random assignment
+        const zones = ['Residential', 'Commercial', 'Industrial', 'Rural'];
+
+        // Text processing functions
+        function extractDimensions(text) {
+            const areaMatches = text.match(/(\d+(?:\.\d+)?)\s*(?:m²|square\s*meters?|sqm)/i);
+            const heightMatches = text.match(/(\d+(?:\.\d+)?)\s*(?:m|meters?)\s*(?:high|height|tall)/i);
+            
+            return {
+                area: areaMatches ? parseFloat(areaMatches[1]) : null,
+                height: heightMatches ? parseFloat(heightMatches[1]) : null
+            };
+        }
+
+        function identifyProjectType(text) {
+            const lowerText = text.toLowerCase();
+            if (lowerText.includes('carport') || lowerText.includes('car port')) return 'carport';
+            if (lowerText.includes('extension') || lowerText.includes('addition')) return 'extension';
+            if (lowerText.includes('deck') || lowerText.includes('patio')) return 'deck';
+            if (lowerText.includes('shed') || lowerText.includes('garage') || lowerText.includes('storage')) return 'shed';
+            return null;
+        }
+
+        function analyzeConsentRequirement(projectType, area, height) {
+            if (!projectType || !buildingRegulations[projectType]) {
+                return { required: null, reason: 'Project type not recognized' };
+            }
+
+            const rules = buildingRegulations[projectType];
+            const areaExceeds = area && area > rules.maxAreaWithoutConsent;
+            const heightExceeds = height && height > rules.maxHeightWithoutConsent;
+
+            if (areaExceeds || heightExceeds) {
+                let reasons = [];
+                if (areaExceeds) reasons.push(`Area (${area}m²) exceeds ${rules.maxAreaWithoutConsent}m² limit`);
+                if (heightExceeds) reasons.push(`Height (${height}m) exceeds ${rules.maxHeightWithoutConsent}m limit`);
+                return { required: true, reason: reasons.join(', ') };
+            }
+
+            return { required: false, reason: 'Within permitted activity limits' };
+        }
+
+        function formatResponse(message) {
+            return message
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/✅/g, '<span class="consent-yes">✅</span>')
+                .replace(/❌/g, '<span class="consent-no">❌</span>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // Mock location search with random Christchurch coordinates
+        function searchLocation() {
+            const name = document.getElementById('userName').value.trim();
+            const address = document.getElementById('propertyAddress').value.trim();
+
+            if (!name || !address) {
+                alert('Please enter both your name and property address.');
+                return;
+            }
+
+            // Disable button and show loading
+            const button = document.getElementById('searchLocation');
+            button.disabled = true;
+            button.textContent = 'Searching...';
+
+            // Mock API call with 1.5 second delay
+            setTimeout(() => {
+                // Generate random coordinates in Christchurch area
+                const lat = (-43.5321 + (Math.random() - 0.5) * 0.2).toFixed(6);
+                const lng = (172.6362 + (Math.random() - 0.5) * 0.2).toFixed(6);
+                const randomZone = zones[Math.floor(Math.random() * zones.length)];
+
+                // Store user data
+                userData.name = name;
+                userData.address = address;
+                userData.coordinates = `${lat}, ${lng}`;
+                userData.zone = randomZone;
+
+                // Display location information
+                document.getElementById('confirmedAddress').textContent = address;
+                document.getElementById('coordinates').textContent = userData.coordinates;
+                document.getElementById('baseZone').textContent = randomZone;
+                document.getElementById('locationDisplay').classList.remove('hidden');
+                document.getElementById('confirmLocation').classList.remove('hidden');
+
+                // Reset button
+                button.disabled = false;
+                button.textContent = 'Search Location';
+            }, 1500);
+        }
+
+        function proceedToAgent2() {
+            // Hide Agent 1, show Agent 2
+            document.getElementById('agent1').classList.add('hidden');
+            document.getElementById('agent2').classList.remove('hidden');
+
+            // Populate Agent 2 with user data
+            document.getElementById('welcomeName').textContent = userData.name;
+            document.getElementById('propertyLocation').textContent = userData.address;
+            document.getElementById('propertyZone').textContent = userData.zone;
+        }
+
+        function startConsultation() {
+            const projectDescription = document.getElementById('projectDescription').value.trim();
+            
+            if (!projectDescription) {
+                alert('Please describe your planned project.');
+                return;
+            }
+
+            userData.projectDescription = projectDescription;
+
+            // Show chat container
+            document.getElementById('chatContainer').classList.remove('hidden');
+
+            // Add initial analysis
+            addMessage('user', projectDescription);
+            
+            // Analyze the project
+            setTimeout(() => {
+                const analysis = analyzeProject(projectDescription);
+                addMessage('agent', analysis);
+            }, 800);
+        }
+
+        function analyzeProject(description) {
+            const projectType = identifyProjectType(description);
+            const dimensions = extractDimensions(description);
+            const zoneInfo = zoneInformation[userData.zone];
+
+            let response = `**Initial Project Analysis**\n\n`;
+            
+            // Zone information
+            response += `**Your Property Zone: ${userData.zone}**\n`;
+            response += `${zoneInfo.description}\n`;
+            response += `• Building Coverage: ${zoneInfo.buildingCoverage}\n`;
+            response += `• Height Limit: ${zoneInfo.heightLimit}\n`;
+            response += `• Setbacks: ${zoneInfo.setbacks}\n\n`;
+
+            if (projectType) {
+                const rules = buildingRegulations[projectType];
+                response += `**Project Type Identified: ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}**\n\n`;
+                
+                if (dimensions.area || dimensions.height) {
+                    const consentAnalysis = analyzeConsentRequirement(projectType, dimensions.area, dimensions.height);
+                    
+                    if (consentAnalysis.required === false) {
+                        response += `✅ **NO BUILDING CONSENT REQUIRED**\n`;
+                        response += `Your ${projectType} appears to be within permitted activity limits.\n\n`;
+                    } else if (consentAnalysis.required === true) {
+                        response += `❌ **BUILDING CONSENT REQUIRED**\n`;
+                        response += `Reason: ${consentAnalysis.reason}\n\n`;
+                    }
+                    
+                    response += `**${projectType.charAt(0).toUpperCase() + projectType.slice(1)} Requirements:**\n`;
+                    response += `• Maximum area without consent: ${rules.maxAreaWithoutConsent}m²\n`;
+                    response += `• Maximum height without consent: ${rules.maxHeightWithoutConsent}m\n`;
+                    response += `• Setback requirements: ${rules.setbackRequirements}\n\n`;
+                } else {
+                    response += `**${projectType.charAt(0).toUpperCase() + projectType.slice(1)} Requirements:**\n`;
+                    response += `• Maximum area without consent: ${rules.maxAreaWithoutConsent}m²\n`;
+                    response += `• Maximum height without consent: ${rules.maxHeightWithoutConsent}m\n`;
+                    response += `• Setback requirements: ${rules.setbackRequirements}\n\n`;
+                    response += `ℹ️ For a more specific assessment, please provide the dimensions of your planned ${projectType}.\n\n`;
+                }
+            } else {
+                response += `**Project Analysis:**\n`;
+                response += `I couldn't identify a specific project type from your description. Could you clarify if you're planning:\n`;
+                response += `• A carport or garage\n`;
+                response += `• A house extension or addition\n`;
+                response += `• A deck or patio\n`;
+                response += `• A shed or storage building\n`;
+                response += `• Something else?\n\n`;
+            }
+
+            response += `**Need More Information?**\n`;
+            response += `Feel free to ask me about:\n`;
+            response += `• Specific consent requirements\n`;
+            response += `• Setback distances from boundaries\n`;
+            response += `• Height restrictions\n`;
+            response += `• Site coverage calculations\n`;
+            response += `• Any other building code questions\n`;
+
+            return response;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            addMessage('user', message);
+            input.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Generate response after delay
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = generateResponse(message);
+                addMessage('agent', response);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function generateResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            // Consent questions
+            if (lowerMessage.includes('consent') && (lowerMessage.includes('need') || lowerMessage.includes('require'))) {
+                const projectType = identifyProjectType(userMessage);
+                const dimensions = extractDimensions(userMessage);
+                
+                if (projectType && (dimensions.area || dimensions.height)) {
+                    const analysis = analyzeConsentRequirement(projectType, dimensions.area, dimensions.height);
+                    let response = '';
+                    
+                    if (analysis.required === false) {
+                        response = `✅ **NO BUILDING CONSENT REQUIRED**\n\n`;
+                        response += `Your ${projectType} with the specified dimensions appears to be within permitted activity limits.\n\n`;
+                    } else if (analysis.required === true) {
+                        response += `❌ **BUILDING CONSENT REQUIRED**\n\n`;
+                        response += `Reason: ${analysis.reason}\n\n`;
+                    }
+                    
+                    const rules = buildingRegulations[projectType];
+                    response += `**Requirements for ${projectType}:**\n`;
+                    response += `• Maximum area without consent: ${rules.maxAreaWithoutConsent}m²\n`;
+                    response += `• Maximum height without consent: ${rules.maxHeightWithoutConsent}m\n`;
+                    response += `• Setback requirements: ${rules.setbackRequirements}\n`;
+                    
+                    return response;
+                }
+            }
+            
+            // Setback questions
+            if (lowerMessage.includes('setback') || lowerMessage.includes('boundary') || lowerMessage.includes('distance')) {
+                const projectType = identifyProjectType(userMessage);
+                const zoneInfo = zoneInformation[userData.zone];
+                
+                let response = `**Setback Requirements**\n\n`;
+                response += `**Zone requirements (${userData.zone}):** ${zoneInfo.setbacks}\n\n`;
+                
+                if (projectType && buildingRegulations[projectType]) {
+                    response += `**Specific ${projectType} requirements:** ${buildingRegulations[projectType].setbackRequirements}\n\n`;
+                }
+                
+                response += `Note: You must comply with both zone and structure-specific setback requirements. The more restrictive requirement applies.`;
+                return response;
+            }
+            
+            // Height questions
+            if (lowerMessage.includes('height') || lowerMessage.includes('tall') || lowerMessage.includes('high')) {
+                const zoneInfo = zoneInformation[userData.zone];
+                let response = `**Height Restrictions**\n\n`;
+                response += `**Zone limit (${userData.zone}):** ${zoneInfo.heightLimit}\n\n`;
+                
+                response += `**Permitted activity heights:**\n`;
+                Object.keys(buildingRegulations).forEach(type => {
+                    response += `• ${type.charAt(0).toUpperCase() + type.slice(1)}: ${buildingRegulations[type].maxHeightWithoutConsent}m\n`;
+                });
+                
+                return response;
+            }
+            
+            // Zone questions
+            if (lowerMessage.includes('zone') || lowerMessage.includes('zoning')) {
+                const zoneInfo = zoneInformation[userData.zone];
+                let response = `**${userData.zone} Zone Information**\n\n`;
+                response += `${zoneInfo.description}\n\n`;
+                response += `**Zone Rules:**\n`;
+                response += `• Building Coverage: ${zoneInfo.buildingCoverage}\n`;
+                response += `• Height Limit: ${zoneInfo.heightLimit}\n`;
+                response += `• Setbacks: ${zoneInfo.setbacks}\n`;
+                response += `• Special Rules: ${zoneInfo.specialRules}\n`;
+                
+                return response;
+            }
+            
+            // Site coverage questions
+            if (lowerMessage.includes('coverage') || lowerMessage.includes('site coverage')) {
+                const zoneInfo = zoneInformation[userData.zone];
+                let response = `**Site Coverage Rules**\n\n`;
+                response += `**Your zone (${userData.zone}):** ${zoneInfo.buildingCoverage}\n\n`;
+                response += `Site coverage includes all buildings and structures on your property. To calculate:\n`;
+                response += `• Measure the total ground area covered by all buildings\n`;
+                response += `• Divide by your total site area\n`;
+                response += `• Convert to percentage\n\n`;
+                response += `You'll need an accurate site plan to determine compliance.`;
+                
+                return response;
+            }
+            
+            // General response
+            let response = `I'd be happy to help with your building question! To provide specific advice, could you tell me more about:\n\n`;
+            response += `• What type of structure you're planning (carport, extension, deck, shed)\n`;
+            response += `• The dimensions (area in m² and height in meters)\n`;
+            response += `• Your specific concern (consent, setbacks, height limits, etc.)\n\n`;
+            response += `For example: "Do I need consent for a 25m² carport that's 3m high?"\n\n`;
+            response += `I can help with consent requirements, setback distances, height restrictions, site coverage, and other building code questions for your ${userData.zone} zone property.`;
+            
+            return response;
+        }
+
+        function addMessage(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}-message`;
+            messageDiv.innerHTML = formatResponse(message);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message agent-message typing';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Enter key support for chat
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
