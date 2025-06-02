@@ -1349,6 +1349,12 @@ function performLocalAddressSearch(query: string) {
         analysisReport.propertyDetails?.overlays
       );
       
+      // Generate comprehensive overlay analysis using authentic Auckland Unitary Plan overlay documents
+      const overlayAnalysis = await generateOverlayAnalysis(
+        analysisReport.propertyDetails?.overlays || [],
+        projectDescription
+      );
+      
       // Generate building code analysis using official Schedule 1 and MBIE documents  
       const buildingCodeAnalysis = await generateBuildingCodeAnalysis(projectDescription, []);
       
@@ -1475,6 +1481,31 @@ function performLocalAddressSearch(query: string) {
       });
     }
   });
+
+  // Generate comprehensive overlay analysis using authentic Auckland Unitary Plan overlay documents
+  async function generateOverlayAnalysis(overlays: Array<{type: string, data: any}>, projectDescription: string): Promise<string> {
+    if (!overlays || overlays.length === 0) {
+      return '';
+    }
+
+    try {
+      const { aucklandOverlayPDFProcessor } = await import('./auckland-overlay-pdf-processor');
+      return await aucklandOverlayPDFProcessor.getOverlayAnalysis(overlays, projectDescription);
+    } catch (error) {
+      console.error('Overlay analysis error:', error);
+      return generateFallbackOverlayAnalysis(overlays, projectDescription);
+    }
+  }
+
+  function generateFallbackOverlayAnalysis(overlays: Array<{type: string, data: any}>, projectDescription: string): string {
+    if (overlays.length === 1) {
+      const overlay = overlays[0];
+      const overlayName = overlay.data.NAME || overlay.data.SCA_NAME || overlay.data.HERITAGE_NAME || 'planning overlay';
+      return `Your property is subject to a ${overlayName} that imposes additional planning requirements beyond the base zoning. These overlay provisions must be considered for any development and may require special consent processes.`;
+    } else {
+      return `Your property is subject to ${overlays.length} planning overlays that impose additional requirements beyond the base zoning. Where multiple overlays apply, the most restrictive requirements will take precedence. Professional planning advice is recommended to determine compliance with all applicable overlay provisions.`;
+    }
+  }
 
   // Helper functions for property analysis
   async function generateAuthenticZoningAnalysis(officialZoning: string, projectDescription: string, overlays?: any[]): Promise<string> {
