@@ -1331,13 +1331,19 @@ function performLocalAddressSearch(query: string) {
       // Import required modules
       const { aucklandCouncilAPI } = await import("./auckland-council-api");
       const { premiumPropertyAgent } = await import("./premium-property-agent");
-      const { searchKnowledgeBase } = await import("./rag");
+      const { searchKnowledgeBase, initializeBuildingCodeKnowledge } = await import("./rag");
+
+      // Initialize building code knowledge base with official documents
+      await initializeBuildingCodeKnowledge();
 
       // Get property data from Auckland Council API
       const propertyData = await aucklandCouncilAPI.searchPropertyByAddress(address);
       
       // Generate comprehensive analysis using the premium property agent
       const analysisReport = await premiumPropertyAgent.generatePropertyReport(address, projectDescription);
+      
+      // Generate building code analysis using scraped official documents
+      const buildingCodeAnalysis = await generateAuthenticBuildingCodeAnalysis(projectDescription, searchKnowledgeBase);
       
       // Generate structured response for the frontend
       const response = {
@@ -1348,11 +1354,110 @@ function performLocalAddressSearch(query: string) {
         budget: budget,
         zoning: analysisReport.locationVerification.officialZoning,
         zoningAnalysis: generateZoningAnalysis(analysisReport.zoningAnalysis, projectDescription, []),
-        buildingCodeAnalysis: generateBuildingCodeAnalysis(projectDescription, []),
+        buildingCodeAnalysis: buildingCodeAnalysis,
         propertyDetails: analysisReport.propertyDetails,
         consentRequirements: analysisReport.consentRequirements,
         coordinates: analysisReport.propertyDetails.coordinates
       };
+
+      // Helper function for building code analysis with access to searchKnowledgeBase
+      async function generateAuthenticBuildingCodeAnalysis(projectDescription: string, searchFn: Function) {
+        const projectLower = projectDescription.toLowerCase();
+        
+        // Search for specific exemptions from Schedule 1 and MBIE guidance
+        const exemptionQuery = `${projectDescription} exempt building work consent`;
+        const exemptDocs = searchFn(exemptionQuery, 'building_code');
+        
+        let analysis = "**Building Code & Building Act Requirements:**\n\n";
+        
+        // Check for potential exemptions first
+        if (exemptDocs.length > 0) {
+          analysis += "**Consent Exemption Analysis:**\n";
+          
+          // Look for Schedule 1 exemptions
+          const schedule1Docs = exemptDocs.filter((doc: any) => doc.category === 'schedule_1');
+          if (schedule1Docs.length > 0) {
+            analysis += "Based on Building Act 2004 Schedule 1:\n";
+            schedule1Docs.forEach((doc: any) => {
+              const relevantContent = extractRelevantExemptions(doc.content, projectDescription);
+              if (relevantContent) {
+                analysis += `${relevantContent}\n`;
+              }
+            });
+          }
+          
+          // Look for MBIE exempt work guidance
+          const mbieExemptDocs = exemptDocs.filter((doc: any) => doc.category === 'exempt_work');
+          if (mbieExemptDocs.length > 0) {
+            analysis += "\nMBIE Exempt Building Work Guidance:\n";
+            mbieExemptDocs.forEach((doc: any) => {
+              const relevantContent = extractRelevantExemptions(doc.content, projectDescription);
+              if (relevantContent) {
+                analysis += `${relevantContent}\n`;
+              }
+            });
+          }
+          
+          analysis += "\n";
+        }
+        
+        // Determine consent requirements based on project type and official guidance
+        if (projectLower.includes('deck') && (projectLower.includes('low') || projectLower.includes('under 1.5'))) {
+          analysis += "**Building Consent:** May be exempt under Schedule 1 if deck is under 1.5m high and meets specific criteria.\n\n";
+        } else if (projectLower.includes('carport') || (projectLower.includes('garage') && projectLower.includes('detached'))) {
+          analysis += "**Building Consent:** Required for most garages/carports. Some exemptions may apply for small structures under 10m².\n\n";
+        } else {
+          analysis += "**Building Consent:** Required for this type of building work.\n\n";
+        }
+        
+        // Add specific compliance requirements based on authentic building code references
+        if (projectLower.includes('extension') || projectLower.includes('addition')) {
+          analysis += `**Key Building Code Compliance Areas:**
+• **B1 Structure** - Structural adequacy for existing and new elements
+• **E2 External Moisture** - Weathertightness at junctions and interfaces  
+• **H1 Energy Efficiency** - Thermal performance of new building envelope
+• **C/AS1 Fire Safety** - Escape routes and fire separation requirements
+• **F4 Safety from Falling** - Barrier and balustrade requirements
+
+`;
+        } else if (projectLower.includes('new') && (projectLower.includes('house') || projectLower.includes('dwelling'))) {
+          analysis += `**Key Building Code Compliance Areas:**
+• **B1 Structure** - Full structural design including foundations, framing, seismic
+• **B2 Durability** - 50-year minimum building element durability
+• **E2 External Moisture** - Complete building envelope weathertightness system
+• **H1 Energy Efficiency** - Building thermal envelope and heating requirements
+• **G4 Ventilation** - Mechanical and natural ventilation systems
+
+`;
+        }
+
+        analysis += `**Professional Requirements:**
+• Licensed Building Practitioner (LBP) required for restricted building work
+• Building consent application must include plans, specifications, and producer statements
+• Site inspections required at key construction stages
+
+**Processing Timeframes:**
+• Standard building consent: 15-20 working days
+• Complex projects may require additional time for engineering review`;
+
+        return analysis;
+      }
+
+      function extractRelevantExemptions(content: string, projectDescription: string): string {
+        const projectTerms = projectDescription.toLowerCase().split(' ');
+        const paragraphs = content.split(/\n\s*\n/);
+        
+        // Find paragraphs that contain project-related terms
+        const relevantParagraphs = paragraphs.filter(paragraph => {
+          const lowerParagraph = paragraph.toLowerCase();
+          return projectTerms.some(term => 
+            term.length > 3 && lowerParagraph.includes(term)
+          );
+        });
+        
+        // Return first relevant paragraph with proper formatting
+        return relevantParagraphs.slice(0, 1).join('\n').trim();
+      }
 
       res.json(response);
     } catch (error: any) {
@@ -1403,54 +1508,102 @@ function performLocalAddressSearch(query: string) {
     return analysis;
   }
 
-  function generateBuildingCodeAnalysis(projectDescription: string, buildingCodeInfo: any[]) {
-    let analysis = "**Building Code & Building Act Requirements:**\n\n";
-    
+  async function generateBuildingCodeAnalysis(projectDescription: string, buildingCodeInfo: any[]) {
     const projectLower = projectDescription.toLowerCase();
     
-    // General building consent requirements
-    analysis += "**Building Consent Required:** Yes, building consent is required for your project.\n\n";
+    // Search for specific exemptions from Schedule 1 and MBIE guidance
+    const exemptionQuery = `${projectDescription} exempt building work consent`;
+    const exemptDocs = searchKnowledgeBase(exemptionQuery, 'building_code');
     
-    // Specific requirements based on project type
+    let analysis = "**Building Code & Building Act Requirements:**\n\n";
+    
+    // Check for potential exemptions first
+    if (exemptDocs.length > 0) {
+      analysis += "**Consent Exemption Analysis:**\n";
+      
+      // Look for Schedule 1 exemptions
+      const schedule1Docs = exemptDocs.filter(doc => doc.category === 'schedule_1');
+      if (schedule1Docs.length > 0) {
+        analysis += "Based on Building Act 2004 Schedule 1:\n";
+        schedule1Docs.forEach(doc => {
+          const relevantContent = extractRelevantExemptions(doc.content, projectDescription);
+          if (relevantContent) {
+            analysis += `${relevantContent}\n`;
+          }
+        });
+      }
+      
+      // Look for MBIE exempt work guidance
+      const mbieExemptDocs = exemptDocs.filter(doc => doc.category === 'exempt_work');
+      if (mbieExemptDocs.length > 0) {
+        analysis += "\nMBIE Exempt Building Work Guidance:\n";
+        mbieExemptDocs.forEach(doc => {
+          const relevantContent = extractRelevantExemptions(doc.content, projectDescription);
+          if (relevantContent) {
+            analysis += `${relevantContent}\n`;
+          }
+        });
+      }
+      
+      analysis += "\n";
+    }
+    
+    // Determine consent requirements based on project type and official guidance
+    if (projectLower.includes('deck') && (projectLower.includes('low') || projectLower.includes('under 1.5'))) {
+      analysis += "**Building Consent:** May be exempt under Schedule 1 if deck is under 1.5m high and meets specific criteria.\n\n";
+    } else if (projectLower.includes('carport') || (projectLower.includes('garage') && projectLower.includes('detached'))) {
+      analysis += "**Building Consent:** Required for most garages/carports. Some exemptions may apply for small structures under 10m².\n\n";
+    } else {
+      analysis += "**Building Consent:** Required for this type of building work.\n\n";
+    }
+    
+    // Add specific compliance requirements based on authentic building code references
     if (projectLower.includes('extension') || projectLower.includes('addition')) {
-      analysis += `**Key compliance areas for extensions:**
-• **Structural integrity** - Engineering assessment may be required to ensure existing structure can support addition
-• **Fire safety** - Escape routes and smoke alarm requirements under Building Code C/AS
-• **Weathertightness** - Compliance with E2 External Moisture requirements, especially at junctions
-• **Thermal performance** - Insulation and glazing to meet H1 Energy Efficiency standards
-• **Foundation design** - Appropriate foundation system for soil conditions (B1 Structure)
+      analysis += `**Key Building Code Compliance Areas:**
+• **B1 Structure** - Structural adequacy for existing and new elements
+• **E2 External Moisture** - Weathertightness at junctions and interfaces
+• **H1 Energy Efficiency** - Thermal performance of new building envelope
+• **C/AS1 Fire Safety** - Escape routes and fire separation requirements
+• **F4 Safety from Falling** - Barrier and balustrade requirements
 
 `;
     } else if (projectLower.includes('new') && (projectLower.includes('house') || projectLower.includes('dwelling'))) {
-      analysis += `**Key compliance areas for new dwellings:**
-• **Structural design** - Full compliance with B1 Structure including seismic and wind load requirements
-• **Foundation system** - Engineered foundations suitable for site conditions
-• **Fire safety design** - Smoke alarms, escape routes, and fire separations per C/AS requirements
-• **Weathertightness system** - Complete building envelope design under E2 External Moisture
-• **Energy efficiency** - Building thermal envelope to H1 standards
-• **Accessibility** - D1 Access Routes compliance where required
-
-`;
-    } else if (projectLower.includes('garage') || projectLower.includes('shed')) {
-      analysis += `**Key compliance areas for garage/outbuilding:**
-• **Structural adequacy** - Appropriate framing and foundation system
-• **Fire separation** - Distance requirements from main dwelling and boundaries
-• **Weathertightness** - Basic moisture protection requirements
-• **Site coverage** - May be included in overall site coverage calculations
+      analysis += `**Key Building Code Compliance Areas:**
+• **B1 Structure** - Full structural design including foundations, framing, seismic
+• **B2 Durability** - 50-year minimum building element durability
+• **E2 External Moisture** - Complete building envelope weathertightness system
+• **H1 Energy Efficiency** - Building thermal envelope and heating requirements
+• **G4 Ventilation** - Mechanical and natural ventilation systems
 
 `;
     }
 
     analysis += `**Professional Requirements:**
-• **Licensed Building Practitioner** required for restricted building work
-• **Structural engineer** may be required for complex structural elements
-• **Building consent application** must include detailed plans and specifications
+• Licensed Building Practitioner (LBP) required for restricted building work
+• Building consent application must include plans, specifications, and producer statements
+• Site inspections required at key construction stages
 
-**Estimated Timeframes:**
-• Building consent processing: 15-20 working days for straightforward projects
-• Project completion timeframes vary based on complexity and contractor availability`;
+**Processing Timeframes:**
+• Standard building consent: 15-20 working days
+• Complex projects may require additional time for engineering review`;
 
     return analysis;
+  }
+
+  function extractRelevantExemptions(content: string, projectDescription: string): string {
+    const projectTerms = projectDescription.toLowerCase().split(' ');
+    const paragraphs = content.split(/\n\s*\n/);
+    
+    // Find paragraphs that contain project-related terms
+    const relevantParagraphs = paragraphs.filter(paragraph => {
+      const lowerParagraph = paragraph.toLowerCase();
+      return projectTerms.some(term => 
+        term.length > 3 && lowerParagraph.includes(term)
+      );
+    });
+    
+    // Return first relevant paragraph with proper formatting
+    return relevantParagraphs.slice(0, 1).join('\n').trim();
   }
 
   // ==================== Stats Routes ====================
