@@ -311,19 +311,19 @@ Would you like a detailed building feasibility report for your project?`;
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <Building className="h-5 w-5 text-green-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Enhanced Building Analysis</h3>
+                    <MapPin className="h-5 w-5 text-green-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Property Research Analysis</h3>
                     <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
                       Available Now
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">Get comprehensive building feasibility reports with detailed consent requirements, construction analysis, and professional contractor recommendations.</p>
+                  <p className="text-sm text-gray-600">Get comprehensive property research reports with detailed zoning analysis, market data, development potential, and investment insights.</p>
                 </div>
                 <Button 
                   onClick={() => setShowPremiumModal(true)}
                   className="bg-green-600 hover:bg-green-700 text-white px-6 py-2"
                 >
-                  Get Building Analysis
+                  Get Property Analysis
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
