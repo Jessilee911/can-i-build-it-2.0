@@ -21,6 +21,10 @@ export interface PropertyAnalysisReport {
     capitalValue?: number;
     ratesId?: string;
     coordinates?: [number, number];
+    overlays?: Array<{
+      type: string;
+      data: any;
+    }>;
   };
   zoningAnalysis: {
     currentZoning: string;
@@ -130,6 +134,7 @@ export class PremiumPropertyAgent {
         capitalValue: property.capitalValue || undefined,
         ratesId: property.ratesId || undefined,
         coordinates: property.coordinates || undefined,
+        overlays: property.overlays || undefined,
       },
       zoningAnalysis,
       developmentConstraints: constraints,

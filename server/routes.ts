@@ -1477,13 +1477,16 @@ function performLocalAddressSearch(query: string) {
   });
 
   // Helper functions for property analysis
-  async function generateAuthenticZoningAnalysis(officialZoning: string, projectDescription: string): Promise<string> {
+  async function generateAuthenticZoningAnalysis(officialZoning: string, projectDescription: string, overlays?: any[]): Promise<string> {
     try {
       const { getZoneInfo } = await import('./auckland-zone-pdf-mapping');
       const zoneInfo = getZoneInfo(officialZoning);
       
+      // Check for Special Character Areas overlay
+      const specialCharacterArea = overlays?.find(overlay => overlay.type === 'special_character_areas');
+      
       if (zoneInfo) {
-        return generateAuthenticZoneAnalysis(officialZoning, projectDescription, zoneInfo);
+        return generateAuthenticZoneAnalysis(officialZoning, projectDescription, zoneInfo, specialCharacterArea);
       } else {
         return generateFallbackZoningAnalysis(officialZoning, projectDescription);
       }
@@ -1493,11 +1496,19 @@ function performLocalAddressSearch(query: string) {
     }
   }
 
-  function generateAuthenticZoneAnalysis(officialZoning: string, projectDescription: string, zoneInfo: any): string {
+  function generateAuthenticZoneAnalysis(officialZoning: string, projectDescription: string, zoneInfo: any, specialCharacterArea?: any): string {
     const cleanZoneName = officialZoning.replace(/\s*\(Zone\s*\d+\)$/i, '').trim();
     const projectLower = projectDescription.toLowerCase();
 
-    let analysis = `According to the Auckland Unitary Plan ${zoneInfo.zone_code} ${cleanZoneName} document, `;
+    let analysis = '';
+    
+    // Handle Special Character Areas overlay if present
+    if (specialCharacterArea?.data?.NAME) {
+      const specialAreaName = specialCharacterArea.data.NAME;
+      analysis = `Your property has a ${cleanZoneName} base zoning with an additional ${specialAreaName} overlay. The base zone allows `;
+    } else {
+      analysis = `According to the Auckland Unitary Plan ${zoneInfo.zone_code} ${cleanZoneName} document, `;
+    }
 
     // Rural zones (H19)
     if (zoneInfo.zone_code === 'H19') {
