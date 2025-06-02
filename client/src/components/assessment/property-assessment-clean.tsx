@@ -42,58 +42,44 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
       // Add the user query to conversations
       setConversations(prev => [...prev, { type: 'query', content: query }]);
       
-      try {
-        // Call the backend API for property assessment using real NZ data
-        const response = await fetch('/api/assess-property', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ query, agentType: 'can-i-build-it' }),
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Use the RAG-enhanced response that includes actual NZ building knowledge
-          let responseText = data.message;
-          
-          // Check if this is a property-specific question that would benefit from a personalized report
-          const isPropertySpecific = query.toLowerCase().includes('address') || 
-                                    query.toLowerCase().includes('property') ||
-                                    query.toLowerCase().includes('my house') ||
-                                    query.toLowerCase().includes('specific') ||
-                                    query.toLowerCase().includes('exact') ||
-                                    /\d+\s+\w+\s+(street|road|avenue|drive|place)/i.test(query);
-          
-          // Strategic guidance toward personalized reports for property-specific questions
-          if (isPropertySpecific) {
-            responseText += "\n\n**For detailed property-specific analysis including official zoning data, consent requirements, and site constraints, consider getting a Premium Property Analysis report.**";
-          }
-          
-          setConversations(prev => [
-            ...prev, 
-            { 
-              type: 'response', 
-              content: responseText,
-              showReportCTA: isPropertySpecific 
-            }
-          ]);
-        } else {
-          throw new Error('Assessment failed');
-        }
-      } catch (error) {
-        setConversations(prev => [
-          ...prev, 
-          { 
-            type: 'response', 
-            content: 'I apologize, but I encountered an issue while processing your request. Please try again or contact support for assistance.'
-          }
-        ]);
-      } finally {
-        setQuery("");
-        setIsLoading(false);
+      // Call the backend API for property assessment using real NZ data
+      const response = await fetch('/api/assess-property', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query, agentType: 'can-i-build-it' }),
+      });
+      
+      const data = await response.json();
+      
+      // Use the RAG-enhanced response that includes actual NZ building knowledge
+      let responseText = data.message;
+      
+      // Check if this is a property-specific question that would benefit from a personalized report
+      const isPropertySpecific = query.toLowerCase().includes('address') || 
+                                query.toLowerCase().includes('property') ||
+                                query.toLowerCase().includes('my house') ||
+                                query.toLowerCase().includes('specific') ||
+                                query.toLowerCase().includes('exact') ||
+                                /\d+\s+\w+\s+(street|road|avenue|drive|place)/i.test(query);
+      
+      // Strategic guidance toward personalized reports for property-specific questions
+      if (isPropertySpecific) {
+        responseText += "\n\n**For detailed property-specific analysis including official zoning data, consent requirements, and site constraints, consider getting a Premium Property Analysis report.**";
       }
+      
+      setConversations(prev => [
+        ...prev, 
+        { 
+          type: 'response', 
+          content: responseText,
+          showReportCTA: isPropertySpecific 
+        }
+      ]);
+      
+      setQuery("");
+      setIsLoading(false);
     }
   };
 

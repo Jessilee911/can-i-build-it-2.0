@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Building, MapPin, FileText, Lightbulb } from "lucide-react";
 import nzMapImage from "@assets/NZ.png";
 import { FormattedText } from "@/components/ui/formatted-text";
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
 import { LinzGeocodingMap } from "@/components/linz-geocoding-map";
+
+interface PropertyIntakeData {
+  name: string;
+  address: string;
+  coordinates?: [number, number];
+  projectType: 'residential' | 'commercial';
+  projectDescription: string;
+  budget: string;
+}
 
 export default function PropertyChat() {
   const [query, setQuery] = useState("");
@@ -14,6 +23,68 @@ export default function PropertyChat() {
   const [currentAddress, setCurrentAddress] = useState("");
   const [locationData, setLocationData] = useState<any>(null);
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
+  const [intakeData, setIntakeData] = useState<PropertyIntakeData | null>(null);
+
+  // Check for intake data on component mount
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('propertyIntakeData');
+    if (storedData) {
+      try {
+        const data = JSON.parse(storedData) as PropertyIntakeData;
+        setIntakeData(data);
+        setCurrentAddress(data.address);
+        // Clear the stored data
+        sessionStorage.removeItem('propertyIntakeData');
+        // Start automatic analysis
+        startPropertyAnalysis(data);
+      } catch (error) {
+        console.error('Failed to parse intake data:', error);
+      }
+    }
+  }, []);
+
+  const startPropertyAnalysis = async (data: PropertyIntakeData) => {
+    setIsLoading(true);
+    
+    const analysisQuery = `Analyze the property at ${data.address} for a ${data.projectType} project. Project description: ${data.projectDescription}. Budget: ${data.budget}. Please provide detailed zoning information, development potential, and any relevant building regulations.`;
+    
+    setConversations([
+      { type: 'query', content: `Property Analysis Request: ${data.address}` }
+    ]);
+
+    try {
+      const response = await fetch('/api/property-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: data.address,
+          projectType: data.projectType,
+          projectDescription: data.projectDescription,
+          budget: data.budget,
+          coordinates: data.coordinates
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setConversations(prev => [
+          ...prev,
+          { type: 'response', content: result.analysis, showReportCTA: true }
+        ]);
+      } else {
+        throw new Error('Analysis failed');
+      }
+    } catch (error) {
+      setConversations(prev => [
+        ...prev,
+        { type: 'response', content: 'I apologize, but I encountered an issue while analyzing your property. Please try asking your question again or contact support for assistance.' }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
