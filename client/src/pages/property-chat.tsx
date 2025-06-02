@@ -185,7 +185,6 @@ Would you like a detailed building feasibility report for your project?`;
           </div>
         </div>
       )}
-
       {/* NZ Map Watermark Background */}
       <div 
         className="fixed inset-0 z-0 opacity-30 pointer-events-none"
@@ -197,7 +196,6 @@ Would you like a detailed building feasibility report for your project?`;
           animation: 'float 20s ease-in-out infinite',
         }}
       />
-      
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
@@ -208,7 +206,7 @@ Would you like a detailed building feasibility report for your project?`;
             >
               <div className="flex items-center justify-center mb-4">
                 <MapPin className="h-8 w-8 text-green-600 mr-3" />
-                <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Property Research Agent 2</h1>
+                <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Premium Agent</h1>
               </div>
               <p className="text-gray-600 max-w-md mx-auto text-[12px]">
                 Comprehensive property research and analysis for New Zealand properties. Get detailed zoning information, market data, and development potential assessments.
@@ -310,7 +308,6 @@ Would you like a detailed building feasibility report for your project?`;
           </>
         )}
       </div>
-
       {/* Premium Upgrade Modal */}
       <PremiumUpgradeModal 
         isOpen={showPremiumModal} 
