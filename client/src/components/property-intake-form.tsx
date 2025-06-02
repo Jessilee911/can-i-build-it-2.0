@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,6 +29,77 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
   const [isVerifyingAddress, setIsVerifyingAddress] = useState(false);
   const [addressVerified, setAddressVerified] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const autocompleteService = useRef<any>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize Google Places Autocomplete
+  useEffect(() => {
+    const initializeAutocomplete = () => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        autocompleteService.current = new window.google.maps.places.AutocompleteService();
+      }
+    };
+
+    // Load Google Maps script if not already loaded
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeAutocomplete;
+      document.head.appendChild(script);
+    } else {
+      initializeAutocomplete();
+    }
+  }, []);
+
+  const getPlaceSuggestions = (input: string) => {
+    if (!autocompleteService.current || input.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const request = {
+      input,
+      componentRestrictions: { country: 'nz' }, // Restrict to New Zealand
+      types: ['address']
+    };
+
+    autocompleteService.current.getPlacePredictions(request, (predictions: any[], status: any) => {
+      if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+        setSuggestions(predictions);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    });
+  };
+
+  const selectSuggestion = (suggestion: any) => {
+    setFormData({ ...formData, address: suggestion.description });
+    setShowSuggestions(false);
+    setAddressVerified(true);
+    setVerificationMessage("✓ Address selected from suggestions");
+    
+    // Get place details for coordinates
+    if (window.google && window.google.maps && window.google.maps.places) {
+      const service = new window.google.maps.places.PlacesService(document.createElement('div'));
+      service.getDetails(
+        { placeId: suggestion.place_id },
+        (place: any, status: any) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            setFormData(prev => ({ ...prev, coordinates: [lat, lng] }));
+          }
+        }
+      );
+    }
+  };
 
   const handleNext = () => {
     if (step < 3) {
@@ -94,12 +165,8 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
     setAddressVerified(false);
     setVerificationMessage("");
     
-    // Debounce the verification
-    const timeoutId = setTimeout(() => {
-      verifyAddressWithGoogle(address);
-    }, 1000);
-    
-    return () => clearTimeout(timeoutId);
+    // Get suggestions immediately
+    getPlaceSuggestions(address);
   };
 
   const isStep1Valid = formData.name && formData.address;
@@ -168,15 +235,34 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
                 <div className="flex space-x-2">
                   <div className="flex-1 relative">
                     <Input
+                      ref={addressInputRef}
                       type="text"
                       value={formData.address || ''}
                       onChange={(e) => handleAddressChange(e.target.value)}
+                      onFocus={() => formData.address && formData.address.length > 2 && setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                       placeholder="Enter the property address"
                       className={`w-full ${addressVerified ? 'border-green-500' : ''}`}
                     />
                     {isVerifyingAddress && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      </div>
+                    )}
+                    
+                    {/* Suggestions Dropdown */}
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                        {suggestions.map((suggestion, index) => (
+                          <div
+                            key={suggestion.place_id}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                            onClick={() => selectSuggestion(suggestion)}
+                          >
+                            <div className="font-medium">{suggestion.structured_formatting?.main_text}</div>
+                            <div className="text-gray-500 text-xs">{suggestion.structured_formatting?.secondary_text}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
