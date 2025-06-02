@@ -202,10 +202,7 @@ Would you like to create a personalized property report for your specific projec
               className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm"
               style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
             >
-              <div className="flex items-center justify-center mb-4">
-                <Building className="h-8 w-8 text-blue-600 mr-3" />
-                <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
-              </div>
+              <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
               <p className="text-gray-600 max-w-md mx-auto text-[12px]">
                 Advanced building analysis and development guidance for New Zealand properties. Get detailed consent requirements, construction feasibility, and professional recommendations.
               </p>
