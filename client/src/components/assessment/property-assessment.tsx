@@ -198,7 +198,20 @@ Would you like to create a personalized property report for your specific projec
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
-
+          {conversations.length === 0 && (
+            <div 
+              className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+            >
+              <div className="flex items-center justify-center mb-4">
+                <Building className="h-8 w-8 text-blue-600 mr-3" />
+                <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It? Agent 1</h1>
+              </div>
+              <p className="text-gray-600 max-w-md mx-auto text-[12px]">
+                Advanced building analysis and development guidance for New Zealand properties. Get detailed consent requirements, construction feasibility, and professional recommendations.
+              </p>
+            </div>
+          )}
           
           {conversations.map((item, index) => (
             <div 
