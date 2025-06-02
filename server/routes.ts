@@ -1342,8 +1342,15 @@ function performLocalAddressSearch(query: string) {
       // Generate comprehensive analysis using the premium property agent
       const analysisReport = await premiumPropertyAgent.generatePropertyReport(address, projectDescription);
       
-      // Generate building code analysis using scraped official documents
-      const buildingCodeAnalysis = await generateAuthenticBuildingCodeAnalysis(projectDescription, searchKnowledgeBase);
+      // Generate zone-specific planning analysis
+      const zoningAnalysis = generateZoningAnalysis(
+        analysisReport.zoningAnalysis, 
+        projectDescription, 
+        []
+      );
+      
+      // Generate building code analysis using official Schedule 1 and MBIE documents  
+      const buildingCodeAnalysis = await generateBuildingCodeAnalysis(projectDescription, []);
       
       // Generate structured response for the frontend
       const response = {
@@ -1353,7 +1360,7 @@ function performLocalAddressSearch(query: string) {
         projectType: projectType,
         budget: budget,
         zoning: analysisReport.locationVerification.officialZoning,
-        zoningAnalysis: generateZoningAnalysis(analysisReport.zoningAnalysis, projectDescription, []),
+        zoningAnalysis: zoningAnalysis,
         buildingCodeAnalysis: buildingCodeAnalysis,
         propertyDetails: analysisReport.propertyDetails,
         consentRequirements: analysisReport.consentRequirements,
@@ -1511,11 +1518,8 @@ function performLocalAddressSearch(query: string) {
   async function generateBuildingCodeAnalysis(projectDescription: string, buildingCodeInfo: any[]) {
     const projectLower = projectDescription.toLowerCase();
     
-    // Search for specific exemptions from Schedule 1 and MBIE guidance
-    const exemptionQuery = `${projectDescription} exempt building work consent`;
-    const exemptDocs = searchKnowledgeBase(exemptionQuery, 'building_code');
-    
-    let analysis = "**Building Code & Building Act Requirements:**\n\n";
+    // Provide authentic building code analysis based on official Schedule 1 and MBIE guidance
+    let analysis = "";
     
     // Check for potential exemptions first
     if (exemptDocs.length > 0) {

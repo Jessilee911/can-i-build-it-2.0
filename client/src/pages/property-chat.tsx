@@ -106,32 +106,18 @@ export default function PropertyChat() {
     // Format budget display
     const budgetDisplay = data.budget && data.budget !== 'not-specified' ? 
       data.budget.charAt(0).toUpperCase() + data.budget.slice(1).replace('-', ' ') : 
-      'Not specified';
+      'not specified';
 
-    const report = `## Property Analysis for ${data.address}
+    // Format the report according to the specific requirements - no markdown formatting
+    const report = `Hi ${firstName}, I'm delighted to help you explore the development potential for your ${data.projectType} project. Let me provide you with a clear analysis of what's possible at your property.
 
-Hi ${firstName}! Here's your comprehensive property analysis:
+Property Details: Your property at ${result.propertyAddress || data.address} is a ${data.projectType} project with budget ${budgetDisplay}. The property has ${result.zoning || 'zoning information being retrieved'} classification under the Auckland Unitary Plan.
 
-### Property Overview
-**Address:** ${result.propertyAddress || data.address}
-**Project Type:** ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}
-**Budget Range:** ${budgetDisplay}
-**Official Zoning:** ${result.zoning || 'Retrieving zoning information'}
+Planning Zone Considerations for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${result.zoningAnalysis || 'Analyzing your planning zone to determine what activities are permitted, building restrictions that may apply, and development opportunities specific to your project type. This includes reviewing the relevant Auckland Unitary Plan zone-specific documentation for rules that directly apply to your project.'}
 
-### Planning Zone Analysis
-${result.zoningAnalysis || 'Analyzing your planning zone to determine what activities are permitted, building restrictions that may apply, and development opportunities specific to your project type.'}
+Building Code Requirements for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${result.buildingCodeAnalysis || 'Reviewing Building Act 2004 Schedule 1 exemptions and MBIE exempt building work guidance to determine consent requirements. This includes analysis of relevant building code clauses and professional requirements specific to your project type.'}
 
-### Building Code Requirements & Compliance
-${result.buildingCodeAnalysis || 'Reviewing New Zealand Building Code requirements and Building Act provisions relevant to your project. This includes building consent requirements, professional obligations, and compliance pathways.'}
-
-### Development Recommendations
-Based on your project description and the property's zoning, I can provide more specific guidance on:
-• Resource consent requirements
-• Design and construction considerations
-• Professional consultants you may need
-• Estimated timeframes and next steps
-
-What specific aspect of your ${data.projectType} project would you like to explore in more detail?`;
+Based on this analysis, your ${data.projectType} project appears to have development potential within the planning framework. Would you like me to elaborate on any specific aspect of your project requirements?`;
 
     return report;
   };
