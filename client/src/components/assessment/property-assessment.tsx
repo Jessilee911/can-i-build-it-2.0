@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Building } from "lucide-react";
 import { Link } from "wouter";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
@@ -67,7 +67,7 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, agentType: 'can-i-build-it' }),
       });
       
       const data = await response.json();
@@ -203,9 +203,12 @@ Would you like to create a personalized property report for your specific projec
               className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm"
               style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
             >
-              <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
+              <div className="flex items-center justify-center mb-4">
+                <Building className="h-8 w-8 text-blue-600 mr-3" />
+                <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It? Agent 1</h1>
+              </div>
               <p className="text-gray-600 max-w-md mx-auto text-[12px]">
-                Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
+                Advanced building analysis and development guidance for New Zealand properties. Get detailed consent requirements, construction feasibility, and professional recommendations.
               </p>
             </div>
           )}

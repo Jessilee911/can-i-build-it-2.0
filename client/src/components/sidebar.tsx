@@ -78,14 +78,14 @@ export function Sidebar({ className }: SidebarProps) {
 
   const navigationItems = [
     {
-      title: "Agent 1 - Property Research",
+      title: "Agent 1 - Can I Build It",
       href: "/",
-      icon: <HomeIcon className="h-4 w-4" />
+      icon: <BuildingIcon className="h-4 w-4" />
     },
     {
-      title: "Agent 2 - Can I Build It",
+      title: "Agent 2 - Property Research",
       href: "/property-chat",
-      icon: <BuildingIcon className="h-4 w-4" />
+      icon: <HomeIcon className="h-4 w-4" />
     }
   ];
 
