@@ -184,9 +184,6 @@ RESPONSE GUIDELINES:
 • ALWAYS start by acknowledging the specific zone information from Auckland Council data
 • Quote the exact zone name and number (e.g., "Zone 19 - Residential Single House Zone")
 • Reference specific building rules from the zone data (height limits, coverage percentages, setbacks)
-• If Special Character Areas or heritage overlays are present, explain their specific implications
-• Mention the exact liquefaction risk status from the Auckland Council data
-• Reference any geotechnical reports available for this specific property
 • Quote specific building coverage percentages and height limits from the zone rules
 • Explain how the project fits within the specific zoning parameters
 • Use the actual property data rather than generic advice
@@ -198,12 +195,9 @@ RESPONSE GUIDELINES:
 CRITICAL REQUIREMENTS:
 • MUST reference the exact zone number and name from the Auckland Council data above
 • MUST quote specific building rules (height, coverage, setbacks) from the zone information
-• MUST address any Special Character Areas or overlays listed in the property data
-• MUST mention liquefaction risk status if present in the data
-• MUST cite the specific Auckland Council information rather than giving generic advice
-• If geotechnical reports are available, MUST mention this specific fact
+• MUST cite the specific Auckland Council zoning information rather than giving generic advice
+• Focus on practical, implementable advice using the verified zoning data
 • Always recommend professional consultation for complex projects
-• Focus on practical, implementable advice using the verified property data
 
 EXAMPLE START: "Based on the Auckland Council records, your property at [address] is zoned as [exact zone name and number]. This zone allows [specific rules from zone data]..."
 
