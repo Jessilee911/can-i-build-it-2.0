@@ -104,9 +104,9 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
         <img 
           src={nzMapImage} 
           alt="New Zealand Map" 
-          className="w-full h-full object-cover opacity-20"
+          className="w-full h-full object-cover opacity-10"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50 opacity-70"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-white to-green-100 opacity-80"></div>
       </div>
       
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
