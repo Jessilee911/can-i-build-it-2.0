@@ -50,6 +50,7 @@
     "@types/memoizee": "^0.4.12",
     "@types/node-fetch": "^2.6.12",
     "@types/nodemailer": "^6.4.17",
+    "@types/pdf-parse": "^1.1.5",
     "@types/uuid": "^10.0.0",
     "bcryptjs": "^3.0.2",
     "cheerio": "^1.0.0",

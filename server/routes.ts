@@ -1342,11 +1342,10 @@ function performLocalAddressSearch(query: string) {
       // Generate comprehensive analysis using the premium property agent
       const analysisReport = await premiumPropertyAgent.generatePropertyReport(address, projectDescription);
       
-      // Generate zone-specific planning analysis
-      const zoningAnalysis = generateZoningAnalysis(
-        analysisReport.zoningAnalysis, 
-        projectDescription, 
-        []
+      // Generate zone-specific planning analysis using authentic Auckland Unitary Plan documents
+      const zoningAnalysis = await generateAuthenticZoningAnalysis(
+        analysisReport.locationVerification.officialZoning, 
+        projectDescription
       );
       
       // Generate building code analysis using official Schedule 1 and MBIE documents  
@@ -1477,6 +1476,35 @@ function performLocalAddressSearch(query: string) {
   });
 
   // Helper functions for property analysis
+  async function generateAuthenticZoningAnalysis(officialZoning: string, projectDescription: string): Promise<string> {
+    try {
+      const { aucklandPDFProcessor } = await import('./auckland-pdf-processor');
+      const analysis = await aucklandPDFProcessor.getZonePlanningAnalysis(officialZoning, projectDescription);
+      return analysis;
+    } catch (error) {
+      console.error('Auckland PDF processing error:', error);
+      return generateFallbackZoningAnalysis(officialZoning, projectDescription);
+    }
+  }
+
+  function generateFallbackZoningAnalysis(officialZoning: string, projectDescription: string): string {
+    const cleanZoneName = officialZoning?.replace(/\s*\(Zone\s*\d+\)$/i, '').trim() || 'Unknown Zone';
+    
+    if (cleanZoneName.includes('Rural')) {
+      return `Your property is in a ${cleanZoneName} which typically allows rural residential activities and ${projectDescription} projects subject to larger site requirements and rural character considerations. Height limits are generally 8-10 metres with building coverage restrictions of 10-15% and substantial setback requirements from boundaries. Development must maintain the rural character and may require resource consent for certain activities.`;
+    }
+    
+    if (cleanZoneName.includes('Residential')) {
+      return `Your property is in a ${cleanZoneName} which permits residential activities including ${projectDescription} projects. Standard residential development rules apply including height limits typically 8-11 metres, site coverage restrictions of 35-50%, and boundary setback requirements of 1-3 metres. Your project should comply with zone-specific development standards detailed in the Auckland Unitary Plan.`;
+    }
+    
+    if (cleanZoneName.includes('Business')) {
+      return `Your property is in a ${cleanZoneName} which allows business activities and may permit certain residential or mixed-use developments. Development standards for ${projectDescription} projects include specific height limits, site coverage requirements, and parking provisions. Resource consent may be required depending on the specific nature and scale of your project.`;
+    }
+    
+    return `Your property is in a ${cleanZoneName}. Planning provisions for your ${projectDescription} project are subject to the zone's specific development standards including height, coverage, and setback requirements. Professional planning advice is recommended to ensure compliance with all applicable Auckland Unitary Plan provisions for this zone.`;
+  }
+
   function generateZoningAnalysis(zoningData: any, projectDescription: string, planningInfo: any[]) {
     if (!zoningData) {
       return "Retrieving official zoning information for your property. This will include what activities are permitted in your zone and any specific restrictions that apply to your project type.";
