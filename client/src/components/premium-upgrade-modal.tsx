@@ -142,31 +142,13 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
   };
 
   const handleLocationConfirm = (confirmed: boolean) => {
-    console.log('Location confirm called with:', confirmed);
-    console.log('Location data:', locationData);
-    console.log('Form values:', form.getValues());
-    
-    if (confirmed && locationData) {
-      // User confirmed the location - navigate to property chat agent
-      const propertyData = {
-        address: locationData.address,
-        coordinates: locationData.coordinates,
-        zoning: locationData.zoning
-      };
-      
-      const userName = form.getValues('fullName') || 'User';
-      
-      const queryParams = new URLSearchParams({
-        property: encodeURIComponent(JSON.stringify(propertyData)),
-        user: encodeURIComponent(userName)
+    if (confirmed) {
+      setShowLocationVerification(false);
+      toast({
+        title: "Location Verified",
+        description: "Property location has been confirmed.",
       });
-      
-      const redirectUrl = `/property-chat?${queryParams.toString()}`;
-      console.log('Redirecting to:', redirectUrl);
-      
-      window.location.href = redirectUrl;
     } else {
-      console.log('Location not confirmed or no location data');
       setShowLocationVerification(false);
       setLocationData(null);
     }
