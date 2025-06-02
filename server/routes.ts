@@ -1339,27 +1339,19 @@ function performLocalAddressSearch(query: string) {
       // Generate comprehensive analysis using the premium property agent
       const analysisReport = await premiumPropertyAgent.generatePropertyReport(address, projectDescription);
       
-      // Search for relevant building code information using RAG
-      const buildingCodeQuery = `building consent requirements for ${projectDescription} in New Zealand`;
-      const buildingCodeInfo = searchKnowledgeBase(buildingCodeQuery, 'building_code');
-      
-      // Search for planning rules relevant to the project
-      const planningQuery = `${projectType} development ${projectDescription} planning rules`;
-      const planningInfo = searchKnowledgeBase(planningQuery, 'planning');
-
-      // Generate building code analysis
-      const buildingCodeAnalysis = generateBuildingCodeAnalysis(projectDescription, buildingCodeInfo);
-      
-      // Generate planning zone analysis  
-      const zoningAnalysis = generateZoningAnalysis(analysisReport.zoningAnalysis, projectDescription, planningInfo);
-
-      // Return structured response
+      // Generate structured response for the frontend
       const response = {
+        success: true,
+        propertyAddress: analysisReport.propertyDetails.address,
+        ownerName: ownerName,
+        projectType: projectType,
+        budget: budget,
         zoning: analysisReport.locationVerification.officialZoning,
-        zoningAnalysis: zoningAnalysis,
-        buildingCodeAnalysis: buildingCodeAnalysis,
+        zoningAnalysis: generateZoningAnalysis(analysisReport.zoningAnalysis, projectDescription, []),
+        buildingCodeAnalysis: generateBuildingCodeAnalysis(projectDescription, []),
         propertyDetails: analysisReport.propertyDetails,
-        consentRequirements: analysisReport.consentRequirements
+        consentRequirements: analysisReport.consentRequirements,
+        coordinates: analysisReport.propertyDetails.coordinates
       };
 
       res.json(response);

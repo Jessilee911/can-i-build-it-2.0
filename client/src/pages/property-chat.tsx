@@ -103,21 +103,35 @@ export default function PropertyChat() {
   };
 
   const formatPropertyReport = (result: any, data: PropertyIntakeData, firstName: string) => {
-    const report = `## Property Analysis Summary
+    // Format budget display
+    const budgetDisplay = data.budget && data.budget !== 'not-specified' ? 
+      data.budget.charAt(0).toUpperCase() + data.budget.slice(1).replace('-', ' ') : 
+      'Not specified';
 
-**Property Address:** ${data.address}
+    const report = `## Property Analysis for ${data.address}
+
+Hi ${firstName}! Here's your comprehensive property analysis:
+
+### Property Overview
+**Address:** ${result.propertyAddress || data.address}
 **Project Type:** ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}
-**Budget:** ${data.budget || 'Not specified'}
-**Zoning:** ${result.zoning || 'Information being retrieved'}
+**Budget Range:** ${budgetDisplay}
+**Official Zoning:** ${result.zoning || 'Retrieving zoning information'}
 
 ### Planning Zone Analysis
-${result.zoningAnalysis || 'Analyzing what your planning zone allows for your specific project. This will include permitted activities, building restrictions, and development opportunities.'}
+${result.zoningAnalysis || 'Analyzing your planning zone to determine what activities are permitted, building restrictions that may apply, and development opportunities specific to your project type.'}
 
-### Building Code & Compliance Requirements
-${result.buildingCodeAnalysis || 'Reviewing NZ Building Code requirements and Building Act provisions relevant to your project description. This includes consent requirements, professional obligations, and compliance pathways.'}
+### Building Code Requirements & Compliance
+${result.buildingCodeAnalysis || 'Reviewing New Zealand Building Code requirements and Building Act provisions relevant to your project. This includes building consent requirements, professional obligations, and compliance pathways.'}
 
-### Next Steps
-Based on this initial analysis, I can provide more detailed guidance on specific aspects of your project. What would you like to explore further?`;
+### Development Recommendations
+Based on your project description and the property's zoning, I can provide more specific guidance on:
+• Resource consent requirements
+• Design and construction considerations
+• Professional consultants you may need
+• Estimated timeframes and next steps
+
+What specific aspect of your ${data.projectType} project would you like to explore in more detail?`;
 
     return report;
   };
