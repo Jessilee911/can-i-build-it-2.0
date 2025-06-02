@@ -183,7 +183,6 @@ Would you like to create a personalized property report for your specific projec
           </div>
         </div>
       )}
-
       {/* NZ Map Watermark Background */}
       <div 
         className="fixed inset-0 z-0 opacity-30 pointer-events-none"
@@ -205,7 +204,7 @@ Would you like to create a personalized property report for your specific projec
             >
               <div className="flex items-center justify-center mb-4">
                 <Building className="h-8 w-8 text-blue-600 mr-3" />
-                <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It? Agent 1</h1>
+                <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
               </div>
               <p className="text-gray-600 max-w-md mx-auto text-[12px]">
                 Advanced building analysis and development guidance for New Zealand properties. Get detailed consent requirements, construction feasibility, and professional recommendations.
@@ -408,7 +407,6 @@ Would you like to create a personalized property report for your specific projec
         </div>
 
       </div>
-      
       {/* Premium Upgrade Modal */}
       <PremiumUpgradeModal 
         isOpen={showPremiumModal}
