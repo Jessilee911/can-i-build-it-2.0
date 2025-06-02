@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Building2, MapPin, FileText, Lightbulb } from "lucide-react";
+import { ArrowRight, Building, MapPin, FileText, Lightbulb } from "lucide-react";
 import nzMapImage from "@assets/NZ.png";
 import { FormattedText } from "@/components/ui/formatted-text";
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
@@ -311,7 +311,7 @@ Would you like a detailed building feasibility report for your project?`;
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <Building2 className="h-5 w-5 text-green-600" />
+                    <Building className="h-5 w-5 text-green-600" />
                     <h3 className="text-lg font-semibold text-gray-900">Enhanced Building Analysis</h3>
                     <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
                       Available Now
