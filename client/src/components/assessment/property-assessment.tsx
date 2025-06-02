@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Building } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
 import { LinzGeocodingMap } from "@/components/linz-geocoding-map";
+import { PropertyIntakeForm, PropertyIntakeData } from "@/components/property-intake-form";
 
 interface PropertyAssessmentProps {
   showPricing?: boolean;
@@ -18,6 +19,8 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentAddress, setCurrentAddress] = useState("");
+  const [showIntakeForm, setShowIntakeForm] = useState(false);
+  const [, setLocation] = useLocation();
   const [locationData, setLocationData] = useState<any>(null);
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
 

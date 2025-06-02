@@ -3,10 +3,16 @@ import { Button } from "@/components/ui/button";
 import { MapPin, ExternalLink } from "lucide-react";
 
 interface LinzGeocodingMapProps {
-  address: string;
+  address?: string;
   coordinates?: { latitude: number; longitude: number };
   zoning?: any;
-  onLocationConfirm: (confirmed: boolean) => void;
+  onLocationConfirm?: (confirmed: boolean) => void;
+  // Modal interface
+  isOpen?: boolean;
+  onClose?: () => void;
+  onLocationSelect?: (address: string, coordinates?: [number, number]) => void;
+  initialAddress?: string;
+  hideZoning?: boolean;
 }
 
 export function LinzGeocodingMap({ 
