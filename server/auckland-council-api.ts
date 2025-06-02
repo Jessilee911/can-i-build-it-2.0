@@ -27,16 +27,7 @@ export class AucklandCouncilAPI {
   
   // Key datasets for property analysis
   private keyDatasets = {
-    unitary_plan_zones: "Unitary_Plan_Base_Zone",
-    geotechnical_reports: "Geotechnical_Report_Extent", 
-    liquefaction_vulnerability: "Liquefaction_Vulnerability_Calibrated_Assessment",
-    flood_sensitive_areas: "Flood_Sensitive_Areas",
-    notable_trees: "Notable_Trees_Overlay",
-    heritage_overlay: "Historic_Heritage_Overlay_Extent_of_Place",
-    special_character_areas: "Special_Character_Areas_Overlay_Residential_and_Business",
-    aircraft_noise: "Aircraft_Noise_Overlay",
-    ridgeline_protection: "Ridgeline_Protection_Overlay",
-    coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise"
+    unitary_plan_zones: "Unitary_Plan_Base_Zone"
   };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
@@ -263,33 +254,7 @@ export class AucklandCouncilAPI {
         property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
       }
 
-      // Query additional overlays and constraints
-      const overlayResults = await Promise.allSettled([
-        this.queryFeatureService(this.keyDatasets.geotechnical_reports, lat, lon),
-        this.queryFeatureService(this.keyDatasets.liquefaction_vulnerability, lat, lon),
-        this.queryFeatureService(this.keyDatasets.flood_sensitive_areas, lat, lon),
-        this.queryFeatureService(this.keyDatasets.notable_trees, lat, lon),
-        this.queryFeatureService(this.keyDatasets.heritage_overlay, lat, lon),
-        this.queryFeatureService(this.keyDatasets.special_character_areas, lat, lon),
-        this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon)
-      ]);
-
-      // Process overlay results and add to property data
-      overlayResults.forEach((result, index) => {
-        if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
-          const datasetName = Object.keys(this.keyDatasets)[index + 1]; // Skip zoning which was already processed
-          console.log(`Found ${datasetName} data for property`);
-          
-          // Store overlay information in property object for report generation
-          if (!property.overlays) {
-            property.overlays = [];
-          }
-          property.overlays.push({
-            type: datasetName,
-            data: result.value[0].attributes
-          });
-        }
-      });
+      // Only querying Unitary Plan Base Zone data now
 
       console.log(`Property data compiled for ${address}:`, property);
       return property;

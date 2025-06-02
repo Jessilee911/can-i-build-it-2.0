@@ -155,35 +155,8 @@ export class PropertyAgent {
         propertyInfo += `Coordinates: ${context.coordinates[1]}, ${context.coordinates[0]}\n`;
       }
       
-      // Add overlay information
-      if (context.propertyData.overlays && context.propertyData.overlays.length > 0) {
-        propertyInfo += `\nProperty Overlays and Constraints:\n`;
-        context.propertyData.overlays.forEach(overlay => {
-          if (overlay.type === 'special_character_areas') {
-            const data = overlay.data[0]?.attributes;
-            if (data) {
-              propertyInfo += `• Special Character Area: ${data.NAME || 'Present'}\n`;
-              if (data.TYPE) propertyInfo += `  - Type: ${data.TYPE}\n`;
-              if (data.SCHEDULE) propertyInfo += `  - Schedule: ${data.SCHEDULE}\n`;
-              if (data.DocumentURL) propertyInfo += `  - Documentation: ${data.DocumentURL}\n`;
-            }
-          } else if (overlay.type === 'heritage_overlay') {
-            propertyInfo += `• Heritage Overlay: Present\n`;
-          } else if (overlay.type === 'liquefaction_vulnerability') {
-            propertyInfo += `• Liquefaction Risk: Present\n`;
-          } else if (overlay.type === 'flood_sensitive_areas') {
-            propertyInfo += `• Flood Sensitive Area: Present\n`;
-          } else if (overlay.type === 'notable_trees') {
-            propertyInfo += `• Notable Trees: Present\n`;
-          } else if (overlay.type === 'geotechnical_reports') {
-            propertyInfo += `• Geotechnical Reports Available: Yes\n`;
-          } else if (overlay.type === 'aircraft_noise') {
-            propertyInfo += `• Aircraft Noise Overlay: Present\n`;
-          } else {
-            propertyInfo += `• ${overlay.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: Present\n`;
-          }
-        });
-      }
+      // Note: Overlay data (special character areas, heritage, liquefaction, etc.) has been simplified
+      // Only Unitary Plan Base Zone data is now included for focused zoning guidance
       
       propertyInfo += "\n";
     }
