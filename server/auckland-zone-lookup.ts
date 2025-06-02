@@ -25,6 +25,19 @@ export const AUCKLAND_ZONE_LOOKUP: Record<number, ZoneInfo> = {
       "Landscaping requirements"
     ]
   },
+  3: {
+    code: 3,
+    name: "Rural - Countryside Living Zone",
+    description: "Rural lifestyle living with larger residential sites",
+    category: 'rural',
+    buildingRules: [
+      "Maximum height typically 8 metres",
+      "Building coverage up to 10-15%",
+      "Large residential sites (5000m²+)",
+      "Rural residential character",
+      "Limited subdivision"
+    ]
+  },
   4: {
     code: 4,
     name: "Future Urban Zone",
@@ -85,6 +98,19 @@ export const AUCKLAND_ZONE_LOOKUP: Record<number, ZoneInfo> = {
       "Transport hub integration"
     ]
   },
+  11: {
+    code: 11,
+    name: "Rural - Mixed Rural Zone",
+    description: "Rural areas allowing a mixture of rural production and other compatible activities",
+    category: 'rural',
+    buildingRules: [
+      "Maximum height typically 8-12 metres",
+      "Low building coverage",
+      "Moderate minimum site areas",
+      "Rural and non-rural activities",
+      "Rural character maintenance"
+    ]
+  },
   12: {
     code: 12,
     name: "Business - Mixed Use Zone",
@@ -95,6 +121,19 @@ export const AUCKLAND_ZONE_LOOKUP: Record<number, ZoneInfo> = {
       "Flexible use provisions",
       "Transit-oriented development",
       "Urban design standards"
+    ]
+  },
+  15: {
+    code: 15,
+    name: "Rural - Rural Conservation Zone",
+    description: "Rural areas with significant conservation values requiring protection",
+    category: 'rural',
+    buildingRules: [
+      "Maximum height typically 8 metres",
+      "Very low building coverage",
+      "Large minimum site areas",
+      "Conservation value protection",
+      "Very limited development"
     ]
   },
   16: {
@@ -256,6 +295,19 @@ export const AUCKLAND_ZONE_LOOKUP: Record<number, ZoneInfo> = {
       "Local services permitted",
       "Residential above commercial",
       "Community facilities encouraged"
+    ]
+  },
+  46: {
+    code: 46,
+    name: "Rural - Rural Coastal Zone",
+    description: "Coastal rural areas with particular landscape and environmental values",
+    category: 'rural',
+    buildingRules: [
+      "Maximum height typically 8 metres",
+      "Very low building coverage",
+      "Large minimum site areas",
+      "Coastal character protection",
+      "Restricted development"
     ]
   },
   49: {
