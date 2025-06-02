@@ -297,13 +297,14 @@ Would you like to create a personalized property report for your specific projec
                   </div>
                   <p className="text-sm text-gray-600">Get comprehensive property reports with official Auckland Council data, detailed zoning analysis, and expert recommendations for your specific project.</p>
                 </div>
-                <Button 
-                  onClick={() => setShowPremiumModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-                >
-                  Get Premium Analysis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href="/property-chat">
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                  >
+                    Get Premium Analysis
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
             
