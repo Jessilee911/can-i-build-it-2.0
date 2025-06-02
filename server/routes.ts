@@ -873,11 +873,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Import official zone lookup to interpret the zone code
           const { formatZoneForDisplay, getZoneBuildingGuidance } = await import('./auckland-zone-lookup');
           
+          console.log(`Raw zoning data received:`, rawZoning);
+          console.log(`Zone code being looked up: ${rawZoning.ZONE} (type: ${typeof rawZoning.ZONE})`);
+          
           zoningData = {
             ...rawZoning,
             zoneName: formatZoneForDisplay(rawZoning.ZONE),
             zoneGuidance: getZoneBuildingGuidance(rawZoning.ZONE)
           };
+          
+          console.log(`Zone lookup result: ${zoningData.zoneName}`);
         }
       }
 
