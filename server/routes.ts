@@ -5,6 +5,8 @@ import { scraper } from "./scraper";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { generateRAGResponse } from "./rag";
 import { setupKnowledgeRoutes } from "./routes-knowledge";
+import { getZoneInfo } from "./auckland-zone-lookup";
+import OpenAI from "openai";
 import Stripe from "stripe";
 import {
   createCheckoutSession,
@@ -1319,8 +1321,167 @@ function performLocalAddressSearch(query: string) {
     }
   });
 
+  // Property Chat Agent Routes
+  app.post('/api/analyze-project', async (req, res) => {
+    try {
+      const { propertyData, projectDescription, userName } = req.body;
+      
+      if (!propertyData || !projectDescription) {
+        return res.status(400).json({ error: 'Property data and project description are required' });
+      }
+
+      const analysis = await analyzeProjectRequirements(propertyData, projectDescription);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error analyzing project:', error);
+      res.status(500).json({ error: 'Failed to analyze project requirements' });
+    }
+  });
+
+  app.post('/api/property-chat', async (req, res) => {
+    try {
+      const { message, propertyData, chatHistory, userName } = req.body;
+      
+      if (!message || !propertyData) {
+        return res.status(400).json({ error: 'Message and property data are required' });
+      }
+
+      const response = await handlePropertyChat(message, propertyData, chatHistory, userName);
+      res.json({ message: response });
+    } catch (error) {
+      console.error('Error in property chat:', error);
+      res.status(500).json({ error: 'Failed to process chat message' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Property Chat Agent Functions
+async function analyzeProjectRequirements(propertyData: any, projectDescription: string) {
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    
+    // Get building code information relevant to the project
+    const buildingCodes = await searchBuildingCodes(projectDescription);
+    
+    // Get zone information
+    const zoneInfo = getZoneInfo(propertyData.zoning?.ZONE || propertyData.zoning?.code);
+    
+    const systemPrompt = `You are a New Zealand building and planning expert. Analyze the following project and provide specific guidance.
+
+Property Information:
+- Address: ${propertyData.address}
+- Zone: ${zoneInfo?.name || 'Zone information available'}
+- Zone Description: ${zoneInfo?.description || 'Standard zoning rules apply'}
+- Zone Category: ${zoneInfo?.category || 'residential'}
+
+Building Codes Available:
+${buildingCodes.map(code => `- ${code.title}: ${code.summary}`).join('\n')}
+
+Zone Rules:
+${zoneInfo?.buildingRules?.join('\n- ') || 'Standard zone building rules apply'}
+
+Analyze this project and determine:
+1. Whether building consent is required
+2. Specific building code sections that apply
+3. Planning considerations for this zone
+4. Specific recommendations
+5. Any warnings or restrictions
+
+Be very specific and cite relevant building code sections where applicable.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Project: ${projectDescription}` }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3
+    });
+
+    const analysis = JSON.parse(response.choices[0].message.content || '{}');
+    
+    return {
+      consentRequired: analysis.consentRequired || false,
+      buildingCodeReferences: analysis.buildingCodeReferences || [],
+      planningConsiderations: analysis.planningConsiderations || [],
+      recommendations: analysis.recommendations || [],
+      warningsAndRestrictions: analysis.warningsAndRestrictions || []
+    };
+  } catch (error) {
+    console.error('Error in project analysis:', error);
+    throw error;
+  }
+}
+
+async function handlePropertyChat(message: string, propertyData: any, chatHistory: any[], userName: string) {
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    
+    // Get building code information relevant to the message
+    const buildingCodes = await searchBuildingCodes(message);
+    
+    // Get zone information
+    const zoneInfo = getZoneInfo(propertyData.zoning?.ZONE || propertyData.zoning?.code);
+    
+    const systemPrompt = `You are ${userName}'s personal building advisor for their property at ${propertyData.address}.
+
+Property Context:
+- Address: ${propertyData.address}
+- Zone: ${zoneInfo?.name || 'Zone information available'}
+- Zone Description: ${zoneInfo?.description || 'Standard zoning rules apply'}
+- Zone Category: ${zoneInfo?.category || 'residential'}
+- Coordinates: ${propertyData.coordinates?.[1]}, ${propertyData.coordinates?.[0]}
+
+Zone Building Rules:
+${zoneInfo?.buildingRules?.join('\n- ') || 'Standard zone building rules apply'}
+
+Available Building Code Information:
+${buildingCodes.map(code => `- ${code.title}: ${code.summary}`).join('\n')}
+
+Chat History Context:
+${chatHistory.slice(-5).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+
+Provide specific, actionable advice for ${userName}'s property. Always reference:
+1. Specific building code requirements when relevant
+2. Zone-specific rules and restrictions
+3. Consent requirements (building consent, resource consent)
+4. Property-specific considerations
+
+Be conversational but authoritative. Cite specific building code sections when applicable.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message }
+      ],
+      temperature: 0.4,
+      max_tokens: 1000
+    });
+
+    return response.choices[0].message.content || "I apologize, but I couldn't generate a response. Please try rephrasing your question.";
+  } catch (error) {
+    console.error('Error in property chat:', error);
+    throw error;
+  }
+}
+
+async function searchBuildingCodes(query: string) {
+  try {
+    // Search building codes database for relevant sections
+    const response = await fetch(`http://localhost:5000/api/building-codes/search?q=${encodeURIComponent(query)}&limit=5`);
+    if (response.ok) {
+      return await response.json();
+    }
+    return [];
+  } catch (error) {
+    console.error('Error searching building codes:', error);
+    return [];
+  }
 }
 
 // Report generation function
