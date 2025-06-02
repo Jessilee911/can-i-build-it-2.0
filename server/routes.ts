@@ -780,7 +780,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Property assessment using RAG and real NZ data
   apiRouter.post("/api/assess-property", async (req: Request, res: Response) => {
     try {
-      const { query, address } = req.body;
+      const { query, address, agentType, locationData } = req.body;
       
       if (!query || query.length < 5) {
         return res.status(400).json({ message: "Query is required and must be at least 5 characters" });
@@ -789,19 +789,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import RAG functions
       const { generateRAGResponse, analyzeQuery } = await import('./rag');
       
-      // Generate response using RAG (Retrieval Augmented Generation)
-      const ragResponse = await generateRAGResponse(query, { address });
+      // Create context based on agent type
+      let contextData: any = { address };
       
-      // Check if the response mentions personalized property report
-      const showReportCTA = ragResponse.includes('personalized property report') || 
-                           ragResponse.includes('property-specific details') ||
-                           ragResponse.includes('tailored to your exact address');
+      if (agentType === 'can-i-build-it') {
+        contextData.agentFocus = 'building_consent_and_construction';
+        contextData.specialization = 'Building consent requirements, construction feasibility, building code compliance, and development processes';
+      } else {
+        contextData.agentFocus = 'general_property_research';
+        contextData.specialization = 'General property information, zoning, and planning guidance';
+      }
+      
+      // Add location data if available
+      if (locationData) {
+        contextData.verifiedLocation = locationData;
+      }
+      
+      // Generate response using RAG with agent-specific context
+      const ragResponse = await generateRAGResponse(query, contextData);
+      
+      // Enhanced CTA logic based on agent type
+      let showReportCTA = false;
+      let ctaMessage = '';
+      
+      if (agentType === 'can-i-build-it') {
+        showReportCTA = ragResponse.includes('building consent') || 
+                       ragResponse.includes('construction') ||
+                       ragResponse.includes('building requirements') ||
+                       ragResponse.includes('development potential');
+        ctaMessage = 'Get comprehensive building analysis with detailed consent requirements and construction guidance';
+      } else {
+        showReportCTA = ragResponse.includes('personalized property report') || 
+                       ragResponse.includes('property-specific details') ||
+                       ragResponse.includes('tailored to your exact address');
+        ctaMessage = 'Get detailed property report with official data and zoning analysis';
+      }
       
       return res.json({
         message: ragResponse,
         showReportCTA,
+        ctaMessage,
         needsOfficialData: true,
-        suggestedDataSources: [
+        agentType: agentType || 'general',
+        suggestedDataSources: agentType === 'can-i-build-it' ? [
+          "Building.govt.nz - for building consent requirements",
+          "Auckland Council Building Department - for local consent processes",
+          "NZ Building Code - for compliance requirements",
+          "Regional council APIs - for resource consent rules"
+        ] : [
           "LINZ Data Service API - for property boundaries and ownership",
           "Auckland Council GeoMaps API - for zoning information", 
           "Building.govt.nz - for building consent requirements",
