@@ -99,15 +99,17 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src={nzMapImage} 
-          alt="New Zealand Map" 
-          className="w-full h-full object-cover opacity-10"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-white to-green-100 opacity-80"></div>
-      </div>
+      {/* NZ Map Watermark Background */}
+      <div 
+        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
+        style={{
+          backgroundImage: `url(${nzMapImage})`,
+          backgroundSize: '60%',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          animation: 'float 20s ease-in-out infinite',
+        }}
+      />
       
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
