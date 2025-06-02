@@ -46,10 +46,12 @@ export default function PropertyChat() {
   const startPropertyAnalysis = async (data: PropertyIntakeData) => {
     setIsLoading(true);
     
-    const analysisQuery = `Analyze the property at ${data.address} for a ${data.projectType} project. Project description: ${data.projectDescription}. Budget: ${data.budget}. Please provide detailed zoning information, development potential, and any relevant building regulations.`;
+    // Create personalized greeting
+    const firstName = data.name.split(' ')[0];
+    const greeting = `Hi ${firstName}!\n\nI'm excited to help you explore the development potential for your ${data.projectType} project. Let me analyze the property details and provide you with comprehensive insights about what's possible at your location.`;
     
     setConversations([
-      { type: 'query', content: `Property Analysis Request: ${data.address}` }
+      { type: 'response', content: greeting }
     ]);
 
     try {
@@ -63,27 +65,61 @@ export default function PropertyChat() {
           projectType: data.projectType,
           projectDescription: data.projectDescription,
           budget: data.budget,
-          coordinates: data.coordinates
+          coordinates: data.coordinates,
+          ownerName: firstName
         }),
       });
 
       if (response.ok) {
         const result = await response.json();
+        
+        // Format the response as a structured report
+        const structuredReport = formatPropertyReport(result, data, firstName);
+        
         setConversations(prev => [
           ...prev,
-          { type: 'response', content: result.analysis, showReportCTA: true }
+          { 
+            type: 'response', 
+            content: structuredReport,
+            showReportCTA: false 
+          }
         ]);
       } else {
         throw new Error('Analysis failed');
       }
     } catch (error) {
+      console.error('Property analysis error:', error);
       setConversations(prev => [
         ...prev,
-        { type: 'response', content: 'I apologize, but I encountered an issue while analyzing your property. Please try asking your question again or contact support for assistance.' }
+        { 
+          type: 'response', 
+          content: `I apologize ${firstName}, but I'm experiencing technical difficulties analyzing your property. Please try again or let me know if you need assistance.`,
+          showReportCTA: false 
+        }
       ]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const formatPropertyReport = (result: any, data: PropertyIntakeData, firstName: string) => {
+    const report = `## Property Analysis Summary
+
+**Property Address:** ${data.address}
+**Project Type:** ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}
+**Budget:** ${data.budget || 'Not specified'}
+**Zoning:** ${result.zoning || 'Information being retrieved'}
+
+### Planning Zone Analysis
+${result.zoningAnalysis || 'Analyzing what your planning zone allows for your specific project. This will include permitted activities, building restrictions, and development opportunities.'}
+
+### Building Code & Compliance Requirements
+${result.buildingCodeAnalysis || 'Reviewing NZ Building Code requirements and Building Act provisions relevant to your project description. This includes consent requirements, professional obligations, and compliance pathways.'}
+
+### Next Steps
+Based on this initial analysis, I can provide more detailed guidance on specific aspects of your project. What would you like to explore further?`;
+
+    return report;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

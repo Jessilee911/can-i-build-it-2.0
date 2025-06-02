@@ -1322,7 +1322,7 @@ function performLocalAddressSearch(query: string) {
   // Property analysis endpoint for Agent 2 (Property Research)
   apiRouter.post("/api/property-analysis", async (req: Request, res: Response) => {
     try {
-      const { address, projectType, projectDescription, budget, coordinates } = req.body;
+      const { address, projectType, projectDescription, budget, coordinates, ownerName } = req.body;
       
       if (!address || !projectDescription) {
         return res.status(400).json({ message: "Address and project description are required" });
@@ -1331,6 +1331,7 @@ function performLocalAddressSearch(query: string) {
       // Import required modules
       const { aucklandCouncilAPI } = await import("./auckland-council-api");
       const { premiumPropertyAgent } = await import("./premium-property-agent");
+      const { searchKnowledgeBase } = await import("./rag");
 
       // Get property data from Auckland Council API
       const propertyData = await aucklandCouncilAPI.searchPropertyByAddress(address);
@@ -1338,84 +1339,129 @@ function performLocalAddressSearch(query: string) {
       // Generate comprehensive analysis using the premium property agent
       const analysisReport = await premiumPropertyAgent.generatePropertyReport(address, projectDescription);
       
-      // Format the response for the frontend
-      const analysis = `# Property Analysis Report
+      // Search for relevant building code information using RAG
+      const buildingCodeQuery = `building consent requirements for ${projectDescription} in New Zealand`;
+      const buildingCodeInfo = searchKnowledgeBase(buildingCodeQuery, 'building_code');
+      
+      // Search for planning rules relevant to the project
+      const planningQuery = `${projectType} development ${projectDescription} planning rules`;
+      const planningInfo = searchKnowledgeBase(planningQuery, 'planning');
 
-## Property Overview
-**Address:** ${analysisReport.propertyDetails.address}
-**Project Type:** ${projectType}
-**Budget:** ${budget}
+      // Generate building code analysis
+      const buildingCodeAnalysis = generateBuildingCodeAnalysis(projectDescription, buildingCodeInfo);
+      
+      // Generate planning zone analysis  
+      const zoningAnalysis = generateZoningAnalysis(analysisReport.zoningAnalysis, projectDescription, planningInfo);
 
-## Executive Summary
-${analysisReport.executiveSummary}
+      // Return structured response
+      const response = {
+        zoning: analysisReport.locationVerification.officialZoning,
+        zoningAnalysis: zoningAnalysis,
+        buildingCodeAnalysis: buildingCodeAnalysis,
+        propertyDetails: analysisReport.propertyDetails,
+        consentRequirements: analysisReport.consentRequirements
+      };
 
-## Location Verification
-- **Verified Address:** ${analysisReport.locationVerification.verifiedAddress}
-- **Official Zoning:** ${analysisReport.locationVerification.officialZoning}
-- **Zoning Description:** ${analysisReport.locationVerification.zoningDescription}
-- **Data Source:** ${analysisReport.locationVerification.dataSource}
-
-## Zoning Analysis
-**Current Zoning:** ${analysisReport.zoningAnalysis.currentZoning}
-
-**Permitted Uses:**
-${analysisReport.zoningAnalysis.permittedUses.map(use => `• ${use}`).join('\n')}
-
-**Building Restrictions:**
-${analysisReport.zoningAnalysis.buildingRestrictions.map(restriction => `• ${restriction}`).join('\n')}
-
-**Development Potential:** ${analysisReport.zoningAnalysis.developmentPotential}
-
-## Development Constraints
-
-**Infrastructure Constraints:**
-${analysisReport.developmentConstraints.infrastructure.map(constraint => `• ${constraint}`).join('\n')}
-
-**Environmental Constraints:**
-${analysisReport.developmentConstraints.environmental.map(constraint => `• ${constraint}`).join('\n')}
-
-**Planning Constraints:**
-${analysisReport.developmentConstraints.planning.map(constraint => `• ${constraint}`).join('\n')}
-
-## Consent Requirements
-**Building Consent:** ${analysisReport.consentRequirements.buildingConsent}
-**Resource Consent:** ${analysisReport.consentRequirements.resourceConsent}
-
-**Other Consents Required:**
-${analysisReport.consentRequirements.otherConsents.map(consent => `• ${consent}`).join('\n')}
-
-## Recommended Next Steps
-${analysisReport.recommendedNextSteps.map(step => `• ${step}`).join('\n')}
-
-## Professional Contacts
-
-**Planners:**
-${analysisReport.professionalContacts.planners.map(planner => `• ${planner}`).join('\n')}
-
-**Engineers:**
-${analysisReport.professionalContacts.engineers.map(engineer => `• ${engineer}`).join('\n')}
-
-**Architects:**
-${analysisReport.professionalContacts.architects.map(architect => `• ${architect}`).join('\n')}
-
----
-*This analysis was generated on ${new Date(analysisReport.generatedAt).toLocaleDateString()} using official Auckland Council data and New Zealand building regulations.*`;
-
-      res.json({
-        success: true,
-        analysis,
-        propertyData: analysisReport.propertyDetails,
-        zoning: analysisReport.zoningAnalysis
-      });
-
-    } catch (error) {
-      console.error("Property analysis error:", error);
+      res.json(response);
+    } catch (error: any) {
+      console.error('Property analysis error:', error);
       res.status(500).json({ 
-        success: false, 
-        message: "Failed to generate property analysis. Please try again or contact support." 
+        message: "Failed to analyze property", 
+        error: error.message 
       });
     }
   });
+
+  // Helper functions for property analysis
+  function generateZoningAnalysis(zoningData: any, projectDescription: string, planningInfo: any[]) {
+    if (!zoningData) {
+      return "Retrieving official zoning information for your property. This will include what activities are permitted in your zone and any specific restrictions that apply to your project type.";
+    }
+
+    let analysis = `Your property is zoned as **${zoningData.currentZoning}**.\n\n`;
+    
+    if (zoningData.permittedUses && zoningData.permittedUses.length > 0) {
+      analysis += `**What's allowed in your zone:**\n`;
+      zoningData.permittedUses.forEach((use: string) => {
+        analysis += `• ${use}\n`;
+      });
+      analysis += '\n';
+    }
+
+    if (zoningData.buildingRestrictions && zoningData.buildingRestrictions.length > 0) {
+      analysis += `**Building restrictions that may affect your project:**\n`;
+      zoningData.buildingRestrictions.forEach((restriction: string) => {
+        analysis += `• ${restriction}\n`;
+      });
+      analysis += '\n';
+    }
+
+    // Analyze project compatibility with zone
+    const projectLower = projectDescription.toLowerCase();
+    if (projectLower.includes('extension') || projectLower.includes('addition')) {
+      analysis += `**For your extension project:** Most residential zones allow extensions as a permitted activity, subject to building setbacks, height limits, and site coverage requirements.\n\n`;
+    } else if (projectLower.includes('new') && (projectLower.includes('house') || projectLower.includes('dwelling'))) {
+      analysis += `**For your new dwelling:** This is typically a permitted activity in residential zones, subject to compliance with development standards.\n\n`;
+    }
+
+    if (zoningData.developmentPotential) {
+      analysis += `**Development opportunities:** ${zoningData.developmentPotential}`;
+    }
+
+    return analysis;
+  }
+
+  function generateBuildingCodeAnalysis(projectDescription: string, buildingCodeInfo: any[]) {
+    let analysis = "**Building Code & Building Act Requirements:**\n\n";
+    
+    const projectLower = projectDescription.toLowerCase();
+    
+    // General building consent requirements
+    analysis += "**Building Consent Required:** Yes, building consent is required for your project.\n\n";
+    
+    // Specific requirements based on project type
+    if (projectLower.includes('extension') || projectLower.includes('addition')) {
+      analysis += `**Key compliance areas for extensions:**
+• **Structural integrity** - Engineering assessment may be required to ensure existing structure can support addition
+• **Fire safety** - Escape routes and smoke alarm requirements under Building Code C/AS
+• **Weathertightness** - Compliance with E2 External Moisture requirements, especially at junctions
+• **Thermal performance** - Insulation and glazing to meet H1 Energy Efficiency standards
+• **Foundation design** - Appropriate foundation system for soil conditions (B1 Structure)
+
+`;
+    } else if (projectLower.includes('new') && (projectLower.includes('house') || projectLower.includes('dwelling'))) {
+      analysis += `**Key compliance areas for new dwellings:**
+• **Structural design** - Full compliance with B1 Structure including seismic and wind load requirements
+• **Foundation system** - Engineered foundations suitable for site conditions
+• **Fire safety design** - Smoke alarms, escape routes, and fire separations per C/AS requirements
+• **Weathertightness system** - Complete building envelope design under E2 External Moisture
+• **Energy efficiency** - Building thermal envelope to H1 standards
+• **Accessibility** - D1 Access Routes compliance where required
+
+`;
+    } else if (projectLower.includes('garage') || projectLower.includes('shed')) {
+      analysis += `**Key compliance areas for garage/outbuilding:**
+• **Structural adequacy** - Appropriate framing and foundation system
+• **Fire separation** - Distance requirements from main dwelling and boundaries
+• **Weathertightness** - Basic moisture protection requirements
+• **Site coverage** - May be included in overall site coverage calculations
+
+`;
+    }
+
+    analysis += `**Professional Requirements:**
+• **Licensed Building Practitioner** required for restricted building work
+• **Structural engineer** may be required for complex structural elements
+• **Building consent application** must include detailed plans and specifications
+
+**Estimated Timeframes:**
+• Building consent processing: 15-20 working days for straightforward projects
+• Project completion timeframes vary based on complexity and contractor availability`;
+
+    return analysis;
+  }
+
+  // ==================== Stats Routes ====================
 
   // ==================== Stats Routes ====================
   apiRouter.get("/api/stats", async (req: Request, res: Response) => {
