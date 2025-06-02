@@ -114,7 +114,11 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
   };
 
   const handleSubmit = () => {
-    if (formData.name && formData.address && formData.projectDescription && formData.budget) {
+    if (formData.name && formData.address && formData.projectDescription) {
+      // Store the intake data in sessionStorage for Agent 2
+      sessionStorage.setItem('propertyIntakeData', JSON.stringify(formData));
+      
+      // Call the completion handler and navigate to Agent 2
       onComplete(formData as PropertyIntakeData);
     }
   };
