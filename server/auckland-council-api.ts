@@ -35,7 +35,8 @@ export class AucklandCouncilAPI {
     heritage_overlay: "Historic_Heritage_Overlay_Extent_of_Place",
     aircraft_noise: "Aircraft_Noise_Overlay",
     ridgeline_protection: "Ridgeline_Protection_Overlay",
-    coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise"
+    coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise",
+    special_character_areas: "Special_Character_Areas_Overlay_Residential_and_Business"
   };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
@@ -269,7 +270,8 @@ export class AucklandCouncilAPI {
         this.queryFeatureService(this.keyDatasets.flood_sensitive_areas, lat, lon),
         this.queryFeatureService(this.keyDatasets.notable_trees, lat, lon),
         this.queryFeatureService(this.keyDatasets.heritage_overlay, lat, lon),
-        this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon)
+        this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon),
+        this.queryFeatureService(this.keyDatasets.special_character_areas, lat, lon)
       ]);
 
       // Process overlay results and add to property data

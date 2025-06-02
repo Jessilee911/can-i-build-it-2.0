@@ -1,0 +1,195 @@
+# Special Character Areas Overlay Integration
+
+## Implementation Prompt
+
+Integrate Auckland Council's Special Character Areas Overlay data to provide comprehensive property analysis that combines base zoning with special character area requirements.
+
+## API Integration Setup
+
+### 1. Special Character Areas API Configuration
+**Base URL:** `https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services/Special_Character_Areas_Overlay_Residential_and_Business/FeatureServer/0/query`
+
+**Query Parameters for Property Lookup:**
+```python
+special_character_params = {
+    'outFields': 'NAME,TYPE,SCHEDULE,DocumentURL,SUBTYPE',
+    'where': '1=1',
+    'geometry': f'{longitude},{latitude}',
+    'geometryType': 'esriGeometryPoint',
+    'inSR': '4326',  # WGS84 for input coordinates
+    'spatialRel': 'esriSpatialRelIntersects',
+    'f': 'json',
+    'returnGeometry': 'false'
+}
+```
+
+### 2. Property Analysis Integration Workflow
+When analyzing a property, perform these steps in sequence:
+
+```python
+# Step 1: Get base zone (existing functionality)
+base_zone = get_property_zone(address)
+base_zone_pdf = get_zone_pdf_url(base_zone)
+
+# Step 2: Check for Special Character Area overlay
+special_area = check_special_character_area(latitude, longitude)
+
+# Step 3: Get relevant documents for both
+zone_rules = extract_zone_rules(base_zone_pdf, project_type)
+special_rules = extract_special_character_rules(special_area, project_type) if special_area else None
+
+# Step 4: Combine analysis
+combined_analysis = merge_planning_requirements(zone_rules, special_rules)
+```
+
+## Special Character Area Types Integration
+
+### Key Fields to Extract and Use:
+- **NAME**: Display name of the special character area
+- **TYPE**: Coded value indicating area type (Business/Residential focus)
+- **SCHEDULE**: Reference to specific AUP schedule
+- **DocumentURL**: Link to detailed planning documents
+- **SUBTYPE**: Additional classification details
+
+### Response Integration Format
+
+**When NO Special Character Area is detected:**
+```
+"Planning Zone Considerations for Your [Project Type]: Your property is zoned [Base Zone Name] under the Auckland Unitary Plan. [Standard zone analysis continues...]"
+```
+
+**When Special Character Area IS detected:**
+```
+"Planning Zone Considerations for Your [Project Type]: Your property has a [Base Zone Name] base zoning with an additional [Special Character Area Name] overlay. The base zone allows [base zone permissions], however the special character overlay imposes additional requirements including [specific overlay requirements]. [Combined analysis continues...]"
+```
+
+## Enhanced Property Analysis Structure
+
+### 1. Updated Property Summary Section
+```
+Property Details:
+Address: [full address]
+Project Type: [user's specified project]  
+Budget: [if provided, otherwise "not specified"]
+Base Zoning: [official zone name and code]
+Special Character Area: [name if applicable, otherwise "None applicable"]
+```
+
+### 2. Enhanced Planning Analysis Section
+**Section Title:** "Planning Requirements for Your [Project Type]"
+
+**Content Structure:**
+1. **Base Zone Analysis**: Extract from standard AUP zone PDF
+2. **Special Character Overlay Analysis**: Extract from special character documents (if applicable)
+3. **Combined Requirements**: Highlight where overlay requirements are more restrictive
+4. **Compliance Summary**: Clear statement of what applies to the specific project
+
+### 3. Special Character Area Rule Extraction
+
+**Priority Rules to Extract:**
+- **Design Requirements**: Architectural style, materials, height variations
+- **Site Coverage Modifications**: May be more restrictive than base zone
+- **Setback Variations**: Special character areas often have unique setback rules
+- **Building Alterations**: Additional consent requirements for character areas
+- **Heritage Considerations**: Special consent pathways or restrictions
+
+**Document Processing:**
+```python
+def extract_special_character_rules(special_area_data, project_type):
+    if not special_area_data:
+        return None
+    
+    # Get document URL if available
+    document_url = special_area_data.get('DocumentURL')
+    schedule_ref = special_area_data.get('SCHEDULE')
+    area_name = special_area_data.get('NAME')
+    
+    # Extract relevant rules based on project type
+    if 'residential' in area_name.lower():
+        return extract_residential_character_rules(document_url, project_type)
+    elif 'business' in area_name.lower():
+        return extract_business_character_rules(document_url, project_type)
+    
+    return extract_general_character_rules(document_url, project_type)
+```
+
+## Response Format Examples
+
+### Example 1: Property with Special Character Overlay
+```
+"Hi John, I'm delighted to help you explore the development potential for your double garage project. Let me provide you with a clear analysis of what's possible at your property.
+
+Property Details: Your property at 15 Jervois Road, Herne Bay is a residential project with a Residential - Single House Zone base zoning and is located within the Herne Bay Residential Special Character Area overlay.
+
+Planning Requirements for Your Double Garage: Your base Single House Zone allows accessory buildings including garages with standard height limits of 8 metres and site coverage up to 40%. However, the Herne Bay Special Character Area overlay requires that all new buildings, including garages, maintain the established character of the area through appropriate design, materials, and positioning. The overlay specifies that accessory buildings must be positioned to minimise visual impact from the street and use materials compatible with the character dwelling. Additional design assessment may be required through the resource consent process.
+
+Building Code Requirements for Your Double Garage: [Standard building code analysis continues...]"
+```
+
+### Example 2: Property without Special Character Overlay
+```
+"Hi Sarah, I'm delighted to help you explore the development potential for your house extension project. Let me provide you with a clear analysis of what's possible at your property.
+
+Property Details: Your property at 25 Main Road, Mount Wellington is a residential project with a Residential - Mixed Housing Suburban Zone. No special character area overlays apply to your property.
+
+Planning Requirements for Your House Extension: Your Mixed Housing Suburban Zone allows residential activities with building coverage up to 40% of the site area and maximum height of 8 metres. Extensions to existing dwellings are generally permitted activities provided they comply with setback requirements of 1.5 metres from side boundaries and 4 metres from rear boundaries. [Analysis continues...]"
+```
+
+## Technical Implementation Requirements
+
+### 1. Coordinate Handling
+- Convert street addresses to coordinates using existing geocoding service
+- Handle coordinate system conversions (WGS84 to NZTM2000 if needed)
+- Implement buffer zones for boundary properties
+
+### 2. Error Handling
+```python
+def check_special_character_area(lat, lon):
+    try:
+        response = query_special_character_api(lat, lon)
+        if response and response.get('features'):
+            return response['features'][0]['attributes']
+        return None
+    except Exception as e:
+        logging.warning(f"Special character area lookup failed: {e}")
+        return None  # Gracefully continue with base zone analysis only
+```
+
+### 3. Caching Strategy
+- Cache special character area data by coordinates
+- Update cache weekly to handle plan changes
+- Store document URLs and last-modified dates
+
+### 4. Integration with Existing Zone Mapping
+Update the existing zone mapping to include special character area awareness:
+
+```python
+def get_comprehensive_planning_analysis(address, project_type):
+    # Get coordinates
+    coords = geocode_address(address)
+    
+    # Get base zone
+    base_zone = get_property_zone(address)
+    zone_pdf_url = get_zone_pdf_url(base_zone)
+    
+    # Check special character overlay
+    special_area = check_special_character_area(coords['lat'], coords['lon'])
+    
+    # Extract and combine rules
+    base_rules = extract_zone_rules(zone_pdf_url, project_type)
+    special_rules = extract_special_character_rules(special_area, project_type) if special_area else None
+    
+    return combine_planning_analysis(base_rules, special_rules, special_area)
+```
+
+## Expected Outcomes
+
+After implementation, your property analysis will:
+
+1. **Identify Special Character Areas**: Automatically detect when properties are subject to special character overlays
+2. **Provide Comprehensive Analysis**: Combine base zone rules with overlay requirements
+3. **Flag Additional Requirements**: Highlight when special character areas impose stricter rules
+4. **Reference Correct Documents**: Link to both base zone PDFs and special character area documentation
+5. **Give Accurate Guidance**: Provide realistic expectations for projects in character areas
+
+This integration ensures property owners receive complete planning guidance that accounts for all applicable Auckland Unitary Plan provisions, not just the base zoning.

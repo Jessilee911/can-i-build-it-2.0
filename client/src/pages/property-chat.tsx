@@ -108,10 +108,25 @@ export default function PropertyChat() {
       data.budget.charAt(0).toUpperCase() + data.budget.slice(1).replace('-', ' ') : 
       'not specified';
 
+    // Check for special character areas overlay information
+    const hasSpecialCharacterArea = result.propertyDetails?.overlays?.some((overlay: any) => 
+      overlay.type === 'special_character_areas'
+    );
+    
+    const specialCharacterInfo = hasSpecialCharacterArea 
+      ? result.propertyDetails.overlays.find((overlay: any) => overlay.type === 'special_character_areas')
+      : null;
+
     // Format the report according to the specific requirements - no markdown formatting
+    let baseZoneText = `The property has ${result.zoning || 'zoning information being retrieved'} classification under the Auckland Unitary Plan`;
+    
+    if (specialCharacterInfo?.data?.NAME) {
+      baseZoneText += ` with an additional ${specialCharacterInfo.data.NAME} overlay`;
+    }
+
     const report = `Hi ${firstName}, I'm delighted to help you explore the development potential for your ${data.projectType} project. Let me provide you with a clear analysis of what's possible at your property.
 
-Property Details: Your property at ${result.propertyAddress || data.address} is a ${data.projectType} project with budget ${budgetDisplay}. The property has ${result.zoning || 'zoning information being retrieved'} classification under the Auckland Unitary Plan.
+Property Details: Your property at ${result.propertyAddress || data.address} is a ${data.projectType} project with budget ${budgetDisplay}. ${baseZoneText}.
 
 Planning Zone Considerations for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${result.zoningAnalysis || 'Analyzing your planning zone to determine what activities are permitted, building restrictions that may apply, and development opportunities specific to your project type. This includes reviewing the relevant Auckland Unitary Plan zone-specific documentation for rules that directly apply to your project.'}
 

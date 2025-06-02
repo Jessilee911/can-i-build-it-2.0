@@ -1345,7 +1345,8 @@ function performLocalAddressSearch(query: string) {
       // Generate zone-specific planning analysis using authentic Auckland Unitary Plan documents
       const zoningAnalysis = await generateAuthenticZoningAnalysis(
         analysisReport.locationVerification.officialZoning, 
-        projectDescription
+        projectDescription,
+        analysisReport.propertyDetails?.overlays
       );
       
       // Generate building code analysis using official Schedule 1 and MBIE documents  
