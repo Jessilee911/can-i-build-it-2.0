@@ -112,7 +112,8 @@ export class PropertyAgent {
     propertyInfo += `Lot and DP number: ${lotDp || 'Not available in current data'}\n`;
     
     // District/Planning Zone
-    propertyInfo += `District/Planning Zone: ${context.zoning || 'Zone information not available'}\n`;
+    const zoneInfo = this.formatZoneInfo(context.zoning, context.propertyData);
+    propertyInfo += `District/Planning Zone: ${zoneInfo}\n`;
     
     // Overlays
     const overlays = this.formatOverlays(context.propertyData?.overlays);
@@ -291,11 +292,22 @@ export class PropertyAgent {
     if (propertyData?.overlays) {
       for (const overlay of propertyData.overlays) {
         if (overlay.type === 'liquefaction_vulnerability') {
-          const vulnerability = overlay.data?.Vulnerability || overlay.data?.VulnerabilityDescription;
-          if (vulnerability) hazards.push(`Liquefaction: ${vulnerability}`);
+          const data = overlay.data;
+          const vulnerability = data?.Vulnerability || data?.VulnerabilityDescription || data?.attributes?.Vulnerability || data?.attributes?.VulnerabilityDescription;
+          const level = data?.LiquefactionAssessmentLevel || data?.attributes?.LiquefactionAssessmentLevel;
+          
+          if (vulnerability) {
+            let hazardText = `Liquefaction vulnerability: ${vulnerability}`;
+            if (level) hazardText += ` (Assessment Level ${level})`;
+            hazards.push(hazardText);
+          }
         }
         if (overlay.type === 'geotechnical_reports') {
-          hazards.push('Geotechnical considerations apply');
+          const data = overlay.data;
+          const reportId = data?.GeotechExtentID || data?.attributes?.GeotechExtentID;
+          let hazardText = 'Geotechnical study area';
+          if (reportId) hazardText += ` (Report ID: ${reportId})`;
+          hazards.push(hazardText);
         }
       }
     }
@@ -311,8 +323,17 @@ export class PropertyAgent {
     );
     
     if (specialCharacterOverlay) {
-      const type = specialCharacterOverlay.data?.TYPE;
-      return `Special Character Area Type ${type || 'Present'}`;
+      const data = specialCharacterOverlay.data;
+      const type = data?.TYPE || data?.attributes?.TYPE;
+      const name = data?.NAME || data?.attributes?.NAME;
+      const schedule = data?.SCHEDULE || data?.attributes?.SCHEDULE;
+      
+      let result = 'Special Character Areas Overlay Residential and Business';
+      if (type) result += ` - Type ${type}`;
+      if (name) result += ` - ${name}`;
+      if (schedule) result += ` - Schedule ${schedule}`;
+      
+      return result;
     }
     
     return 'None';
@@ -348,6 +369,26 @@ export class PropertyAgent {
       return 'Zone C - Corrosive environment (coastal Auckland)';
     }
     return 'Zone C - Corrosive environment (typical for Auckland coastal areas)';
+  }
+
+  private formatZoneInfo(zoning: string | undefined, propertyData: any): string {
+    if (!zoning) return 'Zone information not available';
+    
+    // If we have H3 zone, provide full Unitary Plan Base Zone information
+    if (zoning === 'H3') {
+      return `${zoning} - Residential - Single House Zone (Auckland Unitary Plan Base Zone)`;
+    }
+    
+    // Map other common zones
+    const zoneDescriptions: { [key: string]: string } = {
+      'H1': 'H1 - Residential - Large Lot Zone (Auckland Unitary Plan Base Zone)',
+      'H2': 'H2 - Residential - Rural and Coastal Settlement Zone (Auckland Unitary Plan Base Zone)',
+      'H4': 'H4 - Residential - Mixed Housing Suburban Zone (Auckland Unitary Plan Base Zone)',
+      'H5': 'H5 - Residential - Mixed Housing Urban Zone (Auckland Unitary Plan Base Zone)',
+      'H6': 'H6 - Residential - Terrace Housing and Apartment Building Zone (Auckland Unitary Plan Base Zone)',
+    };
+    
+    return zoneDescriptions[zoning] || `${zoning} (Auckland Unitary Plan Base Zone)`;
   }
 
   /**
