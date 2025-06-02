@@ -142,18 +142,30 @@ export function LinzGeocodingMap({
       </div>
 
       {/* Location Confirmation Actions */}
-      <div className="flex space-x-3">
+      <div className="flex space-x-3 mt-4">
         <Button 
-          onClick={() => onLocationConfirm(true)}
-          className="flex-1"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Confirm button clicked');
+            onLocationConfirm(true);
+          }}
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
           disabled={!coordinates}
+          type="button"
         >
           Confirm This Location
         </Button>
         <Button 
-          onClick={() => onLocationConfirm(false)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Try different address button clicked');
+            onLocationConfirm(false);
+          }}
           variant="outline"
-          className="flex-1"
+          className="flex-1 border-gray-300 hover:bg-gray-50"
+          type="button"
         >
           Try Different Address
         </Button>
