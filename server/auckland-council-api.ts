@@ -27,7 +27,15 @@ export class AucklandCouncilAPI {
   
   // Key datasets for property analysis
   private keyDatasets = {
-    unitary_plan_zones: "Unitary_Plan_Base_Zone"
+    unitary_plan_zones: "Unitary_Plan_Base_Zone",
+    geotechnical_reports: "Geotechnical_Report_Extent", 
+    liquefaction_vulnerability: "Liquefaction_Vulnerability_Calibrated_Assessment",
+    flood_sensitive_areas: "Flood_Sensitive_Areas",
+    notable_trees: "Notable_Trees_Overlay",
+    heritage_overlay: "Historic_Heritage_Overlay_Extent_of_Place",
+    aircraft_noise: "Aircraft_Noise_Overlay",
+    ridgeline_protection: "Ridgeline_Protection_Overlay",
+    coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise"
   };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
@@ -254,7 +262,32 @@ export class AucklandCouncilAPI {
         property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
       }
 
-      // Only querying Unitary Plan Base Zone data now
+      // Query additional overlays and constraints
+      const overlayResults = await Promise.allSettled([
+        this.queryFeatureService(this.keyDatasets.geotechnical_reports, lat, lon),
+        this.queryFeatureService(this.keyDatasets.liquefaction_vulnerability, lat, lon),
+        this.queryFeatureService(this.keyDatasets.flood_sensitive_areas, lat, lon),
+        this.queryFeatureService(this.keyDatasets.notable_trees, lat, lon),
+        this.queryFeatureService(this.keyDatasets.heritage_overlay, lat, lon),
+        this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon)
+      ]);
+
+      // Process overlay results and add to property data
+      overlayResults.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
+          const datasetName = Object.keys(this.keyDatasets)[index + 1]; // Skip zoning which was already processed
+          console.log(`Found ${datasetName} data for property`);
+          
+          // Store overlay information in property object for report generation
+          if (!property.overlays) {
+            property.overlays = [];
+          }
+          property.overlays.push({
+            type: datasetName,
+            data: result.value[0].attributes
+          });
+        }
+      });
 
       console.log(`Property data compiled for ${address}:`, property);
       return property;
@@ -408,37 +441,6 @@ export class AucklandCouncilAPI {
     
     if (property.coordinates) {
       report += `Coordinates: ${property.coordinates[0].toFixed(6)}, ${property.coordinates[1].toFixed(6)}\n`;
-    }
-    
-    // Add overlay information
-    if (property.overlays && property.overlays.length > 0) {
-      report += `\nProperty Overlays and Constraints:\n`;
-      report += `=====================================\n`;
-      
-      property.overlays.forEach(overlay => {
-        if (overlay.type === 'special_character_areas') {
-          const data = overlay.data[0]?.attributes;
-          if (data) {
-            report += `\nSpecial Character Area:\n`;
-            if (data.NAME) report += `  Name: ${data.NAME}\n`;
-            if (data.TYPE) report += `  Type: ${data.TYPE}\n`;
-            if (data.SCHEDULE) report += `  Schedule: ${data.SCHEDULE}\n`;
-            if (data.DocumentURL) report += `  Documentation: ${data.DocumentURL}\n`;
-          }
-        } else if (overlay.type === 'heritage_overlay') {
-          report += `\nHeritage Overlay: Present\n`;
-        } else if (overlay.type === 'liquefaction_vulnerability') {
-          report += `\nLiquefaction Risk: Present\n`;
-        } else if (overlay.type === 'flood_sensitive_areas') {
-          report += `\nFlood Sensitive Area: Present\n`;
-        } else if (overlay.type === 'notable_trees') {
-          report += `\nNotable Trees: Present\n`;
-        } else if (overlay.type === 'geotechnical_reports') {
-          report += `\nGeotechnical Reports Available: Yes\n`;
-        } else if (overlay.type === 'aircraft_noise') {
-          report += `\nAircraft Noise Overlay: Present\n`;
-        }
-      });
     }
     
     return report;

@@ -64,46 +64,38 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     },
   });
 
-
-
-  const onSubmit = async (data: PremiumRequestData) => {
-    // First verify the location
-    try {
-      const verificationResponse = await fetch("/api/verify-location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: data.propertyAddress })
-      });
-
-      if (!verificationResponse.ok) {
-        throw new Error("Location verification failed");
-      }
-
-      const locationData = await verificationResponse.json();
-      
-      if (locationData.success) {
-        setLocationData(locationData);
-        setShowLocationVerification(true);
+  const premiumRequestMutation = useMutation({
+    mutationFn: async (data: PremiumRequestData) => {
+      const response = await apiRequest("/api/premium-assessment-request", "POST", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsSubmitted(true);
+      setRequestId(data.requestId);
+      if (data.report) {
+        setGeneratedReport(data.report);
+        toast({
+          title: "Report Generated Successfully!",
+          description: "Your comprehensive property analysis is ready for review.",
+        });
       } else {
-        // If location can't be verified, still redirect to Property Assistant
-        redirectToPropertyAssistant(data);
+        toast({
+          title: "Request Submitted Successfully!",
+          description: "Your detailed report will be provided within 24 hours.",
+        });
       }
-    } catch (error) {
-      // If verification fails, still redirect to Property Assistant
-      redirectToPropertyAssistant(data);
-    }
-  };
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Please try again or contact support",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const redirectToPropertyAssistant = (data: PremiumRequestData) => {
-    // Store form data in session storage for Property Assistant
-    sessionStorage.setItem('propertyAssistantData', JSON.stringify({
-      userName: data.fullName,
-      propertyAddress: data.propertyAddress,
-      projectDescription: data.projectDescription
-    }));
-    
-    // Redirect to Property Assistant
-    window.location.href = '/property-chat';
+  const onSubmit = (data: PremiumRequestData) => {
+    premiumRequestMutation.mutate(data);
   };
 
   const handleClose = () => {
@@ -115,22 +107,47 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     onClose();
   };
 
+  const handleVerifyLocation = async () => {
+    const address = form.getValues("propertyAddress");
+    if (!address.trim()) {
+      toast({
+        title: "Address Required",
+        description: "Please enter a property address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/geocode-location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setLocationData(data.location);
+          setShowLocationVerification(true);
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Location Verification Failed",
+        description: "Unable to verify the property location. Please check the address.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleLocationConfirm = (confirmed: boolean) => {
     if (confirmed) {
       setShowLocationVerification(false);
-      // Redirect to Property Assistant (Agent 2) with form data
-      const formData = form.getValues();
-      
-      // Store form data in session storage for Property Assistant
-      sessionStorage.setItem('propertyAssistantData', JSON.stringify({
-        userName: formData.fullName,
-        propertyAddress: formData.propertyAddress,
-        projectDescription: formData.projectDescription
-      }));
-      
-      // Redirect to Property Assistant
-      window.location.href = '/property-chat';
-      setLocationData(null);
+      toast({
+        title: "Location Verified",
+        description: "Property location has been confirmed.",
+      });
     } else {
       setShowLocationVerification(false);
       setLocationData(null);
@@ -320,9 +337,20 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Property Address *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Example Street, Auckland" {...field} />
-                  </FormControl>
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input placeholder="123 Example Street, Auckland" {...field} />
+                    </FormControl>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleVerifyLocation}
+                      className="shrink-0"
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Confirm Location
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -357,10 +385,17 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               </Button>
               <Button 
                 type="submit" 
-                disabled={false}
+                disabled={premiumRequestMutation.isPending}
                 className="flex-1"
               >
-                Start Premium Report
+                {premiumRequestMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Request Premium Analysis"
+                )}
               </Button>
             </div>
           </form>

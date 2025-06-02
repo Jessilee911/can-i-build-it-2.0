@@ -248,10 +248,7 @@ export type InsertConsentRequirement = z.infer<typeof insertConsentRequirementSc
 export const chatSessions = pgTable("chat_sessions", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
-  agentType: varchar("agent_type").notNull().default("agent_1"), // 'agent_1' (general) or 'agent_2' (property-specific)
   title: text("title").notNull(),
-  propertyAddress: varchar("property_address"), // Required for agent_2 sessions
-  propertyData: jsonb("property_data"), // Cached property research for agent_2
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   isActive: boolean("is_active").default(true),
