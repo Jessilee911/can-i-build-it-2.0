@@ -125,9 +125,10 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
                     type="button"
                     variant="outline"
                     onClick={() => setShowLocationModal(true)}
-                    className="px-4"
+                    className="shrink-0"
                   >
-                    Verify
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Confirm Location
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
