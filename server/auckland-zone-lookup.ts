@@ -330,6 +330,330 @@ export const AUCKLAND_ZONE_LOOKUP: Record<number, ZoneInfo> = {
       "Acoustic insulation required",
       "Height restrictions apply"
     ]
+  },
+  25: {
+    code: 25,
+    name: "Water",
+    description: "Water bodies including rivers, lakes, and other waterways",
+    category: 'special',
+    buildingRules: [
+      "Very limited development permitted",
+      "Water-related activities only",
+      "Environmental protection priority",
+      "Public access considerations"
+    ]
+  },
+  26: {
+    code: 26,
+    name: "Strategic Transport Corridor Zone",
+    description: "Major transport corridors and associated infrastructure",
+    category: 'special',
+    buildingRules: [
+      "Transport infrastructure permitted",
+      "Limited non-transport activities",
+      "Height restrictions for safety",
+      "Access control requirements"
+    ]
+  },
+  27: {
+    code: 27,
+    name: "Road",
+    description: "Public roads and associated transport infrastructure",
+    category: 'special',
+    buildingRules: [
+      "Road and transport infrastructure",
+      "Network utility services",
+      "Limited non-transport development",
+      "Safety and access requirements"
+    ]
+  },
+  29: {
+    code: 29,
+    name: "Strategic Transport Corridor Zone",
+    description: "Major transport corridors and associated infrastructure",
+    category: 'special',
+    buildingRules: [
+      "Transport infrastructure permitted",
+      "Limited non-transport activities",
+      "Height restrictions for safety",
+      "Access control requirements"
+    ]
+  },
+  30: {
+    code: 30,
+    name: "Coastal - General Coastal Marine Zone",
+    description: "General coastal marine areas under Resource Management Act",
+    category: 'coastal',
+    buildingRules: [
+      "Resource consent required for most activities",
+      "Marine and coastal activities",
+      "Environmental protection priority",
+      "Public access preservation"
+    ]
+  },
+  37: {
+    code: 37,
+    name: "Coastal - Minor Port Zone",
+    description: "Small port facilities and related commercial activities",
+    category: 'coastal',
+    buildingRules: [
+      "Port and marine facilities",
+      "Commercial shipping activities",
+      "Industrial activities related to port",
+      "Environmental management required"
+    ]
+  },
+  39: {
+    code: 39,
+    name: "Coastal - Defence Zone",
+    description: "Defence facilities and related activities in coastal areas",
+    category: 'coastal',
+    buildingRules: [
+      "Defence and military facilities",
+      "Security considerations apply",
+      "Limited public access",
+      "Specialized building requirements"
+    ]
+  },
+  40: {
+    code: 40,
+    name: "Coastal - Marina Zone",
+    description: "Marina facilities and associated commercial activities",
+    category: 'coastal',
+    buildingRules: [
+      "Marine-related facilities permitted",
+      "Commercial activities supporting marina",
+      "Height restrictions apply",
+      "Environmental impact considerations"
+    ]
+  },
+  41: {
+    code: 41,
+    name: "Coastal - Mooring Zone",
+    description: "Areas designated for boat mooring and anchorage",
+    category: 'coastal',
+    buildingRules: [
+      "Mooring facilities and services",
+      "Limited land-based activities",
+      "Marine environment protection",
+      "Navigation safety requirements"
+    ]
+  },
+  43: {
+    code: 43,
+    name: "Hauraki Gulf Islands",
+    description: "Hauraki Gulf Islands with special island planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Island-specific planning provisions",
+      "Conservation priority",
+      "Limited development scale",
+      "Infrastructure constraints considered"
+    ]
+  },
+  45: {
+    code: 45,
+    name: "Coastal - Ferry Terminal Zone",
+    description: "Ferry terminal facilities and passenger services",
+    category: 'coastal',
+    buildingRules: [
+      "Ferry terminal buildings",
+      "Passenger service facilities",
+      "Commercial activities supporting ferry",
+      "Transport interchange facilities"
+    ]
+  },
+  48: {
+    code: 48,
+    name: "Strategic Transport Corridor Zone",
+    description: "Major transport corridors and associated infrastructure",
+    category: 'special',
+    buildingRules: [
+      "Transport infrastructure permitted",
+      "Limited non-transport activities",
+      "Height restrictions for safety",
+      "Access control requirements"
+    ]
+  },
+  50: {
+    code: 50,
+    name: "Strategic Transport Corridor Zone",
+    description: "Major transport corridors and associated infrastructure",
+    category: 'special',
+    buildingRules: [
+      "Transport infrastructure permitted",
+      "Limited non-transport activities",
+      "Height restrictions for safety",
+      "Access control requirements"
+    ]
+  },
+  51: {
+    code: 51,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  52: {
+    code: 52,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  53: {
+    code: 53,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  54: {
+    code: 54,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  55: {
+    code: 55,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  56: {
+    code: 56,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  57: {
+    code: 57,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  58: {
+    code: 58,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  59: {
+    code: 59,
+    name: "Coastal - Coastal Transition Zone",
+    description: "Transition areas between land and marine environments",
+    category: 'coastal',
+    buildingRules: [
+      "Limited development permitted",
+      "Coastal process protection",
+      "Natural character preservation",
+      "Hazard area considerations"
+    ]
+  },
+  63: {
+    code: 63,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  64: {
+    code: 64,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  67: {
+    code: 67,
+    name: "Special Purpose Zone",
+    description: "Areas with special characteristics requiring specific planning provisions",
+    category: 'special',
+    buildingRules: [
+      "Site-specific rules apply",
+      "Specialized activities permitted",
+      "May have unique height/coverage limits",
+      "Refer to specific zone provisions"
+    ]
+  },
+  68: {
+    code: 68,
+    name: "Rural - Waitakere Foothills Zone",
+    description: "Waitakere foothills area with specific landscape and environmental values",
+    category: 'rural',
+    buildingRules: [
+      "Maximum height typically 8 metres",
+      "Very low building coverage",
+      "Large minimum site areas",
+      "Landscape protection"
+    ]
+  },
+  69: {
+    code: 69,
+    name: "Rural - Waitakere Ranges Zone",
+    description: "Waitakere Ranges heritage area with strict conservation controls",
+    category: 'rural',
+    buildingRules: [
+      "Maximum height typically 8 metres",
+      "Very limited building coverage",
+      "Heritage landscape protection",
+      "Strict development controls"
+    ]
   }
 };
 
