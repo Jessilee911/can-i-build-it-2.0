@@ -60,26 +60,26 @@ export function LinzGeocodingMap({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div className="space-y-4 select-text">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 select-text">
         <div className="flex items-start space-x-3">
           <MapPin className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-          <div className="flex-1">
-            <h3 className="font-semibold text-blue-900 mb-2">Property Location Confirmation</h3>
-            <div className="space-y-2 text-sm">
-              <p><strong>Address:</strong> {address}</p>
+          <div className="flex-1 select-text">
+            <h3 className="font-semibold text-blue-900 mb-2 select-text">Property Location Confirmation</h3>
+            <div className="space-y-2 text-sm select-text">
+              <p className="select-text"><strong>Address:</strong> <span className="select-text">{address}</span></p>
               {coordinates && (
-                <p><strong>Coordinates:</strong> {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}</p>
+                <p className="select-text"><strong>Coordinates:</strong> <span className="select-text font-mono">{coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}</span></p>
               )}
               {zoning && zoning.zoneName && (
-                <div className="bg-green-50 border border-green-200 p-2 rounded text-xs">
-                  <p><strong>Auckland Unitary Plan Zone:</strong></p>
-                  <p className="font-medium text-green-800">{zoning.zoneName}</p>
-                  <p className="text-green-700 mt-1 text-xs">Source: Auckland Council Official API</p>
+                <div className="bg-green-50 border border-green-200 p-2 rounded text-xs select-text">
+                  <p className="select-text"><strong>Auckland Unitary Plan Zone:</strong></p>
+                  <p className="font-medium text-green-800 select-text">{zoning.zoneName}</p>
+                  <p className="text-green-700 mt-1 text-xs select-text">Source: Auckland Council Official API</p>
                 </div>
               )}
               {!zoning?.zoneName && (
-                <p className="text-amber-700 bg-amber-50 p-2 rounded text-xs">
+                <p className="text-amber-700 bg-amber-50 p-2 rounded text-xs select-text">
                   <strong>Note:</strong> Zoning information will be retrieved from Auckland Council's official database.
                 </p>
               )}
