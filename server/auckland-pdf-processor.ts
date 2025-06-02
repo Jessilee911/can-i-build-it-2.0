@@ -71,7 +71,7 @@ export class AucklandPDFProcessor {
       }
 
       const buffer = await response.buffer();
-      const pdfContent = await pdfParse.default(buffer);
+      const pdfContent = await pdfParse(buffer);
 
       const content: PDFContent = {
         text: pdfContent.text,
@@ -178,7 +178,7 @@ export class AucklandPDFProcessor {
     }
 
     // Remove duplicates and limit results
-    return [...new Set(rules)].slice(0, 10);
+    return Array.from(new Set(rules)).slice(0, 10);
   }
 
   /**
@@ -256,11 +256,11 @@ export class AucklandPDFProcessor {
     const now = Date.now();
     let oldestEntry: number | null = null;
     
-    for (const [_, cached] of this.pdfCache) {
+    this.pdfCache.forEach((cached) => {
       if (oldestEntry === null || cached.timestamp < oldestEntry) {
         oldestEntry = cached.timestamp;
       }
-    }
+    });
     
     return {
       size: this.pdfCache.size,
