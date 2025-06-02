@@ -14,7 +14,6 @@ import ReportGenerator from "@/pages/report-generator";
 import Chat from "@/pages/chat";
 import PremiumChat from "@/pages/premium-chat";
 import PropertyChat from "@/pages/property-chat";
-import ARZoningViewer from "@/pages/ar-zoning-viewer";
 import ReportPage from "@/pages/report";
 
 import { Link } from "wouter";
@@ -58,11 +57,6 @@ function Router() {
       <Route path="/property-chat" component={() => (
         <AppLayout>
           <PropertyChat />
-        </AppLayout>
-      )} />
-      <Route path="/ar-zoning" component={() => (
-        <AppLayout>
-          <ARZoningViewer />
         </AppLayout>
       )} />
       <Route path="/report/:id" component={() => (

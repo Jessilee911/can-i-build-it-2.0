@@ -259,20 +259,7 @@ export class AucklandCouncilAPI {
       
       if (zoningData && zoningData.length > 0) {
         const zone = zoningData[0];
-        const zoneCode = zone.attributes?.ZONE;
-        
-        // Use zone lookup to get proper zone name
-        if (zoneCode) {
-          const { getZoneInfo } = await import('./auckland-zone-lookup');
-          const zoneInfo = getZoneInfo(zoneCode);
-          if (zoneInfo) {
-            property.zoning = `${zoneInfo.name} (Zone ${zoneCode})`;
-          } else {
-            property.zoning = `Zone ${zoneCode}`;
-          }
-        } else {
-          property.zoning = zone.attributes?.Zone || zone.attributes?.ZONE_NAME || zone.attributes?.ZONING;
-        }
+        property.zoning = zone.attributes?.Zone || zone.attributes?.ZONE_NAME || zone.attributes?.ZONING;
         
         // Extract suburb information if available
         property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
