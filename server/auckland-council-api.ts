@@ -36,7 +36,9 @@ export class AucklandCouncilAPI {
     aircraft_noise: "Aircraft_Noise_Overlay",
     ridgeline_protection: "Ridgeline_Protection_Overlay",
     coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise",
-    special_character_areas: "Special_Character_Areas_Overlay_Residential_and_Business"
+    special_character_areas: "Special_Character_Areas_Overlay_Residential_and_Business",
+    museum_viewshaft: "Auckland_War_Memorial_Museum_Viewshaft_Overlay",
+    stockade_hill_viewshaft: "Stockade_Hill_Viewshaft_Overlay"
   };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
@@ -263,7 +265,7 @@ export class AucklandCouncilAPI {
         property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
       }
 
-      // Query additional overlays and constraints
+      // Query additional overlays and constraints including all heritage and character overlays
       const overlayResults = await Promise.allSettled([
         this.queryFeatureService(this.keyDatasets.geotechnical_reports, lat, lon),
         this.queryFeatureService(this.keyDatasets.liquefaction_vulnerability, lat, lon),
@@ -271,7 +273,9 @@ export class AucklandCouncilAPI {
         this.queryFeatureService(this.keyDatasets.notable_trees, lat, lon),
         this.queryFeatureService(this.keyDatasets.heritage_overlay, lat, lon),
         this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon),
-        this.queryFeatureService(this.keyDatasets.special_character_areas, lat, lon)
+        this.queryFeatureService(this.keyDatasets.special_character_areas, lat, lon),
+        this.queryFeatureService(this.keyDatasets.museum_viewshaft, lat, lon),
+        this.queryFeatureService(this.keyDatasets.stockade_hill_viewshaft, lat, lon)
       ]);
 
       // Process overlay results and add to property data

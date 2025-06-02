@@ -124,11 +124,18 @@ export default function PropertyChat() {
       baseZoneText += ` with an additional ${specialCharacterInfo.data.NAME} overlay`;
     }
 
+    // Construct comprehensive planning analysis including overlays
+    let planningAnalysis = result.zoningAnalysis || 'Analyzing your planning zone to determine what activities are permitted, building restrictions that may apply, and development opportunities specific to your project type. This includes reviewing the relevant Auckland Unitary Plan zone-specific documentation for rules that directly apply to your project.';
+    
+    if (result.overlayAnalysis && result.overlayAnalysis.trim()) {
+      planningAnalysis += ' ' + result.overlayAnalysis;
+    }
+
     const report = `Hi ${firstName}, I'm delighted to help you explore the development potential for your ${data.projectType} project. Let me provide you with a clear analysis of what's possible at your property.
 
 Property Details: Your property at ${result.propertyAddress || data.address} is a ${data.projectType} project with budget ${budgetDisplay}. ${baseZoneText}.
 
-Planning Zone Considerations for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${result.zoningAnalysis || 'Analyzing your planning zone to determine what activities are permitted, building restrictions that may apply, and development opportunities specific to your project type. This includes reviewing the relevant Auckland Unitary Plan zone-specific documentation for rules that directly apply to your project.'}
+Planning Zone Considerations for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${planningAnalysis}
 
 Building Code Requirements for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${result.buildingCodeAnalysis || 'Reviewing Building Act 2004 Schedule 1 exemptions and MBIE exempt building work guidance to determine consent requirements. This includes analysis of relevant building code clauses and professional requirements specific to your project type.'}
 

@@ -1367,6 +1367,7 @@ function performLocalAddressSearch(query: string) {
         budget: budget,
         zoning: analysisReport.locationVerification.officialZoning,
         zoningAnalysis: zoningAnalysis,
+        overlayAnalysis: overlayAnalysis,
         buildingCodeAnalysis: buildingCodeAnalysis,
         propertyDetails: analysisReport.propertyDetails,
         consentRequirements: analysisReport.consentRequirements,
