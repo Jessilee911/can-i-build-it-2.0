@@ -266,15 +266,6 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
                       </div>
                     )}
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowLocationModal(true)}
-                    className="shrink-0"
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Confirm Location
-                  </Button>
                 </div>
                 {verificationMessage && (
                   <p className={`text-xs mt-1 ${addressVerified ? 'text-green-600' : 'text-red-600'}`}>
