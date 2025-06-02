@@ -170,7 +170,7 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
   };
 
   const isStep1Valid = formData.name && formData.address;
-  const isStep2Valid = formData.projectDescription && formData.budget;
+  const isStep2Valid = formData.projectDescription;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -327,7 +327,7 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Estimated Budget *
+                  Estimated Budget (Optional)
                 </label>
                 <div className="flex items-center space-x-2">
                   <DollarSign className="h-4 w-4 text-gray-400" />
@@ -361,9 +361,11 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
               <div>
                 <span className="font-medium text-gray-700">Description:</span> {formData.projectDescription}
               </div>
-              <div>
-                <span className="font-medium text-gray-700">Budget:</span> {formData.budget}
-              </div>
+              {formData.budget && (
+                <div>
+                  <span className="font-medium text-gray-700">Budget:</span> {formData.budget}
+                </div>
+              )}
             </div>
             <p className="text-sm text-gray-600 mt-4">
               Our AI agent will analyze your property's zoning, regulations, and provide tailored recommendations for your project.
