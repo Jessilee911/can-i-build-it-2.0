@@ -98,38 +98,35 @@ export function LinzGeocodingMap({
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button
+            <button
               onClick={handleViewOnGoogleMaps}
-              variant="outline"
-              size="sm"
-              className="flex items-center space-x-2"
+              className="flex items-center justify-center space-x-2 px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors cursor-pointer"
               disabled={!coordinates}
+              style={{ pointerEvents: 'auto' }}
             >
               <ExternalLink className="h-4 w-4" />
               <span>Google Maps</span>
-            </Button>
+            </button>
             
-            <Button
+            <button
               onClick={handleViewOnAucklandGeoMaps}
-              variant="outline"
-              size="sm"
-              className="flex items-center space-x-2"
+              className="flex items-center justify-center space-x-2 px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors cursor-pointer"
               disabled={!coordinates}
+              style={{ pointerEvents: 'auto' }}
             >
               <ExternalLink className="h-4 w-4" />
               <span>Auckland GeoMaps</span>
-            </Button>
+            </button>
             
-            <Button
+            <button
               onClick={handleViewOnLinz}
-              variant="outline"
-              size="sm"
-              className="flex items-center space-x-2"
+              className="flex items-center justify-center space-x-2 px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors cursor-pointer"
               disabled={!coordinates}
+              style={{ pointerEvents: 'auto' }}
             >
               <ExternalLink className="h-4 w-4" />
               <span>LINZ Data Service</span>
-            </Button>
+            </button>
           </div>
           
           {coordinates && (
@@ -142,33 +139,34 @@ export function LinzGeocodingMap({
       </div>
 
       {/* Location Confirmation Actions */}
-      <div className="flex space-x-3 mt-4">
-        <Button 
+      <div className="flex space-x-3 mt-4" style={{ position: 'relative', zIndex: 10000 }}>
+        <button 
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log('Confirm button clicked');
             onLocationConfirm(true);
           }}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-medium transition-colors cursor-pointer"
           disabled={!coordinates}
           type="button"
+          style={{ pointerEvents: 'auto', zIndex: 10001 }}
         >
           Confirm This Location
-        </Button>
-        <Button 
+        </button>
+        <button 
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log('Try different address button clicked');
             onLocationConfirm(false);
           }}
-          variant="outline"
-          className="flex-1 border-gray-300 hover:bg-gray-50"
+          className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 px-4 rounded-md font-medium transition-colors cursor-pointer"
           type="button"
+          style={{ pointerEvents: 'auto', zIndex: 10001 }}
         >
           Try Different Address
-        </Button>
+        </button>
       </div>
       
       {!coordinates && (
