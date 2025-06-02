@@ -166,8 +166,8 @@ Would you like to create a personalized property report for your specific projec
       {/* LINZ Geocoding Map Modal */}
       {showLocationConfirm && locationData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Verify Property Location</h3>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto modal-content">
+            <h3 className="text-lg font-semibold mb-4" style={{ userSelect: 'text' }}>Verify Property Location</h3>
             <LinzGeocodingMap
               address={locationData.address}
               coordinates={locationData.coordinates}
