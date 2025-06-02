@@ -26,6 +26,9 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
     projectType: 'residential'
   });
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [isVerifyingAddress, setIsVerifyingAddress] = useState(false);
+  const [addressVerified, setAddressVerified] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState("");
 
   const handleNext = () => {
     if (step < 3) {
@@ -48,6 +51,55 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
   const handleLocationConfirm = (address: string, coordinates?: [number, number]) => {
     setFormData({ ...formData, address, coordinates });
     setShowLocationModal(false);
+  };
+
+  const verifyAddressWithGoogle = async (address: string) => {
+    if (!address || address.length < 10) {
+      setAddressVerified(false);
+      setVerificationMessage("");
+      return;
+    }
+
+    setIsVerifyingAddress(true);
+    try {
+      const response = await fetch(`/api/geocode?address=${encodeURIComponent(address)}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.coordinates && data.formattedAddress) {
+          setFormData({ 
+            ...formData, 
+            address: data.formattedAddress,
+            coordinates: data.coordinates 
+          });
+          setAddressVerified(true);
+          setVerificationMessage("✓ Address verified");
+        } else {
+          setAddressVerified(false);
+          setVerificationMessage("Address not found. Please check and try again.");
+        }
+      } else {
+        setAddressVerified(false);
+        setVerificationMessage("Unable to verify address at this time.");
+      }
+    } catch (error) {
+      setAddressVerified(false);
+      setVerificationMessage("Unable to verify address at this time.");
+    } finally {
+      setIsVerifyingAddress(false);
+    }
+  };
+
+  const handleAddressChange = (address: string) => {
+    setFormData({ ...formData, address });
+    setAddressVerified(false);
+    setVerificationMessage("");
+    
+    // Debounce the verification
+    const timeoutId = setTimeout(() => {
+      verifyAddressWithGoogle(address);
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
   };
 
   const isStep1Valid = formData.name && formData.address;
@@ -114,13 +166,20 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
                   Property Address *
                 </label>
                 <div className="flex space-x-2">
-                  <Input
-                    type="text"
-                    value={formData.address || ''}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="Enter the property address"
-                    className="flex-1"
-                  />
+                  <div className="flex-1 relative">
+                    <Input
+                      type="text"
+                      value={formData.address || ''}
+                      onChange={(e) => handleAddressChange(e.target.value)}
+                      placeholder="Enter the property address"
+                      className={`w-full ${addressVerified ? 'border-green-500' : ''}`}
+                    />
+                    {isVerifyingAddress && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      </div>
+                    )}
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
@@ -131,8 +190,13 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
                     Confirm Location
                   </Button>
                 </div>
+                {verificationMessage && (
+                  <p className={`text-xs mt-1 ${addressVerified ? 'text-green-600' : 'text-red-600'}`}>
+                    {verificationMessage}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 mt-1">
-                  Click the map icon to verify and confirm the exact location
+                  Address will be automatically verified. Click "Confirm Location" to view on map.
                 </p>
               </div>
             </div>
