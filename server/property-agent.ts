@@ -101,13 +101,58 @@ export class PropertyAgent {
    * Build comprehensive property context for AI
    */
   private async buildPropertyContext(context: PropertyAgentContext): Promise<string> {
-    let propertyInfo = `Client Name: ${context.userName || 'Client'}\n`;
+    let propertyInfo = `COMPREHENSIVE PROPERTY ANALYSIS REPORT\n`;
+    propertyInfo += `==========================================\n\n`;
+    
+    // Property Address
     propertyInfo += `Property Address: ${context.propertyAddress}\n`;
-    if (context.projectDescription) {
-      propertyInfo += `Project Description: ${context.projectDescription}\n\n`;
-    } else {
-      propertyInfo += '\n';
-    }
+    
+    // Lot and DP Number
+    const lotDp = this.extractLotDP(context.propertyData);
+    propertyInfo += `Lot and DP number: ${lotDp || 'Not available in current data'}\n`;
+    
+    // District/Planning Zone
+    propertyInfo += `District/Planning Zone: ${context.zoning || 'Zone information not available'}\n`;
+    
+    // Overlays
+    const overlays = this.formatOverlays(context.propertyData?.overlays);
+    propertyInfo += `Overlays: ${overlays}\n`;
+    
+    // Controls
+    const controls = this.extractControls(context.propertyData);
+    propertyInfo += `Controls: ${controls}\n`;
+    
+    // Flood hazards
+    const floodInfo = this.extractFloodInfo(context.propertyData);
+    propertyInfo += `Flood hazards (catchment and hydrology)/information: ${floodInfo}\n`;
+    
+    // Overland flow paths
+    const overlandFlow = this.extractOverlandFlow(context.propertyData);
+    propertyInfo += `Overland flow paths: ${overlandFlow}\n`;
+    
+    // Natural hazards
+    const naturalHazards = this.extractNaturalHazards(context.propertyData);
+    propertyInfo += `Natural hazards: ${naturalHazards}\n`;
+    
+    // Special character zones, overlays
+    const specialCharacter = this.extractSpecialCharacter(context.propertyData);
+    propertyInfo += `Special character zones, overlays: ${specialCharacter}\n`;
+    
+    // Wind Zone
+    const windZone = this.getWindZone(context.coordinates);
+    propertyInfo += `Wind Zone: ${windZone}\n`;
+    
+    // Earthquake Zone
+    const earthquakeZone = this.getEarthquakeZone(context.coordinates);
+    propertyInfo += `Earthquake Zone: ${earthquakeZone}\n`;
+    
+    // Snow Zone
+    const snowZone = this.getSnowZone(context.coordinates);
+    propertyInfo += `Snow Zone: ${snowZone}\n`;
+    
+    // Corrosion Zones
+    const corrosionZone = this.getCorrosionZone(context.coordinates);
+    propertyInfo += `Corrosion Zones: ${corrosionZone}\n\n`;
 
     if (context.verificationStatus === "not_found") {
       propertyInfo += "⚠️ Property Status: Could not locate this property in Auckland Council records.\n";
@@ -122,43 +167,28 @@ export class PropertyAgent {
 
     if (context.propertyData) {
       propertyInfo += "✅ Property Status: Verified in Auckland Council records\n\n";
-      
-      // Add property details
-      if (context.propertyData.suburb) {
-        propertyInfo += `Suburb: ${context.propertyData.suburb}\n`;
-      }
-      
-      if (context.zoning) {
-        propertyInfo += `Official Zoning: ${context.zoning}\n`;
-        
-        // Add zone interpretation if available
-        const zoneMatch = context.zoning.match(/Zone (\d+)/);
-        if (zoneMatch) {
-          const zoneCode = parseInt(zoneMatch[1]);
-          const zoneInfo = getZoneInfo(zoneCode);
-          if (zoneInfo) {
-            propertyInfo += `Zone Description: ${zoneInfo.description}\n`;
-            propertyInfo += `Zone Category: ${zoneInfo.category}\n`;
-            propertyInfo += `Key Building Rules:\n${zoneInfo.buildingRules.map(rule => `• ${rule}`).join('\n')}\n`;
-          }
-        }
 
-        // Fetch detailed planning rules from Auckland Council documents
+      // Fetch detailed planning rules from Auckland Council documents
+      if (context.zoning) {
         try {
           const extractedZoneCode = pdfPlanningProcessor.extractZoneCode(context.zoning);
           if (extractedZoneCode) {
             console.log(`Fetching detailed planning rules for zone ${extractedZoneCode}...`);
             const detailedRules = await pdfPlanningProcessor.getZoneBuildingRules(extractedZoneCode);
             if (detailedRules) {
-              propertyInfo += `\nAuckland Council Planning Document Rules:\n${detailedRules}\n`;
+              propertyInfo += `DETAILED PLANNING RULES FOR ZONE ${extractedZoneCode}\n`;
+              propertyInfo += `================================================\n`;
+              propertyInfo += `${detailedRules}\n\n`;
             }
             
-            // Get consent requirements for common building types
+            // Get consent requirements
             if (context.projectDescription?.toLowerCase().includes('garage') || 
                 context.projectDescription?.toLowerCase().includes('building')) {
-              const consentInfo = await pdfPlanningProcessor.getZoneConsentRequirements(extractedZoneCode, "garage");
+              const consentInfo = await pdfPlanningProcessor.getZoneConsentRequirements(extractedZoneCode, "building");
               if (consentInfo) {
-                propertyInfo += `\nConsent Requirements from Official Documents:\n${consentInfo}\n`;
+                propertyInfo += `CONSENT REQUIREMENTS FROM OFFICIAL DOCUMENTS\n`;
+                propertyInfo += `============================================\n`;
+                propertyInfo += `${consentInfo}\n\n`;
               }
             }
           }
@@ -179,40 +209,145 @@ export class PropertyAgent {
         propertyInfo += `Coordinates: ${context.coordinates[1]}, ${context.coordinates[0]}\n`;
       }
       
-      // Add overlay information
-      if (context.propertyData.overlays && context.propertyData.overlays.length > 0) {
-        propertyInfo += `\nProperty Overlays and Constraints:\n`;
-        context.propertyData.overlays.forEach(overlay => {
-          if (overlay.type === 'special_character_areas') {
-            const data = overlay.data[0]?.attributes;
-            if (data) {
-              propertyInfo += `• Special Character Area: ${data.NAME || 'Present'}\n`;
-              if (data.TYPE) propertyInfo += `  - Type: ${data.TYPE}\n`;
-              if (data.SCHEDULE) propertyInfo += `  - Schedule: ${data.SCHEDULE}\n`;
-              if (data.DocumentURL) propertyInfo += `  - Documentation: ${data.DocumentURL}\n`;
-            }
-          } else if (overlay.type === 'heritage_overlay') {
-            propertyInfo += `• Heritage Overlay: Present\n`;
-          } else if (overlay.type === 'liquefaction_vulnerability') {
-            propertyInfo += `• Liquefaction Risk: Present\n`;
-          } else if (overlay.type === 'flood_sensitive_areas') {
-            propertyInfo += `• Flood Sensitive Area: Present\n`;
-          } else if (overlay.type === 'notable_trees') {
-            propertyInfo += `• Notable Trees: Present\n`;
-          } else if (overlay.type === 'geotechnical_reports') {
-            propertyInfo += `• Geotechnical Reports Available: Yes\n`;
-          } else if (overlay.type === 'aircraft_noise') {
-            propertyInfo += `• Aircraft Noise Overlay: Present\n`;
-          } else {
-            propertyInfo += `• ${overlay.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: Present\n`;
-          }
-        });
-      }
-      
       propertyInfo += "\n";
     }
 
     return propertyInfo;
+  }
+
+  private extractLotDP(propertyData: any): string | null {
+    if (!propertyData?.overlays) return null;
+    
+    // Look for lot and DP information in property data
+    for (const overlay of propertyData.overlays) {
+      if (overlay.data?.LOT || overlay.data?.DP || overlay.data?.LEGAL_DESCRIPTION) {
+        const lot = overlay.data.LOT || '';
+        const dp = overlay.data.DP || '';
+        const legal = overlay.data.LEGAL_DESCRIPTION || '';
+        
+        if (lot && dp) return `Lot ${lot} DP ${dp}`;
+        if (legal) return legal;
+      }
+    }
+    return null;
+  }
+
+  private formatOverlays(overlays: any[]): string {
+    if (!overlays || overlays.length === 0) return 'None identified';
+    
+    const overlayTypes = overlays.map(o => {
+      switch (o.type) {
+        case 'special_character_areas': return 'Special Character Areas';
+        case 'heritage_overlay': return 'Historic Heritage';
+        case 'notable_trees': return 'Notable Trees';
+        case 'aircraft_noise': return 'Aircraft Noise';
+        case 'ridgeline_protection': return 'Ridgeline Protection';
+        case 'coastal_inundation': return 'Coastal Inundation';
+        case 'liquefaction_vulnerability': return 'Liquefaction Vulnerability';
+        case 'geotechnical_reports': return 'Geotechnical Study Area';
+        default: return o.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      }
+    });
+    
+    return overlayTypes.join(', ');
+  }
+
+  private extractControls(propertyData: any): string {
+    const controls = [];
+    
+    if (propertyData?.overlays) {
+      for (const overlay of propertyData.overlays) {
+        if (overlay.type === 'heritage_overlay') controls.push('Heritage controls');
+        if (overlay.type === 'special_character_areas') controls.push('Special character controls');
+        if (overlay.type === 'notable_trees') controls.push('Tree protection controls');
+        if (overlay.type === 'aircraft_noise') controls.push('Aircraft noise controls');
+      }
+    }
+    
+    return controls.length > 0 ? controls.join(', ') : 'Standard planning controls apply';
+  }
+
+  private extractFloodInfo(propertyData: any): string {
+    if (!propertyData?.overlays) return 'No flood hazard information available in current dataset';
+    
+    const floodOverlay = propertyData.overlays.find((o: any) => 
+      o.type.includes('flood') || o.type.includes('inundation')
+    );
+    
+    if (floodOverlay) {
+      return `Flood sensitive area identified - detailed assessment required`;
+    }
+    
+    return 'No flood hazards identified in available data';
+  }
+
+  private extractOverlandFlow(propertyData: any): string {
+    return 'Overland flow path information not available in current dataset - site-specific assessment recommended';
+  }
+
+  private extractNaturalHazards(propertyData: any): string {
+    const hazards = [];
+    
+    if (propertyData?.overlays) {
+      for (const overlay of propertyData.overlays) {
+        if (overlay.type === 'liquefaction_vulnerability') {
+          const vulnerability = overlay.data?.Vulnerability || overlay.data?.VulnerabilityDescription;
+          if (vulnerability) hazards.push(`Liquefaction: ${vulnerability}`);
+        }
+        if (overlay.type === 'geotechnical_reports') {
+          hazards.push('Geotechnical considerations apply');
+        }
+      }
+    }
+    
+    return hazards.length > 0 ? hazards.join(', ') : 'No specific natural hazards identified in available data';
+  }
+
+  private extractSpecialCharacter(propertyData: any): string {
+    if (!propertyData?.overlays) return 'None';
+    
+    const specialCharacterOverlay = propertyData.overlays.find((o: any) => 
+      o.type === 'special_character_areas'
+    );
+    
+    if (specialCharacterOverlay) {
+      const type = specialCharacterOverlay.data?.TYPE;
+      return `Special Character Area Type ${type || 'Present'}`;
+    }
+    
+    return 'None';
+  }
+
+  private getWindZone(coordinates?: [number, number]): string {
+    // Auckland is generally in Wind Zone 3 (NZS 3604)
+    if (coordinates && coordinates[0] > -37.5 && coordinates[0] < -36.0) {
+      return 'Wind Zone 3 (NZS 3604)';
+    }
+    return 'Wind Zone 3 (typical for Auckland region)';
+  }
+
+  private getEarthquakeZone(coordinates?: [number, number]): string {
+    // Auckland is in a low seismic risk area
+    if (coordinates && coordinates[0] > -37.5 && coordinates[0] < -36.0) {
+      return 'Low seismic risk zone (NZS 1170.5)';
+    }
+    return 'Low seismic risk zone (typical for Auckland region)';
+  }
+
+  private getSnowZone(coordinates?: [number, number]): string {
+    // Auckland typically has no snow loading requirements
+    if (coordinates && coordinates[0] > -37.5 && coordinates[0] < -36.0) {
+      return 'No snow loading (NZS 1170.3)';
+    }
+    return 'No snow loading (typical for Auckland region)';
+  }
+
+  private getCorrosionZone(coordinates?: [number, number]): string {
+    // Auckland coastal areas are typically Zone C (corrosive)
+    if (coordinates) {
+      return 'Zone C - Corrosive environment (coastal Auckland)';
+    }
+    return 'Zone C - Corrosive environment (typical for Auckland coastal areas)';
   }
 
   /**
@@ -224,41 +359,63 @@ export class PropertyAgent {
 PROPERTY CONTEXT:
 ${propertyContext}
 
+RESPONSE STRUCTURE - ALWAYS FOLLOW THIS FORMAT:
+
+1. COMPREHENSIVE PROPERTY REPORT:
+First, present the property analysis information using the standardized format from the property context above:
+- Property Address
+- Lot and DP number
+- District/Planning Zone
+- Overlays
+- Controls
+- Flood hazards information
+- Overland flow paths
+- Natural hazards
+- Special character zones, overlays
+- Wind Zone
+- Earthquake Zone
+- Snow Zone
+- Corrosion Zones
+
+2. CONSENT AND BUILDING CODE REQUIREMENTS:
+After presenting the property report, provide specific guidance on:
+
+BUILDING CONSENT REQUIREMENTS:
+• What building consent is required for the proposed project
+• Specific building code clauses that apply (B1 Structure, B2 Durability, E1 Surface Water, E2 External Moisture, etc.)
+• Structural requirements considering natural hazards identified
+• Foundation requirements (especially if liquefaction or geotechnical considerations apply)
+• Any special requirements due to wind, earthquake, snow, or corrosion zones
+
+RESOURCE CONSENT REQUIREMENTS:
+• Whether resource consent is needed based on zone rules and overlays
+• Activity status (Permitted/Controlled/Restricted Discretionary/Non-complying)
+• Specific planning standards that must be met (height, setbacks, coverage)
+• Assessment criteria if discretionary consent required
+• Special considerations for overlays (heritage, special character, etc.)
+
+COMPLIANCE PATHWAY:
+• Step-by-step process for obtaining necessary consents
+• Professional consultants required (architect, structural engineer, geotechnical engineer, planner)
+• Timeline and cost considerations
+• Council submission requirements and processes
+
 YOUR ROLE:
 • Provide property-specific building and development advice
-• Reference official Auckland Council zoning data and regulations
-• Give actionable guidance based on the verified property information
-• Explain consent requirements specific to this property's zoning
-• Suggest next steps tailored to this property's constraints and opportunities
-
-RESPONSE GUIDELINES:
-• ALWAYS start by acknowledging the specific zone information from Auckland Council data
-• Quote the exact zone name and number (e.g., "Zone 19 - Residential Single House Zone")
-• Reference specific building rules from the zone data (height limits, coverage percentages, setbacks)
-• If Special Character Areas or heritage overlays are present, explain their specific implications
-• Mention the exact liquefaction risk status from the Auckland Council data
-• Reference any geotechnical reports available for this specific property
-• Quote specific building coverage percentages and height limits from the zone rules
-• Explain how the project fits within the specific zoning parameters
-• Use the actual property data rather than generic advice
-• Be conversational but cite the official Auckland Council information
-• Use clean formatting without markdown asterisks or bold text markers
-• Use numbered lists (1. 2. 3.) and bullet points (•) for organization
-• Keep text readable and professional without special formatting characters
+• Reference official Auckland Council zoning data and planning documents
+• Give actionable guidance based on verified property information
+• Explain exact consent requirements for this specific property
 
 CRITICAL REQUIREMENTS:
-• MUST reference the exact zone number and name from the Auckland Council data above
-• MUST quote specific building rules (height, coverage, setbacks) from the zone information
-• MUST address any Special Character Areas or overlays listed in the property data
-• MUST mention liquefaction risk status if present in the data
-• MUST cite the specific Auckland Council information rather than giving generic advice
-• If geotechnical reports are available, MUST mention this specific fact
-• Always recommend professional consultation for complex projects
-• Focus on practical, implementable advice using the verified property data
+• MUST present the comprehensive property report first using the exact format above
+• MUST reference specific zone rules from Auckland Council planning documents
+• MUST address all overlays and their implications for the project
+• MUST provide specific building code and consent requirements
+• MUST give practical implementation guidance with exact compliance steps
+• Use the actual property data rather than generic advice
+• Be professional and cite official Auckland Council information
 
-EXAMPLE START: "Based on the Auckland Council records, your property at [address] is zoned as [exact zone name and number]. This zone allows [specific rules from zone data]..."
-
-Remember: You are specifically helping with this property. Use the exact Auckland Council data provided above, not general planning advice.`;
+Remember: You are specifically helping with this property. Use the exact Auckland Council data provided above to give authoritative, property-specific guidance.`;
   }
 
   /**
