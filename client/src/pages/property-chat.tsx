@@ -314,16 +314,9 @@ Would you like a detailed building feasibility report for your project?`;
           </div>
         </div>
       )}
-      {/* NZ Map Watermark Background */}
+      {/* Clean Modern Background */}
       <div 
-        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: `url(${nzMapImage})`,
-          backgroundSize: '60%',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          animation: 'float 20s ease-in-out infinite',
-        }}
+        className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100"
       />
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
