@@ -374,7 +374,11 @@ export class AucklandCouncilAPI {
       
       if (zoningData && zoningData.length > 0) {
         const zone = zoningData[0];
-        property.zoning = zone.attributes?.Zone || zone.attributes?.ZONE_NAME || zone.attributes?.ZONING;
+        console.log("Zoning data found:", JSON.stringify(zone, null, 2));
+        
+        // Decode Auckland Unitary Plan zone codes
+        const zoneCode = zone.attributes?.ZONE;
+        property.zoning = this.decodeAucklandZone(zoneCode) || zone.attributes?.NAME || zone.attributes?.ZONE_NAME || "Unknown Zone";
         
         // Extract suburb information if available
         property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
@@ -620,6 +624,41 @@ export class AucklandCouncilAPI {
     }
     
     return report;
+  }
+}
+
+  decodeAucklandZone(zoneCode: number): string | null {
+    const zoneMap: Record<number, string> = {
+      1: "Business - Business Park Zone",
+      3: "Rural - Countryside Living Zone",
+      4: "Future Urban Zone",
+      5: "Business - Heavy Industry Zone",
+      7: "Business - Local Centre Zone",
+      8: "Residential - Terrace Housing and Apartment Building Zone",
+      10: "Business - Metropolitan Centre Zone",
+      11: "Rural - Mixed Rural Zone",
+      12: "Business - Mixed Use Zone",
+      15: "Rural - Rural Conservation Zone",
+      16: "Rural - Rural Production Zone",
+      17: "Business - Light Industry Zone",
+      18: "Residential - Mixed Housing Suburban Zone",
+      19: "Residential - Single House Zone",
+      20: "Residential - Rural and Coastal Settlement Zone",
+      22: "Business - Town Centre Zone",
+      23: "Residential - Large Lot Zone",
+      26: "Strategic Transport Corridor Zone",
+      35: "Business - City Centre Zone",
+      44: "Business - Neighbourhood Centre Zone",
+      49: "Business - General Business Zone",
+      60: "Residential - Mixed Housing Urban Zone",
+      72: "Residential - Low Density Residential Zone"
+    };
+    
+    return zoneMap[zoneCode] || null;
+  }
+
+  formatPropertyReport(property: PropertySearchResult): string {
+    return `Property Report for ${property.address}\n\nZoning: ${property.zoning || 'Unknown'}\nSuburb: ${property.suburb || 'Unknown'}\nLand Area: ${property.landArea || 'Unknown'} sqm\nCapital Value: $${property.capitalValue?.toLocaleString() || 'Unknown'}\nRates ID: ${property.ratesId || 'Unknown'}\n\nOverlays:\n${property.overlays?.map(overlay => `- ${overlay.type}: ${overlay.data ? 'Present' : 'Not found'}`).join('\n') || 'No overlays found'}`;
   }
 }
 

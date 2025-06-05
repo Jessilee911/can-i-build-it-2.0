@@ -74,9 +74,10 @@ export class LINZPropertyAPI {
       }
 
       const data = await response.json() as any;
+      console.log("LINZ API response:", JSON.stringify(data, null, 2));
       
-      if (data.vectorQuery && data.vectorQuery.layers && data.vectorQuery.layers.length > 0) {
-        const layer = data.vectorQuery.layers[0];
+      if (data.vectorQuery && data.vectorQuery.layers && data.vectorQuery.layers['51571']) {
+        const layer = data.vectorQuery.layers['51571'];
         
         if (layer.features && layer.features.length > 0) {
           const feature = layer.features[0];
