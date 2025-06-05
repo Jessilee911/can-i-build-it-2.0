@@ -15,6 +15,7 @@ import Chat from "@/pages/chat";
 import PremiumChat from "@/pages/premium-chat";
 import PropertyChat from "@/pages/property-chat";
 import ReportPage from "@/pages/report";
+import PropertyAssessment from "@/pages/property-assessment";
 
 import { Link } from "wouter";
 import { Sidebar } from "@/components/sidebar";
@@ -58,6 +59,9 @@ function Router() {
         <AppLayout>
           <PropertyChat />
         </AppLayout>
+      )} />
+      <Route path="/property-assessment" component={() => (
+        <PropertyAssessment />
       )} />
       <Route path="/report/:id" component={() => (
         <AppLayout>
