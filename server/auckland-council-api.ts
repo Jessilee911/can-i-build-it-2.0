@@ -656,6 +656,21 @@ export class AucklandCouncilAPI {
     return zoneMap[zoneCode] || null;
   }
 
+  decodeSpecialCharacterArea(typeCode: number): string | null {
+    const specialCharacterMap: Record<number, string> = {
+      37: "General Balmoral tram Suburb East",
+      40: "Residential Balmoral Tram Suburb West",
+      29: "Residential General",
+      26: "General",
+      14: "Business Balmoral",
+      18: "Business Ponsonby",
+      19: "Business Parnell",
+      25: "Business Newmarket"
+    };
+    
+    return specialCharacterMap[typeCode] || null;
+  }
+
   formatPropertyReport(property: PropertySearchResult): string {
     return `Property Report for ${property.address}\n\nZoning: ${property.zoning || 'Unknown'}\nSuburb: ${property.suburb || 'Unknown'}\nLand Area: ${property.landArea || 'Unknown'} sqm\nCapital Value: $${property.capitalValue?.toLocaleString() || 'Unknown'}\nRates ID: ${property.ratesId || 'Unknown'}\n\nOverlays:\n${property.overlays?.map(overlay => `- ${overlay.type}: ${overlay.data ? 'Present' : 'Not found'}`).join('\n') || 'No overlays found'}`;
   }
