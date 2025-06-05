@@ -862,9 +862,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced geocoding endpoint using Google Maps API key
-  app.get('/api/geocode', async (req: Request, res: Response) => {
+  apiRouter.post('/api/geocode', async (req: Request, res: Response) => {
     try {
-      const { address } = req.query;
+      const { address } = req.body;
 
       if (!address || typeof address !== 'string') {
         return res.status(400).json({ error: 'Address parameter is required' });
@@ -872,8 +872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
       if (!googleMapsApiKey) {
-        ```typescript
-return res.status(500).json({ error: 'Google Maps API key not configured' });
+        return res.status(500).json({ error: 'Google Maps API key not configured' });
       }
 
       // Use Google Geocoding API for accurate coordinates
@@ -887,15 +886,16 @@ return res.status(500).json({ error: 'Google Maps API key not configured' });
         const location = result.geometry.location;
 
         res.json({
-          coordinates: [location.lat, location.lng],
+          success: true,
+          coordinates: { lat: location.lat, lng: location.lng },
           formattedAddress: result.formatted_address
         });
       } else {
-        res.status(404).json({ error: 'Address not found' });
+        res.status(404).json({ success: false, error: 'Address not found' });
       }
     } catch (error) {
       console.error('Geocoding error:', error);
-      res.status(500).json({ error: 'Geocoding failed' });
+      res.status(500).json({ success: false, error: 'Geocoding failed' });
     }
   });
 
@@ -2248,7 +2248,7 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     try {
       console.log(`=== STARTING COMPREHENSIVE PROPERTY RESEARCH FOR: ${propertyAddress} ===`);
       const { researchProperty } = await import('./property-research');
-      propertyResearchData = await researchProperty(propertyAddress.trim());
+      propertyResearchData = await researchProperty(propertyAddress.trim(), undefined, undefined);
       console.log('=== PROPERTY RESEARCH COMPLETED ===');
       console.log('Research results:', JSON.stringify(propertyResearchData, null, 2));
     } catch (error) {

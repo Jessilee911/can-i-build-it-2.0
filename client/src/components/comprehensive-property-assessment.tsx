@@ -43,7 +43,7 @@ export default function ComprehensivePropertyAssessment() {
 
   const geocodeAddress = async (searchAddress: string): Promise<{ lat: number; lng: number } | null> => {
     try {
-      const response = await fetch('/api/geocode-location', {
+      const response = await fetch('/api/geocode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: searchAddress })
@@ -51,10 +51,10 @@ export default function ComprehensivePropertyAssessment() {
       
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.location && data.location.coordinates) {
+        if (data.success && data.coordinates) {
           return {
-            lat: data.location.coordinates.latitude,
-            lng: data.location.coordinates.longitude
+            lat: data.coordinates.lat,
+            lng: data.coordinates.lng
           };
         }
       }
