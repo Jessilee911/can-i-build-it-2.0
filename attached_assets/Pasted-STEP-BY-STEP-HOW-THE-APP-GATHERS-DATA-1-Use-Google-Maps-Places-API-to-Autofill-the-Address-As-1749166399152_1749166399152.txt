@@ -1,0 +1,56 @@
+STEP BY STEP HOW THE APP GATHERS DATA: 
+1)	Use Google Maps Places API to Autofill the Address
+•	As the user types their address, Google suggests matching NZ addresses.
+•	This creates a smooth UX similar to Google Maps
+•	***Actual API to be used for google maps autofill to work (DO NOT CHANGE): https://maps.googleapis.com/maps/api/js?key=AIzaSyB7LgZX94IaNouwXd_r9chzZKtYpny5YU0&loading=async&libraries=places&callback=initMap
+2)	Once the user selects an address from the dropdown, the agent/user has the “lat” and “lng” for the property. 
+	
+3)	Send coordinates to backend:
+
+a.	When the user clicks “confirm address” > send the coordinates (x=lng, y=lat) to the agent. 
+b.	Query LINZ “Property Parcels” Layer: Use this to get the parcel geometry around the lat/lng:
+https://data.linz.govt.nz/services/query/v1/vector.json
+?key=LINZ_API_KEY
+&layer=775
+&x=lng
+&y=lat
+&radius=5
+&geometry=true
+&with_field_names=true
+Extract the returned geometry.coordinates.
+
+c.	Use Parcel Geometry in All ArcGIS Queries, Instead of using geometry=lng,lat, you’ll use:
+geometry={your parcel polygon}
+geometryType=esriGeometryPolygon
+spatialRel=esriSpatialRelIntersects
+d.	The agent first queries all relevant LINZ layers via vector queries
+
+4)	Project description
+a.	The user will input a project description or scope of work for what they’re planning to build/renovate. 
+
+5)	Query Auckland Unitary Plan (AUP) Layers
+a.	Use the same coordinates to check if the property intersects any AUP overlays
+b.	Each layer queried with geometry and spatialRel=intersects
+
+6)	Aggregate & Present the Data in the form of a report with all relevant (true) data. Include a section at the end of the report for negative results (eg. flood planes = not applicable or “not found on property”) 
+
+7)	Link AUP layers with their data sources (layer information) via URL 1 query (live query) 
+
+a.	Agent uses coordinates acquired in step 1
+b.	Agent constructs a query to URL
+c.	Agent makes GET request
+d.	Agent parses the response (ie. Once the Auckland Council server sends back the data, your agent reads through that data to extract the useful parts — like write a paragraph, show a warning, explain implications to user)
+
+8)	URL 2 query – Proposed unitary/district plan rules (use langchain to process PDF’s):
+a.	Agent constructs a query to URL
+b.	Agent makes GET request
+c.	Agent parses the response 
+
+9)	SUMMARY 
+Agent then creates an Ai assessment using all of the combined information of the Zone layers, URL 1 – data sources and URL 2 – Unitary Plan Zone Rules. 
+a)	Ai creates simple bullet type report with relevant layers from URL 1
+b)	Using the rules, the agent must determine what requires a resource consent (ie. Permitted activities verses restricted discretionary, discretionary, and not permitted activities.) this can be found in the unitary plan rules. 
+c)	The agent must comment on the rules relevant to the project description that the user provided. This is where AI reasoning matters most — recommend: Outputting plain-English recommendations (e.g., "This extension is a restricted discretionary activity under rule X...") Including direct links to referenced rules. 
+
+10)	Building codes and building consent requirements
+a)	The agent uses RAG to search the web to answer building code related questions relating only to the user’s project description. The agent must comment on whether a building consent is required. 
