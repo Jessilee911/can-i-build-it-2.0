@@ -33,6 +33,9 @@ export class AucklandCouncilAPI {
     geotechnical_reports: "Geotechnical_Report_Extent", 
     liquefaction_vulnerability: "Liquefaction_Vulnerability_Calibrated_Assessment",
     flood_sensitive_areas: "Flood_Sensitive_Areas",
+    flood_plains: "Flood_Plains",
+    flood_prone_areas: "Flood_Prone_Areas",
+    overland_flow_paths: "Overland_Flow_Paths",
     notable_trees: "Notable_Trees_Overlay",
     heritage_overlay: "Historic_Heritage_Overlay_Extent_of_Place",
     aircraft_noise: "Aircraft_Noise_Overlay",
@@ -54,7 +57,16 @@ export class AucklandCouncilAPI {
     pipelines_and_transmission_lines: "Pipelines_and_Transmission_Lines_Overlay",
     natural_hazards_overlay: "Natural_Hazards_and_Climate_Change_Overlay",
     tree_protection_overlay: "Tree_Protection_Overlay",
-    minerals_overlay: "Minerals_Overlay"
+    minerals_overlay: "Minerals_Overlay",
+    stormwater_pipe: "Stormwater_Pipe", 
+    stormwater_manhole: "Stormwater_Manhole_And_Chamber",
+    stormwater_management: "Stormwater_Management_Area_Control",
+    natural_stream_management: "Natural_Stream_Management_Areas_Overlay",
+    water_supply_management: "Water_Supply_Management_Areas_Overlay",
+    arterial_roads: "Arterial_Roads",
+    subdivision_variation: "Subdivision_Variation_Control",
+    business_park_office: "Business_Park_Zone_Office_Control",
+    high_natural_character: "High_Natural_Character_Overlay"
   };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
