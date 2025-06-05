@@ -625,7 +625,6 @@ export class AucklandCouncilAPI {
     
     return report;
   }
-}
 
   decodeAucklandZone(zoneCode: number): string | null {
     const zoneMap: Record<number, string> = {
