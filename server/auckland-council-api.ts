@@ -146,7 +146,15 @@ export class AucklandCouncilAPI {
 
   async geocodeAddress(address: string): Promise<[number, number] | null> {
     try {
-      // Using free Nominatim service for geocoding
+      console.log(`Geocoding address: ${address}`);
+      
+      // First try Google Maps Geocoding API
+      const googleResult = await this.geocodeWithGoogle(address);
+      if (googleResult) {
+        return googleResult;
+      }
+      
+      // Fallback to free Nominatim service
       const url = "https://nominatim.openstreetmap.org/search";
       const params = new URLSearchParams({
         q: `${address}, Auckland, New Zealand`,
@@ -163,6 +171,7 @@ export class AucklandCouncilAPI {
       if (response.status === 200) {
         const results = await response.json() as Array<{ lat: string; lon: string }>;
         if (results && results.length > 0) {
+          console.log(`Geocoded with Nominatim: ${results[0].lat}, ${results[0].lon}`);
           return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
         }
       }
@@ -170,6 +179,41 @@ export class AucklandCouncilAPI {
       return null;
     } catch (error) {
       console.error("Geocoding error:", error);
+      return null;
+    }
+  }
+
+  private async geocodeWithGoogle(address: string): Promise<[number, number] | null> {
+    try {
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        console.log("Google Maps API key not found, using fallback geocoding");
+        return null;
+      }
+
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address + ", Auckland, New Zealand")}&key=${apiKey}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.log(`Google Geocoding API error: ${response.status}`);
+        return null;
+      }
+
+      const data = await response.json();
+      
+      if (data.status === 'OK' && data.results && data.results.length > 0) {
+        const result = data.results[0];
+        const lat = result.geometry.location.lat;
+        const lng = result.geometry.location.lng;
+        
+        console.log(`Geocoded with Google: ${lat}, ${lng}`);
+        return [lat, lng];
+      } else {
+        console.log(`Google Geocoding failed: ${data.status}`);
+        return null;
+      }
+    } catch (error) {
+      console.error("Google geocoding error:", error);
       return null;
     }
   }
