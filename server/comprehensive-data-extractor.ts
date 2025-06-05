@@ -26,32 +26,41 @@ export interface ComprehensivePropertyData {
 
 export class ComprehensiveDataExtractor {
   
-  async extractPropertyData(address: string, lat: number, lng: number): Promise<ComprehensivePropertyData> {
+  async extractPropertyData(address: string, lat: number, lng: number, projectDescription?: string): Promise<ComprehensivePropertyData> {
     console.log(`Extracting comprehensive data for: ${address} at ${lat}, ${lng}`);
     
-    // Get LINZ parcel data
-    const linzData = await this.getLINZParcelData(lat, lng);
-    
-    // Get Auckland Unitary Plan zoning
-    const zoningData = await this.getAucklandZoning(lat, lng);
-    
-    // Get special character areas
-    const specialCharacterData = await this.getSpecialCharacterAreas(lat, lng);
-    
-    // Get all overlays
-    const overlayData = await this.getAllOverlays(lat, lng);
-    
-    return {
-      address,
-      lotDp: linzData?.lotDp || 'Not available',
-      zoning: zoningData || 'Unknown Zone',
-      coordinates: { lat, lng },
-      specialCharacterAreas: specialCharacterData,
-      overlays: overlayData,
-      buildingControls: this.generateBuildingControls(zoningData),
-      climateZones: this.getClimateZones(lat, lng),
-      infrastructure: this.analyzeInfrastructure(overlayData)
-    };
+    try {
+      // Use the new comprehensive property research workflow
+      const { researchProperty } = await import('./property-research');
+      const researchData = await researchProperty(address, [lat, lng], projectDescription);
+      
+      return {
+        address,
+        lotDp: researchData.lotAndDpNumber,
+        zoning: researchData.districtPlanningZone,
+        coordinates: { lat, lng },
+        specialCharacterAreas: researchData.specialCharacterOverlays,
+        overlays: researchData.overlays,
+        buildingControls: this.generateBuildingControls(researchData.districtPlanningZone),
+        climateZones: this.getClimateZones(lat, lng),
+        infrastructure: this.analyzeInfrastructure(researchData.overlays)
+      };
+    } catch (error) {
+      console.error('Error in comprehensive data extraction:', error);
+      
+      // Fallback to basic extraction
+      return {
+        address,
+        lotDp: 'Data extraction failed',
+        zoning: 'Unknown Zone',
+        coordinates: { lat, lng },
+        specialCharacterAreas: [],
+        overlays: [],
+        buildingControls: [],
+        climateZones: this.getClimateZones(lat, lng),
+        infrastructure: { arterialRoad: false, stormwater: false, wastewater: false }
+      };
+    }
   }
   
   private async getLINZParcelData(lat: number, lng: number): Promise<{ lotDp: string; surveyArea: number } | null> {
