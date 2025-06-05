@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PropertyZoningReport } from '@/components/property-zoning-report';
+import { GoogleMapsAutocomplete } from '@/components/google-maps-autocomplete';
 import { Search, MapPin, Loader2, AlertTriangle } from 'lucide-react';
 
 interface PropertyData {
@@ -38,10 +39,11 @@ export default function ComprehensivePropertyAssessment() {
   const [error, setError] = useState('');
   const [propertyData, setPropertyData] = useState<PropertyData | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [useAutocomplete, setUseAutocomplete] = useState(true);
 
   const geocodeAddress = async (searchAddress: string): Promise<{ lat: number; lng: number } | null> => {
     try {
-      const response = await fetch('/api/geocode', {
+      const response = await fetch('/api/geocode-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address: searchAddress })
@@ -49,12 +51,23 @@ export default function ComprehensivePropertyAssessment() {
       
       if (response.ok) {
         const data = await response.json();
-        return data.success ? data.coordinates : null;
+        if (data.success && data.location && data.location.coordinates) {
+          return {
+            lat: data.location.coordinates.latitude,
+            lng: data.location.coordinates.longitude
+          };
+        }
       }
     } catch (error) {
       console.error('Geocoding error:', error);
     }
     return null;
+  };
+
+  const handlePlaceSelect = async (place: { address: string; lat: number; lng: number }) => {
+    setAddress(place.address);
+    setCoordinates({ lat: place.lat, lng: place.lng });
+    await performSearch(place.address, { lat: place.lat, lng: place.lng });
   };
 
   const handleSearch = async () => {
@@ -68,20 +81,29 @@ export default function ComprehensivePropertyAssessment() {
     setPropertyData(null);
 
     try {
-      // First geocode the address
-      const coords = await geocodeAddress(address);
+      let coords = coordinates;
       if (!coords) {
-        throw new Error('Unable to find coordinates for this address');
+        coords = await geocodeAddress(address);
+        if (!coords) {
+          throw new Error('Unable to find coordinates for this address');
+        }
+        setCoordinates(coords);
       }
-      
-      setCoordinates(coords);
 
-      // Get comprehensive property analysis
+      await performSearch(address, coords);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while searching');
+      setLoading(false);
+    }
+  };
+
+  const performSearch = async (searchAddress: string, coords: { lat: number; lng: number }) => {
+    try {
       const response = await fetch('/api/comprehensive-property-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          address,
+          address: searchAddress,
           coordinates: coords
         })
       });
@@ -159,13 +181,23 @@ export default function ComprehensivePropertyAssessment() {
           </CardHeader>
           <CardContent>
             <div className="flex gap-2">
-              <Input
-                placeholder="Enter property address (e.g., 120 Marsden Avenue Balmoral Auckland 1024)"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1"
-              />
+              {useAutocomplete ? (
+                <GoogleMapsAutocomplete
+                  value={address}
+                  onChange={setAddress}
+                  onPlaceSelect={handlePlaceSelect}
+                  placeholder="Enter property address (e.g., 120 Marsden Avenue Balmoral Auckland 1024)"
+                  className="flex-1"
+                />
+              ) : (
+                <Input
+                  placeholder="Enter property address (e.g., 120 Marsden Avenue Balmoral Auckland 1024)"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1"
+                />
+              )}
               <Button 
                 onClick={handleSearch}
                 disabled={loading}
