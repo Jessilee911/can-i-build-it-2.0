@@ -1,8 +1,8 @@
 import React from 'react';
-import EnhancedPropertyAssessment from '../components/enhanced-property-assessment';
+import ComprehensivePropertyAssessment from '../components/comprehensive-property-assessment';
 
 const PropertyAssessmentPage = () => {
-  return <EnhancedPropertyAssessment />;
+  return <ComprehensivePropertyAssessment />;
 };
 
 export default PropertyAssessmentPage;
