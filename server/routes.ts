@@ -861,6 +861,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced geocoding endpoint using Google Maps API key
+  app.get('/api/geocode', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.query;
+      
+      if (!address || typeof address !== 'string') {
+        return res.status(400).json({ error: 'Address parameter is required' });
+      }
+
+      const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (!googleMapsApiKey) {
+        return res.status(500).json({ error: 'Google Maps API key not configured' });
+      }
+
+      // Use Google Geocoding API for accurate coordinates
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&region=nz&key=${googleMapsApiKey}`;
+      
+      const response = await fetch(geocodeUrl);
+      const data = await response.json();
+      
+      if (data.status === 'OK' && data.results.length > 0) {
+        const result = data.results[0];
+        const location = result.geometry.location;
+        
+        res.json({
+          coordinates: [location.lat, location.lng],
+          formattedAddress: result.formatted_address
+        });
+      } else {
+        res.status(404).json({ error: 'Address not found' });
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      res.status(500).json({ error: 'Geocoding failed' });
+    }
+  });
+
   // Geocode and confirm location endpoint
   app.post('/api/geocode-location', async (req: Request, res: Response) => {
     try {

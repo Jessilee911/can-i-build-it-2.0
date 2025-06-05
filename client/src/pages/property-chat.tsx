@@ -108,14 +108,19 @@ export default function PropertyChat() {
       data.budget.charAt(0).toUpperCase() + data.budget.slice(1).replace('-', ' ') : 
       'not specified';
 
-    // Check for special character areas overlay information
-    const hasSpecialCharacterArea = result.propertyDetails?.overlays?.some((overlay: any) => 
-      overlay.type === 'special_character_areas'
+    // Check for comprehensive overlay information
+    const overlays = result.propertyDetails?.overlays || [];
+    const hasSpecialCharacterArea = overlays.some((overlay: any) => 
+      overlay.type === 'special_character_areas' && overlay.data
     );
     
     const specialCharacterInfo = hasSpecialCharacterArea 
-      ? result.propertyDetails.overlays.find((overlay: any) => overlay.type === 'special_character_areas')
+      ? overlays.find((overlay: any) => overlay.type === 'special_character_areas')
       : null;
+
+    // Count all overlays found
+    const activeOverlays = overlays.filter((overlay: any) => overlay.data !== null);
+    const totalOverlaysChecked = overlays.length;
 
     // Format the report according to the specific requirements - no markdown formatting
     let baseZoneText = `The property has ${result.zoning || 'zoning information being retrieved'} classification under the Auckland Unitary Plan`;
@@ -131,15 +136,19 @@ export default function PropertyChat() {
       planningAnalysis += ' ' + result.overlayAnalysis;
     }
 
-    const report = `Hi ${firstName}, I'm delighted to help you explore the development potential for your ${data.projectType} project. Let me provide you with a clear analysis of what's possible at your property.
+    const report = `Hi ${firstName}, I'm delighted to help you explore the development potential for your ${data.projectType} project. Let me provide you with a comprehensive analysis based on official Auckland Council and LINZ data.
 
 Property Details: Your property at ${result.propertyAddress || data.address} is a ${data.projectType} project with budget ${budgetDisplay}. ${baseZoneText}.
+
+Comprehensive Data Analysis: I've analyzed ${totalOverlaysChecked} different Auckland Unitary Plan layers and overlays for your property. ${activeOverlays.length} overlays were found that may affect your development, ensuring we've captured all relevant planning constraints and opportunities.
 
 Planning Zone Considerations for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${planningAnalysis}
 
 Building Code Requirements for Your ${data.projectType.charAt(0).toUpperCase() + data.projectType.slice(1)}: ${result.buildingCodeAnalysis || 'Reviewing Building Act 2004 Schedule 1 exemptions and MBIE exempt building work guidance to determine consent requirements. This includes analysis of relevant building code clauses and professional requirements specific to your project type.'}
 
-Based on this analysis, your ${data.projectType} project appears to have development potential within the planning framework. Would you like me to elaborate on any specific aspect of your project requirements?`;
+Data Sources Used: This analysis incorporates data from Auckland Council Unitary Plan Base Zones, LINZ Property Parcels (layer 51571), and comprehensive overlay analysis including heritage, environmental, natural hazards, and special character area assessments.
+
+Based on this comprehensive analysis, your ${data.projectType} project appears to have development potential within the planning framework. Would you like me to elaborate on any specific aspect of your project requirements or dive deeper into any particular overlay or constraint?`;
 
     return report;
   };

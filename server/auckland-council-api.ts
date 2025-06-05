@@ -23,9 +23,11 @@ interface PropertySearchResult {
 export class AucklandCouncilAPI {
   private baseUrl = "https://data-aucklandcouncil.opendata.arcgis.com/api/search/v1";
   private arcgisBaseUrl = "https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services";
+  private linzBaseUrl = "https://data.linz.govt.nz/services";
+  private linzApiKey = process.env.LINZ_API_KEY;
   private collections: Record<string, string> = {};
   
-  // Key datasets for property analysis
+  // Key datasets for property analysis - Complete Auckland Unitary Plan layers
   private keyDatasets = {
     unitary_plan_zones: "Unitary_Plan_Base_Zone",
     geotechnical_reports: "Geotechnical_Report_Extent", 
@@ -38,7 +40,21 @@ export class AucklandCouncilAPI {
     coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise",
     special_character_areas: "Special_Character_Areas_Overlay_Residential_and_Business",
     museum_viewshaft: "Auckland_War_Memorial_Museum_Viewshaft_Overlay",
-    stockade_hill_viewshaft: "Stockade_Hill_Viewshaft_Overlay"
+    stockade_hill_viewshaft: "Stockade_Hill_Viewshaft_Overlay",
+    // Additional comprehensive layers
+    significant_ecological_areas: "Significant_Ecological_Areas_Overlay",
+    outstanding_natural_features: "Outstanding_Natural_Features_Overlay",
+    outstanding_natural_landscapes: "Outstanding_Natural_Landscapes_Overlay",
+    high_use_aquifer: "High_Use_Aquifer_Management_Area_Overlay",
+    water_sensitive_areas: "Water_Sensitive_Area_Overlay",
+    volcanic_viewshafts: "Volcanic_Viewshaft_and_Height_Sensitive_Area_Overlay",
+    site_of_significance_to_maori: "Sites_and_Places_of_Significance_to_Mori_Overlay",
+    noise_sensitive_area: "Noise_Sensitive_Area",
+    hazardous_facility_zone: "Hazardous_Facility_Zone",
+    pipelines_and_transmission_lines: "Pipelines_and_Transmission_Lines_Overlay",
+    natural_hazards_overlay: "Natural_Hazards_and_Climate_Change_Overlay",
+    tree_protection_overlay: "Tree_Protection_Overlay",
+    minerals_overlay: "Minerals_Overlay"
   };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
@@ -91,6 +107,41 @@ export class AucklandCouncilAPI {
     });
     
     console.log("Mapped collections:", this.collections);
+  }
+
+  async getLinzPropertyParcel(coordinates: [number, number]): Promise<any> {
+    if (!this.linzApiKey) {
+      console.log("LINZ API key not configured");
+      return null;
+    }
+
+    try {
+      const [lat, lon] = coordinates;
+      const wfsUrl = `${this.linzBaseUrl}/wfs`;
+      const params = new URLSearchParams({
+        service: 'WFS',
+        version: '2.0.0',
+        request: 'GetFeature',
+        typeNames: 'layer-51571', // Property Parcels layer
+        outputFormat: 'application/json',
+        cql_filter: `INTERSECTS(shape, POINT(${lon} ${lat}))`,
+        key: this.linzApiKey
+      });
+
+      const response = await fetch(`${wfsUrl}?${params}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.features && data.features.length > 0) {
+          return data.features[0];
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("LINZ Property Parcels API error:", error);
+      return null;
+    }
   }
 
   async geocodeAddress(address: string): Promise<[number, number] | null> {
@@ -245,17 +296,25 @@ export class AucklandCouncilAPI {
     try {
       console.log(`Querying Auckland Council datasets for property at ${lat}, ${lon}`);
       
+      // First, get the LINZ property parcel for accurate geometry
+      const linzParcel = await this.getLinzPropertyParcel([lat, lon]);
+      let parcelGeometry = null;
+      
+      if (linzParcel && linzParcel.geometry) {
+        parcelGeometry = linzParcel.geometry;
+        console.log(`Found LINZ property parcel with geometry`);
+      }
+      
       // Create base property result
       const property: PropertySearchResult = {
         address: address,
         coordinates: [lat, lon]
       };
 
-      // Query zoning information
-      const zoningData = await this.queryFeatureService(
-        this.keyDatasets.unitary_plan_zones,
-        lat, lon
-      );
+      // Query zoning information using parcel geometry if available
+      const zoningData = parcelGeometry 
+        ? await this.queryFeatureServiceWithGeometry(this.keyDatasets.unitary_plan_zones, parcelGeometry)
+        : await this.queryFeatureService(this.keyDatasets.unitary_plan_zones, lat, lon);
       
       if (zoningData && zoningData.length > 0) {
         const zone = zoningData[0];
@@ -265,32 +324,57 @@ export class AucklandCouncilAPI {
         property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
       }
 
-      // Query additional overlays and constraints including all heritage and character overlays
+      // Query all Auckland Unitary Plan overlays using parcel geometry when available
+      const queryMethod = parcelGeometry 
+        ? (dataset: string) => this.queryFeatureServiceWithGeometry(dataset, parcelGeometry)
+        : (dataset: string) => this.queryFeatureService(dataset, lat, lon);
+
       const overlayResults = await Promise.allSettled([
-        this.queryFeatureService(this.keyDatasets.geotechnical_reports, lat, lon),
-        this.queryFeatureService(this.keyDatasets.liquefaction_vulnerability, lat, lon),
-        this.queryFeatureService(this.keyDatasets.flood_sensitive_areas, lat, lon),
-        this.queryFeatureService(this.keyDatasets.notable_trees, lat, lon),
-        this.queryFeatureService(this.keyDatasets.heritage_overlay, lat, lon),
-        this.queryFeatureService(this.keyDatasets.aircraft_noise, lat, lon),
-        this.queryFeatureService(this.keyDatasets.special_character_areas, lat, lon),
-        this.queryFeatureService(this.keyDatasets.museum_viewshaft, lat, lon),
-        this.queryFeatureService(this.keyDatasets.stockade_hill_viewshaft, lat, lon)
+        queryMethod(this.keyDatasets.geotechnical_reports),
+        queryMethod(this.keyDatasets.liquefaction_vulnerability),
+        queryMethod(this.keyDatasets.flood_sensitive_areas),
+        queryMethod(this.keyDatasets.notable_trees),
+        queryMethod(this.keyDatasets.heritage_overlay),
+        queryMethod(this.keyDatasets.aircraft_noise),
+        queryMethod(this.keyDatasets.special_character_areas),
+        queryMethod(this.keyDatasets.museum_viewshaft),
+        queryMethod(this.keyDatasets.stockade_hill_viewshaft),
+        queryMethod(this.keyDatasets.significant_ecological_areas),
+        queryMethod(this.keyDatasets.outstanding_natural_features),
+        queryMethod(this.keyDatasets.outstanding_natural_landscapes),
+        queryMethod(this.keyDatasets.high_use_aquifer),
+        queryMethod(this.keyDatasets.water_sensitive_areas),
+        queryMethod(this.keyDatasets.volcanic_viewshafts),
+        queryMethod(this.keyDatasets.site_of_significance_to_maori),
+        queryMethod(this.keyDatasets.noise_sensitive_area),
+        queryMethod(this.keyDatasets.hazardous_facility_zone),
+        queryMethod(this.keyDatasets.pipelines_and_transmission_lines),
+        queryMethod(this.keyDatasets.natural_hazards_overlay),
+        queryMethod(this.keyDatasets.tree_protection_overlay),
+        queryMethod(this.keyDatasets.minerals_overlay)
       ]);
 
-      // Process overlay results and add to property data
+      // Process overlay results and add to property data, including negative results
+      const datasetNames = Object.keys(this.keyDatasets).slice(1); // Skip zoning which was already processed
+      
       overlayResults.forEach((result, index) => {
+        const datasetName = datasetNames[index];
+        
+        if (!property.overlays) {
+          property.overlays = [];
+        }
+        
         if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
-          const datasetName = Object.keys(this.keyDatasets)[index + 1]; // Skip zoning which was already processed
           console.log(`Found ${datasetName} data for property`);
-          
-          // Store overlay information in property object for report generation
-          if (!property.overlays) {
-            property.overlays = [];
-          }
           property.overlays.push({
             type: datasetName,
             data: result.value[0].attributes
+          });
+        } else {
+          // Record negative results for comprehensive reporting
+          property.overlays.push({
+            type: datasetName,
+            data: null // Indicates no overlay constraints found
           });
         }
       });
@@ -301,6 +385,36 @@ export class AucklandCouncilAPI {
     } catch (error) {
       console.error("Error querying property datasets:", error);
       return null;
+    }
+  }
+
+  async queryFeatureServiceWithGeometry(serviceName: string, geometry: any): Promise<any[]> {
+    try {
+      const url = `${this.arcgisBaseUrl}/${serviceName}/FeatureServer/0/query`;
+      
+      const params = new URLSearchParams({
+        f: 'json',
+        geometry: JSON.stringify(geometry),
+        geometryType: 'esriGeometryPolygon',
+        inSR: '4326',
+        spatialRel: 'esriSpatialRelIntersects',
+        outFields: '*',
+        returnGeometry: 'false'
+      });
+
+      console.log(`Querying ${serviceName} with parcel geometry`);
+      const response = await fetch(`${url}?${params}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.features || [];
+      } else {
+        console.log(`Feature service query with geometry failed for ${serviceName}: ${response.status}`);
+        return [];
+      }
+    } catch (error) {
+      console.log(`Error querying ${serviceName} with geometry:`, error instanceof Error ? error.message : String(error));
+      return [];
     }
   }
 

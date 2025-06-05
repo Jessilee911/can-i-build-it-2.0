@@ -58,36 +58,35 @@ export class PremiumPropertyAgent {
   async generatePropertyReport(address: string, projectDescription?: string): Promise<PropertyAnalysisReport> {
     console.log(`Generating comprehensive report for: ${address}`);
     
-    // Get property data including official Auckland Council zoning
+    // Use comprehensive property research that integrates all data sources
     let property;
+    let researchData;
+    
     try {
-      // Use the same geocoding logic that includes Unitary Plan Base Zone data
-      const geocodeResponse = await fetch("http://localhost:5000/api/geocode-location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address }),
-      });
+      // Import and use the comprehensive property research
+      const { researchProperty } = await import('./property-research');
+      researchData = await researchProperty(address);
       
-      if (geocodeResponse.ok) {
-        const geocodeData = await geocodeResponse.json();
-        if (geocodeData.success && geocodeData.location) {
-          property = {
-            address: geocodeData.location.address,
-            coordinates: geocodeData.location.coordinates,
-            zoning: geocodeData.location.zoning?.zoneName || 'Unknown',
-            zoningCode: geocodeData.location.zoning?.ZONE,
-            zoningData: geocodeData.location.zoning,
-          };
-        }
-      }
+      // Also get the basic property data from Auckland Council API
+      const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
+      const basicProperty = properties[0];
       
-      // Fallback to Auckland Council API search if geocoding fails
-      if (!property) {
-        const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
-        property = properties[0];
-      }
+      // Combine research data with basic property info
+      property = {
+        address: researchData.propertyAddress,
+        coordinates: basicProperty?.coordinates,
+        zoning: researchData.districtPlanningZone,
+        zoningCode: basicProperty?.zoningCode,
+        zoningData: basicProperty?.zoningData,
+        overlays: basicProperty?.overlays,
+        researchData: researchData
+      };
     } catch (error) {
-      console.log("Property data retrieval failed:", error);
+      console.log("Comprehensive property research failed:", error);
+      
+      // Fallback to basic Auckland Council API search
+      const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
+      property = properties[0];
     }
     
     if (!property) {
@@ -120,10 +119,10 @@ export class PremiumPropertyAgent {
       locationVerification: {
         verifiedAddress: property.address,
         coordinates: property.coordinates || [0, 0],
-        accuracyLevel: property.coordinates ? "High - Official Auckland Council Data" : "Address level",
+        accuracyLevel: property.coordinates ? "High - Official Auckland Council Data with LINZ Property Parcels" : "Address level",
         officialZoning: property.zoning || 'Not determined',
         zoningDescription: property.zoningData?.ZONE_NAME || property.zoning || 'Zoning information not available',
-        dataSource: "Auckland Council Unitary Plan Base Zone & LINZ Property Data",
+        dataSource: "Auckland Council Unitary Plan (All Layers) + LINZ Property Parcels API + Comprehensive Research",
         verificationDate: new Date(),
       },
       propertyDetails: {

@@ -306,3 +306,276 @@ export const insertPremiumRequestSchema = createInsertSchema(premiumRequests).om
 
 export type PremiumRequest = typeof premiumRequests.$inferSelect;
 export type InsertPremiumRequest = z.infer<typeof insertPremiumRequestSchema>;
+import React, { useState, useRef } from 'react';
+import { Search, MapPin, FileText, Download, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+
+const PropertyZoningApp = () => {
+  const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [report, setReport] = useState(null);
+  const [error, setError] = useState('');
+  const reportRef = useRef(null);
+
+  // Mock data for demonstration - in production, this would come from APIs
+  const mockPropertyData = {
+    address: "123 Queen Street, Auckland Central, Auckland 1010",
+    lotDp: "Lot 1 DP 12345",
+    zone: "City Centre Zone",
+    overlays: [
+      "Special Character Areas Overlay - Residential",
+      "Historic Heritage Overlay",
+      "Outstanding Natural Feature Overlay"
+    ],
+    controls: [
+      "Building Height Control: 32m maximum",
+      "Floor Area Ratio: 8:1 maximum",
+      "Minimum Building Setback: 0m from front boundary"
+    ],
+    floodHazards: {
+      catchment: "Waitemata Harbour Catchment",
+      floodProne: false,
+      details: "Property is outside the 1% AEP flood plain"
+    },
+    overlandFlow: "No overland flow paths detected",
+    naturalHazards: [
+      "Liquefaction Susceptibility: Low",
+      "Land Instability: None identified"
+    ],
+    specialCharacter: [
+      "Residential Special Character Areas Overlay",
+      "Character Area: Ponsonby"
+    ],
+    windZone: "Zone 3 (High Wind)",
+    earthquakeZone: "Zone 3 (High Seismic)",
+    snowZone: "Zone 1 (No Snow Loading)",
+    corrosionZone: "Zone C (Coastal - High Corrosion)",
+    arterialRoad: true,
+    stormwater: true,
+    wastewater: true,
+    coordinates: { lat: -36.8485, lng: 174.7633 }
+  };
+
+  const handleAddressSearch = async () => {
+    if (!address.trim()) {
+      setError('Please enter a property address');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // In production, this would:
+      // 1. Geocode the address using LINZ Address API
+      // 2. Query LINZ Parcel Boundaries to get Lot/DP
+      // 3. Query council ArcGIS services for zoning info
+      // 4. Query various overlays and hazard layers
+
+      setReport({
+        ...mockPropertyData,
+        address: address,
+        timestamp: new Date().toLocaleString('en-NZ')
+      });
+    } catch (err) {
+      setError('Failed to generate report. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadReport = () => {
+    if (!report) return;
+
+    const reportContent = reportRef.current.innerText;
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Property_Report_${report.address.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <MapPin className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-800">NZ Property Zoning Report Generator</h1>
+          </div>
+
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Enter property address (e.g. 123 Queen Street, Auckland)"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyPress={(e) => e.key === 'Enter' && handleAddressSearch()}
+              />
+            </div>
+            <button
+              onClick={handleAddressSearch}
+              disabled={loading}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+              {loading ? 'Generating...' : 'Generate Report'}
+            </button>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg mb-6">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <span className="text-red-700">{error}</span>
+            </div>
+          )}
+        </div>
+
+        {report && (
+          <div className="bg-white rounded-lg shadow-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <FileText className="w-6 h-6 text-green-600" />
+                <h2 className="text-2xl font-bold text-gray-800">Property Zoning Report</h2>
+              </div>
+              <button
+                onClick={downloadReport}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                <Download className="w-4 h-4" />
+                Download Report
+              </button>
+            </div>
+
+            <div ref={reportRef} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h3 className="font-semibold text-gray-800 mb-2">Property Details</h3>
+                    <div className="space-y-2 text-sm">
+                      <div><strong>Address:</strong> {report.address}</div>
+                      <div><strong>Lot and DP:</strong> {report.lotDp}</div>
+                      <div><strong>Coordinates:</strong> {report.coordinates.lat}, {report.coordinates.lng}</div>
+                      <div><strong>Report Generated:</strong> {report.timestamp}</div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h3 className="font-semibold text-gray-800 mb-2">District/Planning Zone</h3>
+                    <div className="text-sm">{report.zone}</div>
+                  </div>
+
+                  <div className="p-4 bg-yellow-50 rounded-lg">
+                    <h3 className="font-semibold text-gray-800 mb-2">Building Controls</h3>
+                    <ul className="text-sm space-y-1">
+                      {report.controls.map((control, idx) => (
+                        <li key={idx}>• {control}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <h3 className="font-semibold text-gray-800 mb-2">Overlays</h3>
+                    <ul className="text-sm space-y-1">
+                      {report.overlays.map((overlay, idx) => (
+                        <li key={idx}>• {overlay}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <h3 className="font-semibold text-gray-800 mb-2">Special Character Zones</h3>
+                    <ul className="text-sm space-y-1">
+                      {report.specialCharacter.map((zone, idx) => (
+                        <li key={idx}>• {zone}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-red-50 rounded-lg">
+                    <h3 className="font-semibold text-gray-800 mb-2">Natural Hazards</h3>
+                    <ul className="text-sm space-y-1">
+                      {report.naturalHazards.map((hazard, idx) => (
+                        <li key={idx}>• {hazard}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-1">Wind Zone</h4>
+                  <div className="text-sm">{report.windZone}</div>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-1">Earthquake Zone</h4>
+                  <div className="text-sm">{report.earthquakeZone}</div>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-1">Snow Zone</h4>
+                  <div className="text-sm">{report.snowZone}</div>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-1">Corrosion Zone</h4>
+                  <div className="text-sm">{report.corrosionZone}</div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h3 className="font-semibold text-gray-800 mb-3">Flood Hazards & Hydrology</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong>Catchment:</strong> {report.floodHazards.catchment}
+                  </div>
+                  <div>
+                    <strong>Details:</strong> {report.floodHazards.details}
+                  </div>
+                </div>
+                <div className="mt-2 text-sm">
+                  <strong>Overland Flow Paths:</strong> {report.overlandFlow}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    {report.arterialRoad ? <CheckCircle className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
+                    <span className="font-semibold">Main Arterial Road</span>
+                  </div>
+                  <div className="text-sm mt-1">{report.arterialRoad ? 'Yes' : 'No'}</div>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    {report.stormwater ? <CheckCircle className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
+                    <span className="font-semibold">Stormwater Pipe</span>
+                  </div>
+                  <div className="text-sm mt-1">{report.stormwater ? 'Detected' : 'Not Detected'}</div>
+                </div>
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    {report.wastewater ? <CheckCircle className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
+                    <span className="font-semibold">Wastewater Pipe</span>
+                  </div>
+                  <div className="text-sm mt-1">{report.wastewater ? 'Detected' : 'Not Detected'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PropertyZoningApp;

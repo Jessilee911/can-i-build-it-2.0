@@ -65,7 +65,8 @@ export function PropertyIntakeForm({ onComplete, onCancel }: PropertyIntakeFormP
     const request = {
       input,
       componentRestrictions: { country: 'nz' }, // Restrict to New Zealand
-      types: ['address']
+      types: ['address'],
+      region: 'nz'
     };
 
     autocompleteService.current.getPlacePredictions(request, (predictions: any[], status: any) => {
