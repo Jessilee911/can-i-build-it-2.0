@@ -3,7 +3,7 @@
  * Processes overlay PDF documents to extract relevant planning rules
  */
 
-import pdfParse from 'pdf-parse';
+import pdfParse from './pdf-parse-wrapper';
 import fetch from 'node-fetch';
 import { getOverlayInfo, getOverlaySearchTerms, OverlayPDFMapping } from './auckland-overlay-pdf-mapping';
 
@@ -276,7 +276,8 @@ export class AucklandOverlayPDFProcessor {
   getCacheStats(): { size: number; oldestEntry: number | null } {
     let oldestEntry: number | null = null;
     
-    for (const [, cached] of this.pdfCache) {
+    const values = Array.from(this.pdfCache.values());
+    for (const cached of values) {
       if (oldestEntry === null || cached.timestamp < oldestEntry) {
         oldestEntry = cached.timestamp;
       }

@@ -2,7 +2,7 @@
 // Fetches and analyzes official Auckland Council planning documents
 
 import fetch from 'node-fetch';
-import pdfParse from 'pdf-parse';
+import pdfParse from './pdf-parse-wrapper';
 import { getZoneInfo, getProjectSearchTerms, ZonePDFMapping } from './auckland-zone-pdf-mapping';
 
 interface PDFContent {
