@@ -448,22 +448,7 @@ export function Sidebar({ className }: SidebarProps) {
               Sign In
             </Button>
 
-            {/* Alternative Login Options */}
-            <div className="space-y-2">
-              <p className="text-xs text-center text-muted-foreground">Or continue with Replit</p>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => window.location.href = '/api/login'}
-              >
-                <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-                Continue with Replit
-              </Button>
-            </div>
+            
 
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
