@@ -14,60 +14,11 @@ interface PropertySearchResult {
   suburb?: string;
   ratesId?: string;
   coordinates?: [number, number];
-  overlays?: Array<{
-    type: string;
-    data: any;
-  }>;
 }
 
 export class AucklandCouncilAPI {
   private baseUrl = "https://data-aucklandcouncil.opendata.arcgis.com/api/search/v1";
-  private arcgisBaseUrl = "https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services";
-  private linzBaseUrl = "https://data.linz.govt.nz/services";
-  private linzApiKey = process.env.LINZ_API_KEY;
   private collections: Record<string, string> = {};
-  
-  // Key datasets for property analysis - Complete Auckland Unitary Plan layers
-  private keyDatasets = {
-    unitary_plan_zones: "Unitary_Plan_Base_Zone",
-    geotechnical_reports: "Geotechnical_Report_Extent", 
-    liquefaction_vulnerability: "Liquefaction_Vulnerability_Calibrated_Assessment",
-    flood_sensitive_areas: "Flood_Sensitive_Areas",
-    flood_plains: "Flood_Plains",
-    flood_prone_areas: "Flood_Prone_Areas",
-    overland_flow_paths: "Overland_Flow_Paths",
-    notable_trees: "Notable_Trees_Overlay",
-    heritage_overlay: "Historic_Heritage_Overlay_Extent_of_Place",
-    aircraft_noise: "Aircraft_Noise_Overlay",
-    ridgeline_protection: "Ridgeline_Protection_Overlay",
-    coastal_inundation: "Coastal_Inundation_1_AEP_05m_sea_level_rise",
-    special_character_areas: "Special_Character_Areas_Overlay_Residential_and_Business",
-    museum_viewshaft: "Auckland_War_Memorial_Museum_Viewshaft_Overlay",
-    stockade_hill_viewshaft: "Stockade_Hill_Viewshaft_Overlay",
-    // Additional comprehensive layers
-    significant_ecological_areas: "Significant_Ecological_Areas_Overlay",
-    outstanding_natural_features: "Outstanding_Natural_Features_Overlay",
-    outstanding_natural_landscapes: "Outstanding_Natural_Landscapes_Overlay",
-    high_use_aquifer: "High_Use_Aquifer_Management_Area_Overlay",
-    water_sensitive_areas: "Water_Sensitive_Area_Overlay",
-    volcanic_viewshafts: "Volcanic_Viewshaft_and_Height_Sensitive_Area_Overlay",
-    site_of_significance_to_maori: "Sites_and_Places_of_Significance_to_Mori_Overlay",
-    noise_sensitive_area: "Noise_Sensitive_Area",
-    hazardous_facility_zone: "Hazardous_Facility_Zone",
-    pipelines_and_transmission_lines: "Pipelines_and_Transmission_Lines_Overlay",
-    natural_hazards_overlay: "Natural_Hazards_and_Climate_Change_Overlay",
-    tree_protection_overlay: "Tree_Protection_Overlay",
-    minerals_overlay: "Minerals_Overlay",
-    stormwater_pipe: "Stormwater_Pipe", 
-    stormwater_manhole: "Stormwater_Manhole_And_Chamber",
-    stormwater_management: "Stormwater_Management_Area_Control",
-    natural_stream_management: "Natural_Stream_Management_Areas_Overlay",
-    water_supply_management: "Water_Supply_Management_Areas_Overlay",
-    arterial_roads: "Arterial_Roads",
-    subdivision_variation: "Subdivision_Variation_Control",
-    business_park_office: "Business_Park_Zone_Office_Control",
-    high_natural_character: "High_Natural_Character_Overlay"
-  };
 
   async discoverCollections(): Promise<AucklandCollection[]> {
     try {
@@ -121,52 +72,9 @@ export class AucklandCouncilAPI {
     console.log("Mapped collections:", this.collections);
   }
 
-  async getLinzPropertyParcel(coordinates: [number, number]): Promise<any> {
-    if (!this.linzApiKey) {
-      console.log("LINZ API key not configured");
-      return null;
-    }
-
-    try {
-      const [lat, lon] = coordinates;
-      const wfsUrl = `${this.linzBaseUrl}/wfs`;
-      const params = new URLSearchParams({
-        service: 'WFS',
-        version: '2.0.0',
-        request: 'GetFeature',
-        typeNames: 'layer-51571', // Property Parcels layer
-        outputFormat: 'application/json',
-        cql_filter: `INTERSECTS(shape, POINT(${lon} ${lat}))`,
-        key: this.linzApiKey
-      });
-
-      const response = await fetch(`${wfsUrl}?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.features && data.features.length > 0) {
-          return data.features[0];
-        }
-      }
-      
-      return null;
-    } catch (error) {
-      console.error("LINZ Property Parcels API error:", error);
-      return null;
-    }
-  }
-
   async geocodeAddress(address: string): Promise<[number, number] | null> {
     try {
-      console.log(`Geocoding address: ${address}`);
-      
-      // First try Google Maps Geocoding API
-      const googleResult = await this.geocodeWithGoogle(address);
-      if (googleResult) {
-        return googleResult;
-      }
-      
-      // Fallback to free Nominatim service
+      // Using free Nominatim service for geocoding
       const url = "https://nominatim.openstreetmap.org/search";
       const params = new URLSearchParams({
         q: `${address}, Auckland, New Zealand`,
@@ -183,7 +91,6 @@ export class AucklandCouncilAPI {
       if (response.status === 200) {
         const results = await response.json() as Array<{ lat: string; lon: string }>;
         if (results && results.length > 0) {
-          console.log(`Geocoded with Nominatim: ${results[0].lat}, ${results[0].lon}`);
           return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
         }
       }
@@ -195,319 +102,47 @@ export class AucklandCouncilAPI {
     }
   }
 
-  private async geocodeWithGoogle(address: string): Promise<[number, number] | null> {
-    try {
-      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-      if (!apiKey) {
-        console.log("Google Maps API key not found, using fallback geocoding");
-        return null;
-      }
-
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address + ", Auckland, New Zealand")}&key=${apiKey}`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        console.log(`Google Geocoding API error: ${response.status}`);
-        return null;
-      }
-
-      const data = await response.json();
-      
-      if (data.status === 'OK' && data.results && data.results.length > 0) {
-        const result = data.results[0];
-        const lat = result.geometry.location.lat;
-        const lng = result.geometry.location.lng;
-        
-        console.log(`Geocoded with Google: ${lat}, ${lng}`);
-        return [lat, lng];
-      } else {
-        console.log(`Google Geocoding failed: ${data.status}`);
-        return null;
-      }
-    } catch (error) {
-      console.error("Google geocoding error:", error);
-      return null;
-    }
-  }
-
   async searchPropertyByAddress(address: string): Promise<PropertySearchResult[]> {
     try {
-      // First, geocode the address to get coordinates for spatial queries
+      // First, initialize collections if not done already
+      if (Object.keys(this.collections).length === 0) {
+        await this.initializeCollections();
+      }
+
+      // Geocode the address to get coordinates
       const coordinates = await this.geocodeAddress(address);
       
-      if (!coordinates) {
-        console.log("Could not geocode address, trying text-based search");
-        // Try text search for property datasets
-        const textResults = await this.searchPropertyDatasets(address);
-        return textResults;
-      }
-
-      const [lat, lon] = coordinates;
-      console.log(`Geocoded ${address} to: ${lat}, ${lon}`);
-      
-      // Query the specific Auckland Council feature services for comprehensive property data
-      const propertyData = await this.queryPropertyDatasets(lat, lon, address);
-      
-      if (propertyData) {
-        return [propertyData];
-      }
-
-      // Fallback to text search if spatial search fails
-      const textResults = await this.searchPropertyDatasets(address);
-      return textResults;
-    } catch (error) {
-      console.error("Property search error:", error);
-      return [];
-    }
-  }
-
-  async searchPropertyDatasets(address: string): Promise<PropertySearchResult[]> {
-    try {
-      console.log(`Searching for property datasets related to: ${address}`);
-      
-      // Search for property-related datasets using the queryable API
-      const searchTerms = ['property', 'parcel', 'zoning', 'rates', 'valuation'];
       const results: PropertySearchResult[] = [];
       
-      for (const term of searchTerms) {
-        const url = `${this.baseUrl}/collections/dataset/items`;
-        const params = new URLSearchParams({
-          q: `${term} ${address}`,
-          limit: '5'
-        });
-
-        const response = await fetch(`${url}?${params}`);
+      // Search property parcels collection if available
+      if (this.collections.property_parcels) {
+        const propertyData = await this.searchCollection(
+          this.collections.property_parcels,
+          address,
+          coordinates
+        );
         
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.features && data.features.length > 0) {
-            console.log(`Found ${data.features.length} results for "${term}"`);
-            
-            // Process results to extract property information
-            data.features.forEach((feature: any) => {
-              const props = feature.properties;
-              if (props?.title?.toLowerCase().includes('property') || 
-                  props?.title?.toLowerCase().includes('parcel') ||
-                  props?.title?.toLowerCase().includes('rates')) {
-                
-                results.push({
-                  address: address,
-                  zoning: this.extractZoningFromTitle(props.title),
-                  suburb: this.extractSuburbFromDescription(props.description),
-                  coordinates: feature.geometry?.coordinates ? 
-                    [feature.geometry.coordinates[1], feature.geometry.coordinates[0]] : undefined
-                });
-              }
-            });
-          }
+        if (propertyData && propertyData.length > 0) {
+          results.push(...propertyData.map(item => ({
+            address: item.properties?.FULL_ADDRESS || address,
+            suburb: item.properties?.SUBURB,
+            ratesId: item.properties?.RATES_ID,
+            landArea: item.properties?.LAND_AREA,
+            capitalValue: item.properties?.CAPITAL_VALUE,
+            coordinates: coordinates || undefined
+          })));
         }
       }
 
-      // If we found results, return the first comprehensive match
-      if (results.length > 0) {
-        return [results[0]];
+      // If no results from property parcels, try a general search
+      if (results.length === 0) {
+        const generalResults = await this.generalSearch(address);
+        results.push(...generalResults);
       }
 
-      // Return basic property structure for RAG to populate
-      return [{
-        address: address,
-        coordinates: undefined
-      }];
-      
+      return results;
     } catch (error) {
-      console.error("Error searching property datasets:", error);
-      return [{
-        address: address,
-        coordinates: undefined
-      }];
-    }
-  }
-
-  private extractZoningFromTitle(title: string): string | undefined {
-    const zoningPatterns = [
-      /residential|mixed housing|business|industrial|commercial/i,
-      /zone|zoning/i
-    ];
-    
-    for (const pattern of zoningPatterns) {
-      const match = title.match(pattern);
-      if (match) {
-        return match[0];
-      }
-    }
-    return undefined;
-  }
-
-  private extractSuburbFromDescription(description: string): string | undefined {
-    if (!description) return undefined;
-    
-    // Look for suburb names in description
-    const suburbPatterns = /Auckland|North Shore|Central|South|West/i;
-    const match = description.match(suburbPatterns);
-    return match?.[0];
-  }
-
-  async queryPropertyDatasets(lat: number, lon: number, address: string): Promise<PropertySearchResult | null> {
-    try {
-      console.log(`Querying Auckland Council datasets for property at ${lat}, ${lon}`);
-      
-      // First, get the LINZ property parcel for accurate geometry
-      const linzParcel = await this.getLinzPropertyParcel([lat, lon]);
-      let parcelGeometry = null;
-      
-      if (linzParcel && linzParcel.geometry) {
-        parcelGeometry = linzParcel.geometry;
-        console.log(`Found LINZ property parcel with geometry`);
-      }
-      
-      // Create base property result
-      const property: PropertySearchResult = {
-        address: address,
-        coordinates: [lat, lon]
-      };
-
-      // Query zoning information using parcel geometry if available
-      const zoningData = parcelGeometry 
-        ? await this.queryFeatureServiceWithGeometry(this.keyDatasets.unitary_plan_zones, parcelGeometry)
-        : await this.queryFeatureService(this.keyDatasets.unitary_plan_zones, lat, lon);
-      
-      if (zoningData && zoningData.length > 0) {
-        const zone = zoningData[0];
-        console.log("Zoning data found:", JSON.stringify(zone, null, 2));
-        
-        // Decode Auckland Unitary Plan zone codes
-        const zoneCode = zone.attributes?.ZONE;
-        property.zoning = this.decodeAucklandZone(zoneCode) || zone.attributes?.NAME || zone.attributes?.ZONE_NAME || "Unknown Zone";
-        
-        // Extract suburb information if available
-        property.suburb = zone.attributes?.SUBURB || zone.attributes?.LOCALITY;
-      }
-
-      // Query all Auckland Unitary Plan overlays using parcel geometry when available
-      const queryMethod = parcelGeometry 
-        ? (dataset: string) => this.queryFeatureServiceWithGeometry(dataset, parcelGeometry)
-        : (dataset: string) => this.queryFeatureService(dataset, lat, lon);
-
-      const overlayResults = await Promise.allSettled([
-        queryMethod(this.keyDatasets.geotechnical_reports),
-        queryMethod(this.keyDatasets.liquefaction_vulnerability),
-        queryMethod(this.keyDatasets.flood_sensitive_areas),
-        queryMethod(this.keyDatasets.notable_trees),
-        queryMethod(this.keyDatasets.heritage_overlay),
-        queryMethod(this.keyDatasets.aircraft_noise),
-        queryMethod(this.keyDatasets.special_character_areas),
-        queryMethod(this.keyDatasets.museum_viewshaft),
-        queryMethod(this.keyDatasets.stockade_hill_viewshaft),
-        queryMethod(this.keyDatasets.significant_ecological_areas),
-        queryMethod(this.keyDatasets.outstanding_natural_features),
-        queryMethod(this.keyDatasets.outstanding_natural_landscapes),
-        queryMethod(this.keyDatasets.high_use_aquifer),
-        queryMethod(this.keyDatasets.water_sensitive_areas),
-        queryMethod(this.keyDatasets.volcanic_viewshafts),
-        queryMethod(this.keyDatasets.site_of_significance_to_maori),
-        queryMethod(this.keyDatasets.noise_sensitive_area),
-        queryMethod(this.keyDatasets.hazardous_facility_zone),
-        queryMethod(this.keyDatasets.pipelines_and_transmission_lines),
-        queryMethod(this.keyDatasets.natural_hazards_overlay),
-        queryMethod(this.keyDatasets.tree_protection_overlay),
-        queryMethod(this.keyDatasets.minerals_overlay)
-      ]);
-
-      // Process overlay results and add to property data, including negative results
-      const datasetNames = Object.keys(this.keyDatasets).slice(1); // Skip zoning which was already processed
-      
-      overlayResults.forEach((result, index) => {
-        const datasetName = datasetNames[index];
-        
-        if (!property.overlays) {
-          property.overlays = [];
-        }
-        
-        if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
-          console.log(`Found ${datasetName} data for property`);
-          property.overlays.push({
-            type: datasetName,
-            data: result.value[0].attributes
-          });
-        } else {
-          // Record negative results for comprehensive reporting
-          property.overlays.push({
-            type: datasetName,
-            data: null // Indicates no overlay constraints found
-          });
-        }
-      });
-
-      console.log(`Property data compiled for ${address}:`, property);
-      return property;
-      
-    } catch (error) {
-      console.error("Error querying property datasets:", error);
-      return null;
-    }
-  }
-
-  async queryFeatureServiceWithGeometry(serviceName: string, geometry: any): Promise<any[]> {
-    try {
-      const url = `${this.arcgisBaseUrl}/${serviceName}/FeatureServer/0/query`;
-      
-      const params = new URLSearchParams({
-        f: 'json',
-        geometry: JSON.stringify(geometry),
-        geometryType: 'esriGeometryPolygon',
-        inSR: '4326',
-        spatialRel: 'esriSpatialRelIntersects',
-        outFields: '*',
-        returnGeometry: 'false'
-      });
-
-      console.log(`Querying ${serviceName} with parcel geometry`);
-      const response = await fetch(`${url}?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        return data.features || [];
-      } else {
-        console.log(`Feature service query with geometry failed for ${serviceName}: ${response.status}`);
-        return [];
-      }
-    } catch (error) {
-      console.log(`Error querying ${serviceName} with geometry:`, error instanceof Error ? error.message : String(error));
-      return [];
-    }
-  }
-
-  async queryFeatureService(serviceName: string, lat: number, lon: number): Promise<any[]> {
-    try {
-      const geometry = `${lon},${lat}`;
-      const url = `${this.arcgisBaseUrl}/${serviceName}/FeatureServer/0/query`;
-      
-      const params = new URLSearchParams({
-        f: 'json',
-        geometry: geometry,
-        geometryType: 'esriGeometryPoint',
-        inSR: '4326',
-        spatialRel: 'esriSpatialRelIntersects',
-        outFields: '*',
-        returnGeometry: 'false'
-      });
-
-      console.log(`Querying ${serviceName} with URL: ${url}?${params}`);
-      const response = await fetch(`${url}?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`${serviceName} response:`, JSON.stringify(data, null, 2));
-        return data.features || [];
-      } else {
-        console.log(`Feature service query failed for ${serviceName}: ${response.status}`);
-        const errorText = await response.text();
-        console.log(`Error response: ${errorText}`);
-        return [];
-      }
-    } catch (error) {
-      console.log(`Error querying ${serviceName}:`, error instanceof Error ? error.message : String(error));
+      console.error("Property search error:", error);
       return [];
     }
   }
@@ -574,27 +209,6 @@ export class AucklandCouncilAPI {
     }
   }
 
-  private formatSearchResult(item: any, originalAddress: string, coordinates?: [number, number] | null): PropertySearchResult | null {
-    try {
-      // Extract property information from various possible data structures
-      const properties = item.properties || item.attributes || item;
-      
-      return {
-        address: properties?.FULL_ADDRESS || properties?.ADDRESS || properties?.address || originalAddress,
-        suburb: properties?.SUBURB || properties?.suburb,
-        zoning: properties?.ZONING || properties?.zone || properties?.ZONE,
-        landArea: properties?.LAND_AREA || properties?.land_area || properties?.AREA,
-        capitalValue: properties?.CAPITAL_VALUE || properties?.capital_value || properties?.CV,
-        ratesId: properties?.RATES_ID || properties?.rates_id,
-        coordinates: coordinates || (item.geometry?.coordinates ? 
-          [item.geometry.coordinates[1], item.geometry.coordinates[0]] : undefined)
-      };
-    } catch (error) {
-      console.log("Error formatting search result:", error);
-      return null;
-    }
-  }
-
   formatPropertyReport(property: PropertySearchResult): string {
     let report = `Property Information for ${property.address}\n`;
     report += `==========================================\n\n`;
@@ -624,55 +238,6 @@ export class AucklandCouncilAPI {
     }
     
     return report;
-  }
-
-  decodeAucklandZone(zoneCode: number): string | null {
-    const zoneMap: Record<number, string> = {
-      1: "Business - Business Park Zone",
-      3: "Rural - Countryside Living Zone",
-      4: "Future Urban Zone",
-      5: "Business - Heavy Industry Zone",
-      7: "Business - Local Centre Zone",
-      8: "Residential - Terrace Housing and Apartment Building Zone",
-      10: "Business - Metropolitan Centre Zone",
-      11: "Rural - Mixed Rural Zone",
-      12: "Business - Mixed Use Zone",
-      15: "Rural - Rural Conservation Zone",
-      16: "Rural - Rural Production Zone",
-      17: "Business - Light Industry Zone",
-      18: "Residential - Mixed Housing Suburban Zone",
-      19: "Residential - Single House Zone",
-      20: "Residential - Rural and Coastal Settlement Zone",
-      22: "Business - Town Centre Zone",
-      23: "Residential - Large Lot Zone",
-      26: "Strategic Transport Corridor Zone",
-      35: "Business - City Centre Zone",
-      44: "Business - Neighbourhood Centre Zone",
-      49: "Business - General Business Zone",
-      60: "Residential - Mixed Housing Urban Zone",
-      72: "Residential - Low Density Residential Zone"
-    };
-    
-    return zoneMap[zoneCode] || null;
-  }
-
-  decodeSpecialCharacterArea(typeCode: number): string | null {
-    const specialCharacterMap: Record<number, string> = {
-      37: "General Balmoral tram Suburb East",
-      40: "Residential Balmoral Tram Suburb West",
-      29: "Residential General",
-      26: "General",
-      14: "Business Balmoral",
-      18: "Business Ponsonby",
-      19: "Business Parnell",
-      25: "Business Newmarket"
-    };
-    
-    return specialCharacterMap[typeCode] || null;
-  }
-
-  formatPropertyReport(property: PropertySearchResult): string {
-    return `Property Report for ${property.address}\n\nZoning: ${property.zoning || 'Unknown'}\nSuburb: ${property.suburb || 'Unknown'}\nLand Area: ${property.landArea || 'Unknown'} sqm\nCapital Value: $${property.capitalValue?.toLocaleString() || 'Unknown'}\nRates ID: ${property.ratesId || 'Unknown'}\n\nOverlays:\n${property.overlays?.map(overlay => `- ${overlay.type}: ${overlay.data ? 'Present' : 'Not found'}`).join('\n') || 'No overlays found'}`;
   }
 }
 

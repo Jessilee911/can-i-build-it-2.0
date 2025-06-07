@@ -1,237 +1,426 @@
-// import { buildingCodeScraper } from './building-code-scraper';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { db } from './db';
 
-interface BuildingCodeDocument {
-  url: string;
-  title: string;
+interface KnowledgeBase {
+  id: string;
   content: string;
-  type: 'html' | 'pdf';
-  source: 'mbie' | 'legislation' | 'council';
-  category: string;
+  source: string;
+  category: 'zoning' | 'building_consent' | 'resource_consent' | 'building_code' | 'planning' | 'infrastructure';
+  region?: string;
+  lastUpdated: Date;
 }
 
-let buildingCodeDocuments: BuildingCodeDocument[] = [];
-let lastScrapeTime: Date | null = null;
-
-export async function initializeBuildingCodeKnowledge() {
-  console.log('Initializing building code knowledge base...');
+// Official MBIE building consent exemptions knowledge base
+const nzBuildingKnowledge: KnowledgeBase[] = [
+  // From MBIE Exemptions Guidance Document
+  {
+    id: 'exempt_001',
+    content: 'General repair, maintenance, and replacement of building parts does not require consent if using the same or similar materials and maintaining original function.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_002',
+    content: 'Interior alterations to existing non-residential buildings do not require consent if they do not affect structural elements, fire safety systems, or accessibility provisions.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_003',
+    content: 'Single-storey detached buildings less than 10 square metres do not require building consent regardless of use.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_004',
+    content: 'Windows and exterior doorways in existing dwellings and outbuildings can be replaced without consent if same size and performance level maintained.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_005',
+    content: 'Internal walls and doorways in existing buildings can be altered without consent provided they are not structural or affect fire safety systems.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
   
-  // Check if we have recent data
-  const dataDir = './data/building_documents';
-  try {
-    const stat = await fs.stat(dataDir);
-    if (stat.isDirectory() && lastScrapeTime && 
-        Date.now() - lastScrapeTime.getTime() < 7 * 24 * 60 * 60 * 1000) { // 7 days
-      await loadExistingDocuments();
-      return;
-    }
-  } catch (error) {
-    // Directory doesn't exist, need to scrape
+  // Critical Infrastructure Constraints - Watercare Hibiscus Coast
+  {
+    id: 'infra_001',
+    content: 'HIBISCUS COAST WASTEWATER MORATORIUM - DEFINITIVE POLICY: Anyone with a building consent granted before 15 November 2024 will be able to connect when ready. If you have a resource consent issued before 15 November 2024 but no building consent yet, contact Watercare for case-by-case assessment of remaining Army Bay Treatment Plant capacity. Anyone applying for NEW resource consent to build homes or businesses in Hibiscus Coast will have a condition preventing connection to public wastewater network until Army Bay Wastewater Treatment Plant upgrade is completed (scheduled 2031, but exploring faster alternatives). Use Watercare online tool to check if your project is impacted.',
+    source: 'https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast',
+    category: 'infrastructure',
+    region: 'Auckland - Hibiscus Coast',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'infra_002',
+    content: 'HIBISCUS COAST DEVELOPMENT FREEZE: Covers Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay, and surrounding areas. Minor dwellings, granny flats, and any new wastewater connections are subject to the same restrictions. No new wastewater connections permitted until infrastructure upgrade completed. This directly affects building consent applications as wastewater connection is typically required for habitable buildings.',
+    source: 'https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast',
+    category: 'infrastructure',
+    region: 'Auckland - Hibiscus Coast',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'infra_003',
+    content: 'ALTERNATIVE OPTIONS FOR HIBISCUS COAST: Properties may need to consider alternative wastewater solutions such as onsite treatment systems during the moratorium period. Auckland Council may have specific requirements for alternative systems. Contact Auckland Council building consent team and Watercare development services before proceeding with any building plans in this area.',
+    source: 'https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast',
+    category: 'infrastructure',
+    region: 'Auckland - Hibiscus Coast',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_006',
+    content: 'Repair, maintenance, and replacement of sanitary plumbing and drainage does not require consent when maintaining existing function and capacity.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_007',
+    content: 'Thermal insulation installation or replacement does not require consent provided it meets Building Code requirements and does not affect structural elements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_008',
+    content: 'Porches and verandas up to 20 square metres do not require consent if single-storey and meet specific height and structural requirements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_009',
+    content: 'Decks, platforms, and bridges up to 1.5m high and meeting specific structural requirements do not require consent.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_010',
+    content: 'Carports not exceeding 20 square metres in floor area do not require consent if single-storey and meeting structural requirements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_011',
+    content: 'Fences and hoardings do not require building consent regardless of height, but must comply with district plan rules.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'exempt_012',
+    content: 'Retaining walls up to 1.5 metres depth of ground without surcharge do not require consent if meeting specific design requirements.',
+    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  // General building consent requirements
+  {
+    id: 'bc_001',
+    content: 'Building consent is required for most new buildings, significant alterations, and additions. Work must be carried out by licensed building practitioners where required.',
+    source: 'Building Act 2004',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'bc_002', 
+    content: 'All building work, whether exempt or requiring consent, must comply with the Building Code and other relevant legislation.',
+    source: 'Building Act 2004 - MBIE Guidance',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  // Zoning information
+  {
+    id: 'zone_001',
+    content: 'Residential - Single House Zone allows one dwelling per site with specific height, boundary setback, and site coverage rules.',
+    source: 'National Planning Standards',
+    category: 'zoning',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'zone_002',
+    content: 'Mixed Housing Urban Zone allows multiple dwellings per site up to 3 storeys, with higher density development permitted.',
+    source: 'National Planning Standards', 
+    category: 'zoning',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'rc_001',
+    content: 'Resource consent is required for activities that breach zone rules. Subdivision always requires resource consent.',
+    source: 'Resource Management Act 1991',
+    category: 'resource_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'legal_001',
+    content: 'Starting building work that requires consent without obtaining it first is illegal under the Building Act 2004. Penalties include stop-work notices, fines up to $200,000, and potential prosecution. Unauthorized work must be brought into compliance or removed at the owner\'s expense.',
+    source: 'Building Act 2004 - Sections 40, 229-238',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'legal_002',
+    content: 'Building work performed without required consent can affect property sales, insurance claims, and mortgage approvals. Banks and insurers may refuse to cover properties with unauthorized building work.',
+    source: 'Building Act 2004 - Compliance Schedules',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'legal_003',
+    content: 'Councils have enforcement powers including stop-work notices, compliance orders, and prosecution for building work done without consent. Owners are responsible for ensuring all work complies with consent requirements.',
+    source: 'Building Act 2004 - Part 3 Compliance and Enforcement',
+    category: 'building_consent',
+    lastUpdated: new Date()
   }
-  
-  // Initialize with authentic building code knowledge from official sources
-  loadPredefinedBuildingCodeKnowledge();
-  lastScrapeTime = new Date();
-  console.log(`Loaded ${buildingCodeDocuments.length} official building code documents`);
-}
+];
 
-async function loadExistingDocuments() {
-  const dataDir = './data/building_documents';
-  try {
-    const sources = await fs.readdir(dataDir);
-    buildingCodeDocuments = [];
+/**
+ * Search the knowledge base for relevant information based on query
+ */
+export function searchKnowledgeBase(query: string, category?: KnowledgeBase['category']): KnowledgeBase[] {
+  const searchTerms = query.toLowerCase().split(' ');
+  
+  let results = nzBuildingKnowledge.filter(item => {
+    if (category && item.category !== category) return false;
     
-    for (const source of sources) {
-      const sourcePath = path.join(dataDir, source);
-      const categories = await fs.readdir(sourcePath);
-      
-      for (const category of categories) {
-        const categoryPath = path.join(sourcePath, category);
-        const files = await fs.readdir(categoryPath);
-        
-        for (const file of files) {
-          if (file.endsWith('.json')) {
-            const filePath = path.join(categoryPath, file);
-            const content = await fs.readFile(filePath, 'utf-8');
-            const doc = JSON.parse(content);
-            buildingCodeDocuments.push(doc);
-          }
-        }
+    const contentLower = item.content.toLowerCase();
+    return searchTerms.some(term => 
+      contentLower.includes(term) || 
+      item.category.includes(term) ||
+      (item.source && item.source.toLowerCase().includes(term))
+    );
+  });
+  
+  // Enhanced scoring system with infrastructure priority
+  const analysis = analyzeQuery(query);
+  
+  results = results.map(item => {
+    const content = item.content.toLowerCase();
+    let score = 0;
+    
+    // CRITICAL: High priority for infrastructure constraints in specific locations
+    if (item.category === 'infrastructure' && analysis.location) {
+      if (item.region === analysis.location) {
+        score += 1000; // Very high priority for location-specific infrastructure
       }
     }
     
-    console.log(`Loaded ${buildingCodeDocuments.length} building code documents from cache`);
-  } catch (error) {
-    console.error('Failed to load existing documents:', error);
-  }
-}
-
-export function searchKnowledgeBase(query: string, category: 'building_code' | 'planning'): any[] {
-  const searchTerm = query.toLowerCase();
-  
-  // Map categories to document types
-  const categoryMap = {
-    'building_code': ['exempt_work', 'schedule_1', 'guidance_document'],
-    'planning': ['auckland_guidance', 'council_guidance']
-  };
-  
-  const relevantCategories = categoryMap[category] || [];
-  
-  return buildingCodeDocuments.filter(doc => {
-    const matchesCategory = relevantCategories.includes(doc.category);
-    const matchesContent = doc.content.toLowerCase().includes(searchTerm) ||
-                          doc.title.toLowerCase().includes(searchTerm);
-    
-    return matchesCategory && matchesContent;
-  });
-}
-
-export async function generateRAGResponse(query: string, contextData?: any): Promise<string> {
-  // Initialize building code knowledge if needed
-  if (buildingCodeDocuments.length === 0) {
-    await initializeBuildingCodeKnowledge();
-  }
-  
-  // Search for relevant building code information
-  const buildingCodeDocs = searchKnowledgeBase(query, 'building_code');
-  const planningDocs = searchKnowledgeBase(query, 'planning');
-  
-  if (buildingCodeDocs.length === 0 && planningDocs.length === 0) {
-    return "I'm accessing the latest official New Zealand building regulations and MBIE guidance to provide accurate information for your specific project requirements.";
-  }
-  
-  // Extract relevant content from found documents
-  let response = "Based on official New Zealand building regulations:\n\n";
-  
-  // Add Schedule 1 exemptions if relevant
-  const schedule1Docs = buildingCodeDocs.filter(doc => doc.category === 'schedule_1');
-  if (schedule1Docs.length > 0) {
-    response += "**Building Act Schedule 1 Exemptions:**\n";
-    schedule1Docs.forEach(doc => {
-      const relevantContent = extractRelevantContent(doc.content, query);
-      response += `${relevantContent}\n\n`;
-    });
-  }
-  
-  // Add MBIE exempt work guidance
-  const exemptWorkDocs = buildingCodeDocs.filter(doc => doc.category === 'exempt_work');
-  if (exemptWorkDocs.length > 0) {
-    response += "**MBIE Exempt Building Work Guidance:**\n";
-    exemptWorkDocs.forEach(doc => {
-      const relevantContent = extractRelevantContent(doc.content, query);
-      response += `${relevantContent}\n\n`;
-    });
-  }
-  
-  return response.trim();
-}
-
-function extractRelevantContent(content: string, query: string): string {
-  const searchTerms = query.toLowerCase().split(' ');
-  const sentences = content.split(/[.!?]+/);
-  
-  // Find sentences containing search terms
-  const relevantSentences = sentences.filter(sentence => {
-    const lowerSentence = sentence.toLowerCase();
-    return searchTerms.some(term => lowerSentence.includes(term));
-  });
-  
-  // Return first few relevant sentences
-  return relevantSentences.slice(0, 3).join('. ').trim();
-}
-
-export function analyzeQuery(query: string): any {
-  const lowerQuery = query.toLowerCase();
-  
-  // Determine category based on query content
-  if (lowerQuery.includes('consent') || lowerQuery.includes('exemption') || 
-      lowerQuery.includes('building code') || lowerQuery.includes('schedule')) {
-    return {
-      category: 'building_code',
-      intent: 'consent_requirements',
-      confidence: 0.9
-    };
-  }
-  
-  if (lowerQuery.includes('zone') || lowerQuery.includes('planning') || 
-      lowerQuery.includes('development')) {
-    return {
-      category: 'planning',
-      intent: 'zoning_guidance',
-      confidence: 0.8
-    };
-  }
-  
-  return {
-    category: 'general',
-    intent: 'property_guidance',
-    confidence: 0.6
-  };
-}
-
-function loadPredefinedBuildingCodeKnowledge() {
-  // Initialize with authentic New Zealand building code documents and regulations
-  buildingCodeDocuments = [
-    {
-      url: 'https://www.legislation.govt.nz/act/public/2004/0072/latest/DLM307529.html',
-      title: 'Building Act 2004 - Schedule 1 Exempt Building Work',
-      content: `Schedule 1 Exempt Building Work (Building Act 2004)
-
-Part 1 - Detached buildings
-1. Detached buildings with floor area not exceeding 10m² and not intended for human habitation
-2. Carports not exceeding 20m² in floor area and with no walls or with walls on not more than 2 sides
-3. Verandas, porches, decks, steps, or landing not more than 1.5 metres above ground
-
-Part 2 - Fences and walls  
-4. Fences not exceeding 2.5 metres in height
-5. Retaining walls not exceeding 1.5 metres in height
-
-Part 3 - Repair and maintenance
-6. Repair and maintenance that restores a building element to its previous condition
-7. Replacement of building elements with similar materials and performance
-
-Part 4 - Site work
-8. Paths, driveways, and parking areas
-9. Swimming pools not exceeding 35,000 litres capacity with safety barriers
-
-Conditions: All exempt work must comply with the building code and not compromise building warrant of fitness requirements.`,
-      type: 'html',
-      source: 'legislation',
-      category: 'schedule_1'
-    },
-    {
-      url: 'https://www.building.govt.nz/building-code-compliance/building-consent/exempt-building-work/',
-      title: 'MBIE Exempt Building Work Guidance',
-      content: `MBIE Guidance on Exempt Building Work
-
-Building consent exemptions under Schedule 1:
-
-Small Detached Buildings:
-- Must not exceed 10m² floor area
-- Cannot be used for human habitation
-- Must comply with boundary setbacks
-- Height restrictions apply (usually under 3m)
-
-Carports and Garages:
-- Carports up to 20m² may be exempt
-- Must have no walls or walls on maximum 2 sides
-- Must comply with fire separation distances
-- Structural adequacy still required
-
-Decks and Platforms:
-- Height limit of 1.5m above ground level
-- Must have appropriate barriers if required
-- Weatherproofing still applies
-- Structural design must be adequate
-
-Important Notes:
-- Exempt work still must comply with Building Code
-- Council may require building consent if work affects existing building
-- Professional advice recommended for structural elements`,
-      type: 'html',
-      source: 'mbie',
-      category: 'exempt_work'
+    // High priority for Hibiscus Coast infrastructure regardless of location detection
+    if (item.category === 'infrastructure' && 
+        (query.toLowerCase().includes('hibiscus') || query.toLowerCase().includes('orewa') || 
+         query.toLowerCase().includes('silverdale') || query.toLowerCase().includes('whangaparaoa'))) {
+      score += 1000;
     }
-  ];
+    
+    // Score based on term matches
+    searchTerms.forEach(term => {
+      if (content.includes(term)) {
+        score += 10;
+      }
+    });
+    
+    // Boost for exact query matches
+    if (content.includes(query.toLowerCase())) {
+      score += 50;
+    }
+    
+    // Boost for building type matches
+    if (analysis.buildingType === 'minor_dwelling' && 
+        (content.includes('minor dwelling') || content.includes('granny flat') || content.includes('secondary'))) {
+      score += 30;
+    }
+    
+    return { ...item, score };
+  })
+  .filter(item => item.score > 0)
+  .sort((a, b) => b.score - a.score);
+  
+  return results.slice(0, 8); // Return top 8 most relevant
+}
+
+/**
+ * Generate an informed response using RAG with OpenAI API
+ */
+export async function generateRAGResponse(query: string, userContext?: any): Promise<string> {
+  if (!process.env.OPENAI_API_KEY) {
+    return `To provide you with accurate information about New Zealand building regulations and property assessments, I need access to AI capabilities that can help analyze and provide guidance on building regulations.
+
+Would you like to set up AI assistance so I can provide detailed property and building regulation information?`;
+  }
+
+  try {
+    // Use OpenAI to provide informed responses about NZ building regulations
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert on New Zealand building regulations, zoning laws, and property development. You have access to official MBIE guidance including the "Building work that does not require a building consent - Exemptions Guidance for Schedule 1 of the Building Act 2004" document.
+
+            Your knowledge includes:
+            - Building Act 2004 and Building Code requirements
+            - Official MBIE exemptions guidance (Schedule 1)
+            - Resource Management Act 1991 and planning rules
+            - National Planning Standards and zone types
+            - Council consent processes and requirements
+            
+            When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
+            
+            CRITICAL INFRASTRUCTURE CONSTRAINTS - PROVIDE EXACT DETAILS:
+            - For Hibiscus Coast area (Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay): ALWAYS provide the specific Watercare policy details:
+              * Building consents granted before 15 November 2024 can connect when ready
+              * Resource consents issued before 15 November 2024 without building consent: contact Watercare for case-by-case assessment
+              * NEW resource consent applications will have condition preventing wastewater connection until Army Bay Treatment Plant upgrade (scheduled 2031)
+              * This applies to ALL new buildings including minor dwellings and granny flats
+              * Alternative wastewater solutions may be required during moratorium
+            - ALWAYS include this exact link: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
+            - Direct users to use Watercare's online tool to check if their project is impacted
+            
+            When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays. Always recommend consulting qualified professionals and suggest our personalized property reports for comprehensive analysis.
+            
+            RESPONSE STYLE REQUIREMENTS:
+            - Provide DEFINITIVE, SPECIFIC answers with exact details from official sources
+            - Lead with the most critical information first (especially infrastructure constraints)
+            - Include specific dates, deadlines, and policy details when available
+            - Always provide exact website links for verification
+            - State clear YES/NO answers where possible rather than general advice
+            - Quote specific policy text when relevant
+            - Write responses in plain text only without any markdown formatting
+            - Do NOT use hashtag symbols (#, ##, ###, ####) for headings
+            - Do NOT use asterisk symbols (**, *) for bold or italic text
+            - Use simple line breaks and colons for organization
+            - Prioritize actionable next steps over general explanations
+            
+            CITATION REQUIREMENTS:
+            - Always include specific source references for building regulations
+            - Cite official government websites like building.govt.nz
+            - Reference specific Building Act sections and Building Code clauses
+            - Include links to relevant MBIE guidance documents
+            - Mention specific council planning documents when applicable
+            - When referencing websites, provide the URL for easy access
+            - Always mention consulting qualified professionals or a qualified professional
+            - Consistently promote our personalized property reports for comprehensive analysis`
+          },
+          {
+            role: 'user',
+            content: `${query}
+
+Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. Be direct and concise - focus on essential information and practical next steps. Always suggest consulting qualified professionals or a qualified professional when appropriate, and recommend our personalized property reports for comprehensive analysis.
+
+IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
+          }
+        ],
+        max_tokens: 600,
+        temperature: 0.3,
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+
+    if (content) {
+      return content;
+    }
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+  }
+
+  // Fallback to local knowledge base if API fails
+  const relevantInfo = searchKnowledgeBase(query);
+  
+  if (relevantInfo.length > 0) {
+    let response = `Based on New Zealand building regulations and planning standards:\n\n`;
+    
+    relevantInfo.forEach((info, index) => {
+      response += `${index + 1}. ${info.content}\n`;
+      response += `   (Source: ${info.source})\n\n`;
+    });
+    
+    response += `This information is based on current New Zealand legislation. For the most current details, I recommend checking official government websites.`;
+    return response;
+  }
+
+  return `I understand your question about "${query}". To provide you with the most accurate and current information from official New Zealand sources, I need access to web search capabilities. This would allow me to search building.govt.nz, council websites, and other official sources in real-time.`;
+}
+
+/**
+ * Analyze query and determine what type of building/planning question it is
+ */
+export function analyzeQuery(query: string): {
+  type: 'new_build' | 'renovation' | 'subdivision' | 'zoning' | 'consent' | 'general';
+  buildingType?: 'house' | 'minor_dwelling' | 'commercial' | 'multi_unit';
+  location?: string;
+  urgency?: 'immediate' | 'planning' | 'future';
+} {
+  const queryLower = query.toLowerCase();
+  
+  let type: any = 'general';
+  let buildingType: any;
+  let urgency: any = 'planning';
+  let location: string | undefined;
+  
+  // Determine location - prioritize specific areas with known constraints
+  if (queryLower.includes('hibiscus coast') || queryLower.includes('orewa') || 
+      queryLower.includes('silverdale') || queryLower.includes('whangaparaoa') ||
+      queryLower.includes('red beach') || queryLower.includes('stanmore bay')) {
+    location = 'Auckland - Hibiscus Coast';
+  } else if (queryLower.includes('auckland')) {
+    location = 'Auckland';
+  } else if (queryLower.includes('wellington')) {
+    location = 'Wellington';
+  } else if (queryLower.includes('christchurch')) {
+    location = 'Christchurch';
+  }
+  
+  // Determine query type
+  if (queryLower.includes('build') || queryLower.includes('new') || queryLower.includes('construct')) {
+    type = 'new_build';
+  } else if (queryLower.includes('renovate') || queryLower.includes('alter') || queryLower.includes('extend')) {
+    type = 'renovation'; 
+  } else if (queryLower.includes('subdivide') || queryLower.includes('split') || queryLower.includes('divide')) {
+    type = 'subdivision';
+  } else if (queryLower.includes('zone') || queryLower.includes('zoning')) {
+    type = 'zoning';
+  } else if (queryLower.includes('consent')) {
+    type = 'consent';
+  }
+  
+  // Determine building type
+  if (queryLower.includes('house') || queryLower.includes('home') || queryLower.includes('dwelling')) {
+    buildingType = 'house';
+  } else if (queryLower.includes('granny flat') || queryLower.includes('minor dwelling') || 
+             queryLower.includes('secondary') || queryLower.includes('sleep-out')) {
+    buildingType = 'minor_dwelling';
+  } else if (queryLower.includes('commercial') || queryLower.includes('office') || queryLower.includes('retail')) {
+    buildingType = 'commercial';
+  } else if (queryLower.includes('apartment') || queryLower.includes('units')) {
+    buildingType = 'multi_unit';
+  }
+  
+  // Determine urgency
+  if (queryLower.includes('urgent') || queryLower.includes('asap') || queryLower.includes('immediately')) {
+    urgency = 'immediate';
+  } else if (queryLower.includes('planning') || queryLower.includes('future') || queryLower.includes('considering')) {
+    urgency = 'future';
+  }
+  
+  return { type, buildingType, location, urgency };
 }

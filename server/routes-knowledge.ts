@@ -1,19 +1,19 @@
 import { Request, Response } from 'express';
-import { initializeBuildingCodeKnowledge } from './process-building-codes';
+import { processBuildingCodeDocuments } from './process-building-codes';
 import { storage } from './storage';
 
 export async function setupKnowledgeRoutes(app: any) {
   
-  // Initialize building code knowledge
-  app.post('/api/admin/initialize-building-codes', async (req: Request, res: Response) => {
+  // Process building code documents
+  app.post('/api/admin/process-building-codes', async (req: Request, res: Response) => {
     try {
-      await initializeBuildingCodeKnowledge();
-      res.json({ success: true, message: 'Building code knowledge initialized successfully' });
+      await processBuildingCodeDocuments();
+      res.json({ success: true, message: 'Building codes processed successfully' });
     } catch (error: any) {
-      console.error('Error initializing building codes:', error);
+      console.error('Error processing building codes:', error);
       res.status(500).json({ 
         success: false, 
-        error: error?.message || 'Failed to initialize building codes' 
+        error: error?.message || 'Failed to process building codes' 
       });
     }
   });

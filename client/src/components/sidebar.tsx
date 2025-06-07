@@ -78,15 +78,25 @@ export function Sidebar({ className }: SidebarProps) {
 
   const navigationItems = [
     {
-      title: "Agent 1 - Can I Build It",
+      title: "Home",
       href: "/",
-      icon: <BuildingIcon className="h-4 w-4" />
-    },
-    {
-      title: "Agent 2 - Property Research",
-      href: "/property-chat",
       icon: <HomeIcon className="h-4 w-4" />
     }
+    // {
+    //   title: "Generate Report",
+    //   href: "/reports",
+    //   icon: <FileTextIcon className="h-4 w-4" />
+    // },
+    // {
+    //   title: "Premium Assessment",
+    //   href: "/premium-chat",
+    //   icon: <StarIcon className="h-4 w-4" />
+    // },
+    // {
+    //   title: "Chat Assistant",
+    //   href: "/chat",
+    //   icon: <MessageSquareIcon className="h-4 w-4" />
+    // }
   ];
 
   const faqSections = [

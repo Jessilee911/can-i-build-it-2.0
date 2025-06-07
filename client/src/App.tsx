@@ -13,9 +13,6 @@ import PaymentSuccess from "@/pages/payment-success";
 import ReportGenerator from "@/pages/report-generator";
 import Chat from "@/pages/chat";
 import PremiumChat from "@/pages/premium-chat";
-import PropertyChat from "@/pages/property-chat";
-import ReportPage from "@/pages/report";
-import PropertyAssessment from "@/pages/property-assessment";
 
 import { Link } from "wouter";
 import { Sidebar } from "@/components/sidebar";
@@ -53,19 +50,6 @@ function Router() {
       <Route path="/premium-chat" component={() => (
         <AppLayout>
           <PremiumChat />
-        </AppLayout>
-      )} />
-      <Route path="/property-chat" component={() => (
-        <AppLayout>
-          <PropertyChat />
-        </AppLayout>
-      )} />
-      <Route path="/property-assessment" component={() => (
-        <PropertyAssessment />
-      )} />
-      <Route path="/report/:id" component={() => (
-        <AppLayout>
-          <ReportPage />
         </AppLayout>
       )} />
       <Route path="/report-questions" component={ReportQuestions} />

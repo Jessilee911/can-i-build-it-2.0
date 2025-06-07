@@ -2,14 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Force text selection in modals */
-.modal-content, .modal-content * {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
-}
-
 @keyframes float {
   0%, 100% {
     transform: translateY(0px) translateX(0px);

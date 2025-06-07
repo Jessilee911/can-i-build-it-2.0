@@ -108,6 +108,8 @@ const PropertyData = () => {
         <div className="p-6">
           {/* Main search component */}
           <PropertyAssessment showPricing={showPricing} />
+          
+
         </div>
       </div>
       

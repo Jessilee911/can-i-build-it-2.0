@@ -1,18 +1,8 @@
-import { aucklandCouncilAPI } from './auckland-council-api';
-import * as rag from './rag';
+import { aucklandCouncilAPI } from "./auckland-council-api";
 
 export interface PropertyAnalysisReport {
   propertyAddress: string;
   executiveSummary: string;
-  locationVerification: {
-    verifiedAddress: string;
-    coordinates: [number, number];
-    accuracyLevel: string;
-    officialZoning: string;
-    zoningDescription: string;
-    dataSource: string;
-    verificationDate: Date;
-  };
   propertyDetails: {
     address: string;
     suburb?: string;
@@ -21,10 +11,6 @@ export interface PropertyAnalysisReport {
     capitalValue?: number;
     ratesId?: string;
     coordinates?: [number, number];
-    overlays?: Array<{
-      type: string;
-      data: any;
-    }>;
   };
   zoningAnalysis: {
     currentZoning: string;
@@ -58,45 +44,16 @@ export class PremiumPropertyAgent {
   async generatePropertyReport(address: string, projectDescription?: string): Promise<PropertyAnalysisReport> {
     console.log(`Generating comprehensive report for: ${address}`);
     
-    // Use comprehensive property research that integrates all data sources
-    let property;
-    let researchData;
-    
-    try {
-      // Import and use the comprehensive property research
-      const { researchProperty } = await import('./property-research');
-      researchData = await researchProperty(address);
-      
-      // Also get the basic property data from Auckland Council API
-      const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
-      const basicProperty = properties[0];
-      
-      // Combine research data with basic property info
-      property = {
-        address: researchData.propertyAddress,
-        coordinates: basicProperty?.coordinates,
-        zoning: researchData.districtPlanningZone,
-        zoningCode: basicProperty?.zoningCode,
-        zoningData: basicProperty?.zoningData,
-        overlays: basicProperty?.overlays,
-        researchData: researchData
-      };
-    } catch (error) {
-      console.log("Comprehensive property research failed:", error);
-      
-      // Fallback to basic Auckland Council API search
-      const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
-      property = properties[0];
-    }
+    // Search Auckland Council data
+    const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
+    const property = properties[0]; // Take the best match
     
     if (!property) {
-      throw new Error(`Unable to retrieve official property data for address: ${address}. Please verify the address is correct and try again.`);
+      throw new Error(`No property data found for address: ${address}`);
     }
 
-    console.log(`Property data compiled for ${address}:`, property);
-
-    // Generate comprehensive zoning analysis using official data
-    const zoningAnalysis = await this.analyzeZoningWithRAG(property, projectDescription);
+    // Generate zoning analysis
+    const zoningAnalysis = this.analyzeZoning(property.zoning || "Unknown");
     
     // Analyze development constraints
     const constraints = await this.analyzeDevelopmentConstraints(property);
@@ -116,24 +73,14 @@ export class PremiumPropertyAgent {
     const report: PropertyAnalysisReport = {
       propertyAddress: address,
       executiveSummary,
-      locationVerification: {
-        verifiedAddress: property.address,
-        coordinates: property.coordinates || [0, 0],
-        accuracyLevel: property.coordinates ? "High - Official Auckland Council Data with LINZ Property Parcels" : "Address level",
-        officialZoning: property.zoning || 'Not determined',
-        zoningDescription: property.zoningData?.ZONE_NAME || property.zoning || 'Zoning information not available',
-        dataSource: "Auckland Council Unitary Plan (All Layers) + LINZ Property Parcels API + Comprehensive Research",
-        verificationDate: new Date(),
-      },
       propertyDetails: {
         address: property.address,
-        suburb: property.suburb || undefined,
-        zoning: property.zoning || undefined,
-        landArea: property.landArea || undefined,
-        capitalValue: property.capitalValue || undefined,
-        ratesId: property.ratesId || undefined,
-        coordinates: property.coordinates || undefined,
-        overlays: property.overlays || undefined,
+        suburb: property.suburb,
+        zoning: property.zoning,
+        landArea: property.landArea,
+        capitalValue: property.capitalValue,
+        ratesId: property.ratesId,
+        coordinates: property.coordinates,
       },
       zoningAnalysis,
       developmentConstraints: constraints,
@@ -146,86 +93,42 @@ export class PremiumPropertyAgent {
     return report;
   }
 
-  private async analyzeZoningWithRAG(property: any, projectDescription?: string): Promise<PropertyAnalysisReport['zoningAnalysis']> {
-    // Get detailed zoning information from Auckland Council data
-    const zoning = property.zoning || 'Unknown';
-    const zoningCode = property.zoningCode;
-    
-    console.log(`Analyzing zoning: ${zoning} (Code: ${zoningCode})`);
-    
-    // Import zone lookup to get official building rules
-    let officialZoneInfo = null;
-    if (zoningCode) {
-      try {
-        const { getZoneInfo } = await import('./auckland-zone-lookup');
-        officialZoneInfo = getZoneInfo(zoningCode);
-      } catch (error) {
-        console.log("Zone lookup failed:", error);
+  private analyzeZoning(zoning: string): PropertyAnalysisReport['zoningAnalysis'] {
+    // Simplified zoning analysis - in production this would be much more detailed
+    const zoningRules: Record<string, any> = {
+      'Residential - Single House': {
+        permittedUses: ['Single dwelling', 'Home office', 'Minor accommodation'],
+        restrictions: ['Height limit 8m', 'Building coverage 35%', 'Setbacks required'],
+        potential: 'Limited subdivision potential. Consider minor dwelling addition.'
+      },
+      'Residential - Mixed Housing Suburban': {
+        permittedUses: ['Single dwelling', 'Duplex', 'Terraced housing', 'Apartments up to 3 stories'],
+        restrictions: ['Height limit 11m', 'Building coverage 40%', 'Outdoor living space required'],
+        potential: 'Good subdivision and intensification opportunities. Multiple dwellings permitted.'
+      },
+      'Residential - Mixed Housing Urban': {
+        permittedUses: ['All residential types', 'Retail (ground floor)', 'Offices', 'Community facilities'],
+        restrictions: ['Height limit 16m', 'Building coverage 50%', 'Active frontage requirements'],
+        potential: 'Excellent development potential. Mixed-use opportunities available.'
+      },
+      'Business - City Centre': {
+        permittedUses: ['Offices', 'Retail', 'Entertainment', 'Residential', 'Hotels'],
+        restrictions: ['Height varies by precinct', 'Active frontage required', 'Wind effects assessment'],
+        potential: 'High-density development opportunities. Mixed commercial/residential use.'
       }
-    }
-    
-    // Combine official Auckland Council data with analysis
-    if (officialZoneInfo) {
-      return {
-        currentZoning: zoning,
-        permittedUses: this.extractPermittedUses(officialZoneInfo),
-        buildingRestrictions: officialZoneInfo.buildingRules,
-        developmentPotential: this.analyzeDevelopmentPotential(officialZoneInfo, projectDescription)
-      };
-    } else {
-      // Fallback if no official zoning data available
-      return this.analyzeFallbackZoning(zoning);
-    }
-  }
+    };
 
-  private extractPermittedUses(zoneInfo: any): string[] {
-    const uses = [zoneInfo.description];
-    
-    // Add category-specific permitted uses
-    switch (zoneInfo.category) {
-      case 'residential':
-        uses.push("Residential dwellings", "Home-based businesses (restricted)", "Community facilities");
-        break;
-      case 'business':
-        uses.push("Commercial activities", "Office developments", "Retail operations");
-        break;
-      case 'rural':
-        uses.push("Primary production", "Rural residential", "Agricultural activities");
-        break;
-      case 'open-space':
-        uses.push("Recreation facilities", "Conservation activities", "Public access");
-        break;
-      default:
-        uses.push("Various permitted activities subject to planning rules");
-    }
-    
-    return uses;
-  }
+    const rules = zoningRules[zoning] || {
+      permittedUses: ['Check Auckland Unitary Plan for specific uses'],
+      restrictions: ['Consult planning professional for detailed analysis'],
+      potential: 'Professional assessment required for development potential'
+    };
 
-  private analyzeDevelopmentPotential(zoneInfo: any, projectDescription?: string): string {
-    let potential = `This ${zoneInfo.name} allows for ${zoneInfo.description.toLowerCase()}.`;
-    
-    if (projectDescription) {
-      potential += ` For your specific project (${projectDescription}), `;
-      
-      if (zoneInfo.category === 'residential') {
-        potential += "residential development is generally permitted subject to compliance with building rules and consent requirements.";
-      } else if (zoneInfo.category === 'business') {
-        potential += "commercial development opportunities exist with appropriate consents.";
-      } else {
-        potential += "development may be possible subject to zone-specific requirements.";
-      }
-    }
-    
-    return potential;
-  }
-
-  private analyzeFallbackZoning(zoning: string): PropertyAnalysisReport['zoningAnalysis'] {
     return {
       currentZoning: zoning,
-      permittedUses: ['Requires professional zoning assessment'],
-      buildingRestrictions: ['Refer to Auckland Unitary Plan for zone-specific requirements'],
-      developmentPotential: 'Professional planning consultation recommended'
+      permittedUses: rules.permittedUses,
+      buildingRestrictions: rules.restrictions,
+      developmentPotential: rules.potential
     };
   }
 
@@ -236,47 +139,156 @@ export class PremiumPropertyAgent {
       planning: [] as string[]
     };
 
-    // Analyze overlays for constraints
-    if (property.overlays) {
-      for (const overlay of property.overlays) {
-        if (overlay.type === 'liquefaction_vulnerability') {
-          const vulnerability = overlay.data?.Vulnerability;
-          if (vulnerability && vulnerability !== 'Very Low') {
-            constraints.environmental.push(`Liquefaction vulnerability: ${vulnerability}`);
-          }
-        }
-      }
+    // Infrastructure constraints based on location
+    if (property.landArea && property.landArea < 500) {
+      constraints.infrastructure.push('Small site may limit infrastructure upgrade options');
+    }
+    
+    if (property.suburb) {
+      // Add suburb-specific infrastructure considerations
+      const infrastructureRisks = this.getInfrastructureRisks(property.suburb);
+      constraints.infrastructure.push(...infrastructureRisks);
+    }
+
+    // Environmental constraints (would be enhanced with actual overlays data)
+    constraints.environmental.push('Check for flood overlays and natural hazard areas');
+    constraints.environmental.push('Assess contaminated land risk');
+    constraints.environmental.push('Consider stormwater management requirements');
+
+    // Planning constraints
+    constraints.planning.push('Comply with Auckland Design Manual requirements');
+    constraints.planning.push('Consider neighbor consultation requirements');
+    
+    if (property.capitalValue && property.capitalValue > 2000000) {
+      constraints.planning.push('High-value area - additional design scrutiny likely');
     }
 
     return constraints;
   }
 
   private analyzeConsentRequirements(property: any, projectDescription?: string): PropertyAnalysisReport['consentRequirements'] {
+    let buildingConsent = 'Required for most building work';
+    let resourceConsent = 'May be required depending on development type';
+    const otherConsents = [];
+
+    if (projectDescription) {
+      const desc = projectDescription.toLowerCase();
+      
+      if (desc.includes('subdivision')) {
+        resourceConsent = 'Required - subdivision consent needed';
+        otherConsents.push('Engineering approval for infrastructure');
+      }
+      
+      if (desc.includes('apartment') || desc.includes('multi')) {
+        otherConsents.push('Car parking assessment');
+        otherConsents.push('Traffic impact assessment may be required');
+      }
+      
+      if (desc.includes('commercial') || desc.includes('retail')) {
+        otherConsents.push('Change of use consent may be required');
+        otherConsents.push('Food business registration if applicable');
+      }
+      
+      if (desc.includes('pool')) {
+        otherConsents.push('Pool barrier compliance certificate');
+      }
+    }
+
     return {
-      buildingConsent: 'Building consent required for most construction work',
-      resourceConsent: 'Resource consent requirements depend on specific activity and zoning',
-      otherConsents: ['Fire safety compliance', 'Utility connections']
+      buildingConsent,
+      resourceConsent,
+      otherConsents
     };
   }
 
   private generateExecutiveSummary(property: any, projectDescription?: string): string {
-    return `Property analysis for ${property.address}. ${property.zoning ? `Zoned as ${property.zoning}.` : 'Zoning to be confirmed.'} ${projectDescription ? `Proposed project: ${projectDescription}.` : ''} Professional consultation recommended for specific development requirements.`;
+    const suburb = property.suburb || 'Auckland';
+    const zoning = property.zoning || 'Unknown zoning';
+    const value = property.capitalValue ? `$${property.capitalValue.toLocaleString()}` : 'Unknown value';
+    
+    let summary = `Property Analysis for ${property.address}, ${suburb}\n\n`;
+    summary += `This property is located in ${suburb} with ${zoning} zoning and has a capital value of ${value}. `;
+    
+    if (property.landArea) {
+      summary += `The land area is ${property.landArea}m². `;
+    }
+    
+    if (projectDescription) {
+      summary += `\n\nProject Scope: ${projectDescription}\n\n`;
+      summary += `Based on the proposed development, this analysis identifies key consent requirements, `;
+      summary += `development constraints, and recommended next steps for your project.`;
+    } else {
+      summary += `\n\nThis analysis provides an overview of development potential and regulatory requirements for the property.`;
+    }
+    
+    return summary;
   }
 
   private generateNextSteps(property: any, projectDescription?: string): string[] {
-    return [
-      'Consult with a qualified planning professional',
-      'Review Auckland Unitary Plan requirements',
-      'Consider preliminary site investigation',
-      'Engage with Auckland Council for pre-application discussions'
+    const steps = [
+      'Engage a qualified planner to review specific development proposals',
+      'Obtain detailed site survey and geotechnical assessment',
+      'Consult with Auckland Council pre-application service',
+      'Review Auckland Unitary Plan provisions in detail'
     ];
+
+    if (projectDescription) {
+      const desc = projectDescription.toLowerCase();
+      
+      if (desc.includes('subdivision')) {
+        steps.unshift('Commission subdivision feasibility study');
+        steps.push('Engage civil engineer for infrastructure design');
+      }
+      
+      if (desc.includes('build') || desc.includes('construct')) {
+        steps.push('Engage architect for design development');
+        steps.push('Consider building consent lodgement timeline');
+      }
+      
+      if (desc.includes('renovation') || desc.includes('alter')) {
+        steps.push('Assess existing building compliance');
+        steps.push('Consider structural engineering assessment if required');
+      }
+    }
+
+    return steps;
+  }
+
+  private getInfrastructureRisks(suburb: string): string[] {
+    // Simplified infrastructure risk mapping
+    const risks: Record<string, string[]> = {
+      'Auckland Central': ['High development pressure on infrastructure', 'Traffic congestion considerations'],
+      'Ponsonby': ['Heritage area restrictions may apply', 'Limited parking availability'],
+      'Parnell': ['Heritage considerations', 'Steep terrain challenges'],
+      'Newmarket': ['High traffic area', 'Commercial/residential interface'],
+      'Takapuna': ['Coastal environment considerations', 'Town centre intensification'],
+      'Devonport': ['Heritage naval area', 'Island access considerations'],
+      'Remuera': ['High-value residential area', 'Mature tree protection'],
+      'Mt Eden': ['Volcanic cone protection', 'Heritage considerations'],
+      'Epsom': ['Character protection areas', 'School zone pressures']
+    };
+
+    return risks[suburb] || ['Standard infrastructure assessment required'];
   }
 
   private getProfessionalContacts(suburb?: string): PropertyAnalysisReport['professionalContacts'] {
+    // In production, this would be a dynamic database
     return {
-      planners: ['Auckland Council Planning Services'],
-      engineers: ['Professional engineering consultants required'],
-      architects: ['Local architectural services available']
+      planners: [
+        'Auckland Council Planning Team - phone: 09 301 0101',
+        'Resource Planning Associates - www.rpa.co.nz',
+        'Urban Planning Solutions Ltd'
+      ],
+      engineers: [
+        'Stantec (Auckland office) - www.stantec.com',
+        'WSP Opus - www.wsp.com/en-nz',
+        'Harrison Grierson - www.harrisongrierson.com'
+      ],
+      architects: [
+        'New Zealand Institute of Architects - www.nzia.co.nz',
+        'Auckland Architecture Centre',
+        'Local architectural practices directory'
+      ]
     };
   }
 
@@ -284,112 +296,69 @@ export class PremiumPropertyAgent {
    * Format report as readable text
    */
   formatReportAsText(report: PropertyAnalysisReport): string {
-    return `
-╔═══════════════════════════════════════════════════════════════════════════════════╗
-║                        COMPREHENSIVE PROPERTY ANALYSIS REPORT                     ║
-╚═══════════════════════════════════════════════════════════════════════════════════╝
+    let output = `COMPREHENSIVE PROPERTY ANALYSIS REPORT\n`;
+    output += `Generated: ${report.generatedAt.toLocaleDateString()}\n`;
+    output += `Property: ${report.propertyAddress}\n`;
+    output += `${'='.repeat(60)}\n\n`;
 
-📍 Property Address: ${report.propertyAddress}
-📅 Generated: ${report.generatedAt.toLocaleDateString('en-NZ')} at ${report.generatedAt.toLocaleTimeString('en-NZ')}
+    output += `EXECUTIVE SUMMARY\n`;
+    output += `${'-'.repeat(20)}\n`;
+    output += `${report.executiveSummary}\n\n`;
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              📍 LOCATION VERIFICATION                           │
-└─────────────────────────────────────────────────────────────────────────────────┘
+    output += `PROPERTY DETAILS\n`;
+    output += `${'-'.repeat(20)}\n`;
+    output += `Address: ${report.propertyDetails.address}\n`;
+    if (report.propertyDetails.suburb) output += `Suburb: ${report.propertyDetails.suburb}\n`;
+    if (report.propertyDetails.zoning) output += `Zoning: ${report.propertyDetails.zoning}\n`;
+    if (report.propertyDetails.landArea) output += `Land Area: ${report.propertyDetails.landArea}m²\n`;
+    if (report.propertyDetails.capitalValue) output += `Capital Value: $${report.propertyDetails.capitalValue.toLocaleString()}\n`;
+    if (report.propertyDetails.ratesId) output += `Rates ID: ${report.propertyDetails.ratesId}\n`;
+    output += `\n`;
 
-✅ Verified Address: ${report.locationVerification.verifiedAddress}
-🌍 Coordinates: ${report.locationVerification.coordinates[1]}, ${report.locationVerification.coordinates[0]}
-🎯 Accuracy Level: ${report.locationVerification.accuracyLevel}
-🏘️  Official Zoning: ${report.locationVerification.officialZoning}
-📋 Zoning Description: ${report.locationVerification.zoningDescription}
-🔗 Data Source: ${report.locationVerification.dataSource}
-⏰ Verification Date: ${report.locationVerification.verificationDate.toLocaleDateString('en-NZ')}
+    output += `ZONING ANALYSIS\n`;
+    output += `${'-'.repeat(20)}\n`;
+    output += `Current Zoning: ${report.zoningAnalysis.currentZoning}\n\n`;
+    output += `Permitted Uses:\n`;
+    report.zoningAnalysis.permittedUses.forEach(use => output += `• ${use}\n`);
+    output += `\nBuilding Restrictions:\n`;
+    report.zoningAnalysis.buildingRestrictions.forEach(restriction => output += `• ${restriction}\n`);
+    output += `\nDevelopment Potential: ${report.zoningAnalysis.developmentPotential}\n\n`;
 
-💡 This property location has been verified using official Auckland Council Unitary Plan 
-   Base Zone data and LINZ property information to ensure accuracy for your development 
-   assessment.
+    output += `DEVELOPMENT CONSTRAINTS\n`;
+    output += `${'-'.repeat(20)}\n`;
+    output += `Infrastructure:\n`;
+    report.developmentConstraints.infrastructure.forEach(constraint => output += `• ${constraint}\n`);
+    output += `\nEnvironmental:\n`;
+    report.developmentConstraints.environmental.forEach(constraint => output += `• ${constraint}\n`);
+    output += `\nPlanning:\n`;
+    report.developmentConstraints.planning.forEach(constraint => output += `• ${constraint}\n`);
+    output += `\n`;
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              📊 EXECUTIVE SUMMARY                               │
-└─────────────────────────────────────────────────────────────────────────────────┘
+    output += `CONSENT REQUIREMENTS\n`;
+    output += `${'-'.repeat(20)}\n`;
+    output += `Building Consent: ${report.consentRequirements.buildingConsent}\n`;
+    output += `Resource Consent: ${report.consentRequirements.resourceConsent}\n`;
+    if (report.consentRequirements.otherConsents.length > 0) {
+      output += `Other Consents:\n`;
+      report.consentRequirements.otherConsents.forEach(consent => output += `• ${consent}\n`);
+    }
+    output += `\n`;
 
-${report.executiveSummary}
+    output += `RECOMMENDED NEXT STEPS\n`;
+    output += `${'-'.repeat(20)}\n`;
+    report.recommendedNextSteps.forEach((step, index) => output += `${index + 1}. ${step}\n`);
+    output += `\n`;
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              🏠 PROPERTY DETAILS                                │
-└─────────────────────────────────────────────────────────────────────────────────┘
+    output += `PROFESSIONAL CONTACTS\n`;
+    output += `${'-'.repeat(20)}\n`;
+    output += `Planning Professionals:\n`;
+    report.professionalContacts.planners.forEach(contact => output += `• ${contact}\n`);
+    output += `\nEngineering Services:\n`;
+    report.professionalContacts.engineers.forEach(contact => output += `• ${contact}\n`);
+    output += `\nArchitectural Services:\n`;
+    report.professionalContacts.architects.forEach(contact => output += `• ${contact}\n`);
 
-🏡 Address: ${report.propertyDetails.address}
-${report.propertyDetails.suburb ? `🌆 Suburb: ${report.propertyDetails.suburb}` : ''}
-${report.propertyDetails.zoning ? `🏘️  Zoning: ${report.propertyDetails.zoning}` : ''}
-${report.propertyDetails.landArea ? `📐 Land Area: ${report.propertyDetails.landArea}m²` : ''}
-${report.propertyDetails.capitalValue ? `💰 Capital Value: $${report.propertyDetails.capitalValue.toLocaleString('en-NZ')}` : ''}
-${report.propertyDetails.ratesId ? `🆔 Rates ID: ${report.propertyDetails.ratesId}` : ''}
-${report.propertyDetails.coordinates ? `🌍 Coordinates: ${report.propertyDetails.coordinates[0]}, ${report.propertyDetails.coordinates[1]}` : ''}
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              🎯 ZONING ANALYSIS                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-🏘️  Current Zoning: ${report.zoningAnalysis.currentZoning}
-
-✅ Permitted Uses:
-${report.zoningAnalysis.permittedUses.map(use => `   • ${use}`).join('\n')}
-
-🚫 Building Restrictions:
-${report.zoningAnalysis.buildingRestrictions.map(restriction => `   • ${restriction}`).join('\n')}
-
-🚀 Development Potential:
-   ${report.zoningAnalysis.developmentPotential}
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                             ⚠️  DEVELOPMENT CONSTRAINTS                          │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-🔧 Infrastructure Constraints:
-${report.developmentConstraints.infrastructure.map(constraint => `   • ${constraint}`).join('\n')}
-
-🌱 Environmental Constraints:
-${report.developmentConstraints.environmental.map(constraint => `   • ${constraint}`).join('\n')}
-
-📋 Planning Constraints:
-${report.developmentConstraints.planning.map(constraint => `   • ${constraint}`).join('\n')}
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              📋 CONSENT REQUIREMENTS                            │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-🏗️  Building Consent: ${report.consentRequirements.buildingConsent}
-🌿 Resource Consent: ${report.consentRequirements.resourceConsent}
-
-📝 Other Consents Required:
-${report.consentRequirements.otherConsents.map(consent => `   • ${consent}`).join('\n')}
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                             📋 RECOMMENDED NEXT STEPS                           │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-${report.recommendedNextSteps.map((step, index) => `${index + 1}. ${step}`).join('\n')}
-
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                             👥 PROFESSIONAL CONTACTS                            │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-🏗️  Planning Professionals:
-${report.professionalContacts.planners.map(contact => `   • ${contact}`).join('\n')}
-
-⚙️  Engineering Consultants:
-${report.professionalContacts.engineers.map(contact => `   • ${contact}`).join('\n')}
-
-🏛️  Architectural Services:
-${report.professionalContacts.architects.map(contact => `   • ${contact}`).join('\n')}
-
-─────────────────────────────────────────────────────────────────────────────────
-
-💡 DISCLAIMER: This report is based on available public data and should be supplemented 
-   with professional consultation for specific development projects.
-
-Generated by Can I Build It? - New Zealand Property Development Platform
-    `.trim();
+    return output;
   }
 }
 

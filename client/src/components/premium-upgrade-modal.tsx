@@ -24,9 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Star, Shield, FileText, Zap, Eye, MapPin } from "lucide-react";
-import { useLocation } from "wouter";
-import { LinzGeocodingMap } from "@/components/linz-geocoding-map";
+import { Loader2, Star, Shield, FileText, Zap } from "lucide-react";
 
 const premiumRequestSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -46,12 +44,8 @@ interface PremiumUpgradeModalProps {
 
 export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: PremiumUpgradeModalProps) {
   const { toast } = useToast();
-  const [, navigate] = useLocation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<string | null>(null);
-  const [requestId, setRequestId] = useState<number | null>(null);
-  const [showLocationVerification, setShowLocationVerification] = useState(false);
-  const [locationData, setLocationData] = useState<any>(null);
 
   const form = useForm<PremiumRequestData>({
     resolver: zodResolver(premiumRequestSchema),
@@ -71,7 +65,6 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
     },
     onSuccess: (data) => {
       setIsSubmitted(true);
-      setRequestId(data.requestId);
       if (data.report) {
         setGeneratedReport(data.report);
         toast({
@@ -101,57 +94,8 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
   const handleClose = () => {
     setIsSubmitted(false);
     setGeneratedReport(null);
-    setShowLocationVerification(false);
-    setLocationData(null);
     form.reset();
     onClose();
-  };
-
-  const handleVerifyLocation = async () => {
-    const address = form.getValues("propertyAddress");
-    if (!address.trim()) {
-      toast({
-        title: "Address Required",
-        description: "Please enter a property address first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/geocode-location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setLocationData(data.location);
-          setShowLocationVerification(true);
-        }
-      }
-    } catch (error) {
-      toast({
-        title: "Location Verification Failed",
-        description: "Unable to verify the property location. Please check the address.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleLocationConfirm = (confirmed: boolean) => {
-    if (confirmed) {
-      setShowLocationVerification(false);
-      toast({
-        title: "Location Verified",
-        description: "Property location has been confirmed.",
-      });
-    } else {
-      setShowLocationVerification(false);
-      setLocationData(null);
-    }
   };
 
   if (isSubmitted) {
@@ -177,19 +121,6 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               </div>
               
               <div className="flex gap-3 pt-4 border-t">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    if (requestId) {
-                      navigate(`/report/${requestId}`);
-                      handleClose();
-                    }
-                  }}
-                  className="flex-1"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Report
-                </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => {
@@ -235,24 +166,9 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
                   Project-specific recommendations
                 </div>
               </div>
-              <div className="flex gap-3">
-                {requestId && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      navigate(`/report/${requestId}`);
-                      handleClose();
-                    }}
-                    className="flex-1"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Report Status
-                  </Button>
-                )}
-                <Button onClick={handleClose} className="flex-1">
-                  Close
-                </Button>
-              </div>
+              <Button onClick={handleClose} className="w-full">
+                Close
+              </Button>
             </div>
           )}
         </DialogContent>
@@ -337,20 +253,9 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Property Address *</FormLabel>
-                  <div className="flex gap-2">
-                    <FormControl>
-                      <Input placeholder="123 Example Street, Auckland" {...field} />
-                    </FormControl>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={handleVerifyLocation}
-                      className="shrink-0"
-                    >
-                      <MapPin className="h-4 w-4 mr-2" />
-                      Confirm Location
-                    </Button>
-                  </div>
+                  <FormControl>
+                    <Input placeholder="123 Example Street, Auckland" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -405,39 +310,6 @@ export function PremiumUpgradeModal({ isOpen, onClose, initialAddress }: Premium
           Our team will review your request and contact you within 24 hours with your comprehensive property analysis.
         </div>
       </DialogContent>
-
-      {/* Location Verification Modal */}
-      {showLocationVerification && locationData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4" style={{ zIndex: 9999 }}>
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Verify Property Location
-              </h3>
-              <button
-                onClick={() => setShowLocationVerification(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Confirm this is the correct property location with official Auckland Council zoning data:
-            </p>
-            <LinzGeocodingMap
-              address={locationData.address}
-              coordinates={locationData.coordinates}
-              zoning={locationData.zoning}
-              onLocationConfirm={handleLocationConfirm}
-            />
-          </div>
-        </div>
-      )}
     </Dialog>
   );
 }

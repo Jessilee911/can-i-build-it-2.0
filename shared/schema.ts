@@ -291,9 +291,7 @@ export const premiumRequests = pgTable("premium_requests", {
   phone: varchar("phone"),
   propertyAddress: varchar("property_address").notNull(),
   projectDescription: text("project_description").notNull(),
-  status: varchar("status", { enum: ["pending", "processing", "completed", "cancelled"] }).default("pending"),
-  reportContent: text("report_content"),
-  reportData: jsonb("report_data"),
+  status: varchar("status", { enum: ["pending", "in_progress", "completed", "cancelled"] }).default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

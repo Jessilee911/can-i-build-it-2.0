@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { useLocation } from "wouter";
+import { Link } from "wouter";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
-import { PropertyIntakeForm, PropertyIntakeData } from "@/components/property-intake-form";
 
 interface PropertyAssessmentProps {
   showPricing?: boolean;
@@ -18,82 +17,78 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentAddress, setCurrentAddress] = useState("");
-  const [showIntakeForm, setShowIntakeForm] = useState(false);
-  const [, setLocation] = useLocation();
-
-  const handleIntakeComplete = (data: PropertyIntakeData) => {
-    // Store the intake data and navigate to Agent 2 with the data
-    sessionStorage.setItem('propertyIntakeData', JSON.stringify(data));
-    setShowIntakeForm(false);
-    setLocation('/property-chat');
-  };
-
-  const handleIntakeCancel = () => {
-    setShowIntakeForm(false);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (query.trim()) {
-      setIsLoading(true);
-      setCurrentAddress(query);
+    if (!query.trim() || query.length < 5) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Add user query to conversation history
+      setConversations(prev => [...prev, {type: 'query', content: query}]);
       
-      // Add the user query to conversations
-      setConversations(prev => [...prev, { type: 'query', content: query }]);
-      
-      try {
-        // Call the backend API for property assessment using real NZ data
-        const response = await fetch('/api/assess-property', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ query, agentType: 'can-i-build-it' }),
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Use the RAG-enhanced response that includes actual NZ building knowledge
-          let responseText = data.message;
-          
-          // Check if this is a property-specific question that would benefit from a personalized report
-          const isPropertySpecific = query.toLowerCase().includes('address') || 
-                                    query.toLowerCase().includes('property') ||
-                                    query.toLowerCase().includes('my house') ||
-                                    query.toLowerCase().includes('specific') ||
-                                    query.toLowerCase().includes('exact') ||
-                                    /\d+\s+\w+\s+(street|road|avenue|drive|place)/i.test(query);
-          
-          // Strategic guidance toward personalized reports for property-specific questions
-          if (isPropertySpecific) {
-            responseText += "\n\n**For detailed property-specific analysis including official zoning data, consent requirements, and site constraints, consider getting a Premium Property Analysis report.**";
-          }
-          
-          setConversations(prev => [
-            ...prev, 
-            { 
-              type: 'response', 
-              content: responseText,
-              showReportCTA: isPropertySpecific 
-            }
-          ]);
-        } else {
-          throw new Error('Assessment failed');
-        }
-      } catch (error) {
-        setConversations(prev => [
-          ...prev, 
-          { 
-            type: 'response', 
-            content: 'I apologize, but I encountered an issue while processing your request. Please try again or contact support for assistance.'
-          }
-        ]);
-      } finally {
-        setQuery("");
-        setIsLoading(false);
+      // Extract potential address from query for premium modal
+      const addressMatch = query.match(/\d+\s+[\w\s]+(street|road|avenue|drive|place|crescent|lane|way|terrace)/i);
+      if (addressMatch) {
+        setCurrentAddress(addressMatch[0]);
       }
+      
+      // Call the backend API for property assessment using real NZ data
+      const response = await fetch('/api/assess-property', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+      
+      const data = await response.json();
+      
+      // Use the RAG-enhanced response that includes actual NZ building knowledge
+      let responseText = data.message;
+      
+      // Check if this is a property-specific question that would benefit from a personalized report
+      const isPropertySpecific = query.toLowerCase().includes('address') || 
+                                query.toLowerCase().includes('property') ||
+                                query.toLowerCase().includes('my house') ||
+                                query.toLowerCase().includes('specific') ||
+                                query.toLowerCase().includes('exact') ||
+                                /\d+\s+\w+\s+(street|road|avenue|drive|place)/i.test(query);
+      
+      // Remove query analysis display for cleaner responses
+      
+      // Strategic guidance toward personalized reports for property-specific questions
+      const shouldShowReportCTA = isPropertySpecific || data.queryAnalysis?.type === 'new_build' || data.queryAnalysis?.type === 'subdivision' || data.needsOfficialData;
+      
+      if (isPropertySpecific || data.queryAnalysis?.type === 'new_build' || data.queryAnalysis?.type === 'subdivision') {
+        responseText += `\n\nUnlock special features\n\n🏡 Get a Personalized Property Report\nFor accurate, property-specific information including zoning details, consent requirements, and development potential for your exact address, I recommend getting a personalized property report. This will provide:
+        
+• Exact zoning rules for your property
+• Building consent requirements specific to your site
+• Resource consent implications
+• Professional consultant recommendations
+• Detailed development timeline and costs
+
+Would you like to create a personalized property report for your specific project?`;
+      } else if (data.needsOfficialData) {
+        responseText += `\n\n💡 **For property-specific details and current regulations, a personalized property report would provide precise information tailored to your exact address and project requirements.**`;
+      }
+      
+      // Add response to conversation history with CTA flag from server or local logic
+      const showCTA = data.showReportCTA || shouldShowReportCTA || data.needsOfficialData;
+      setConversations(prev => [...prev, {type: 'response', content: responseText, showReportCTA: showCTA}]);
+      
+      // Reset form
+      setQuery("");
+      
+    } catch (error) {
+      console.error("Error performing assessment:", error);
+      const errorText = "I encountered an issue connecting to the New Zealand building data sources. To provide accurate property assessments, I need access to official government APIs like LINZ Data Service and Auckland Council GeoMaps. Please ensure these data connections are properly configured.";
+      setConversations(prev => [...prev, {type: 'response', content: errorText}]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,7 +105,6 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
           animation: 'float 20s ease-in-out infinite',
         }}
       />
-      
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
@@ -121,7 +115,7 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
             >
               <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
               <p className="text-gray-600 max-w-md mx-auto text-[12px]">
-                Advanced building analysis and development guidance for New Zealand properties. Get detailed consent requirements, construction feasibility, and professional recommendations.
+                Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
               </p>
             </div>
           )}
@@ -215,7 +209,7 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
                   <p className="text-sm text-gray-600">Get comprehensive property reports with official Auckland Council data, detailed zoning analysis, and expert recommendations for your specific project.</p>
                 </div>
                 <Button 
-                  onClick={() => setShowIntakeForm(true)}
+                  onClick={() => setShowPremiumModal(true)}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
                 >
                   Get Premium Analysis
@@ -321,20 +315,13 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
         </div>
 
       </div>
+      
       {/* Premium Upgrade Modal */}
       <PremiumUpgradeModal 
         isOpen={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
         initialAddress={currentAddress}
       />
-
-      {/* Property Intake Form */}
-      {showIntakeForm && (
-        <PropertyIntakeForm
-          onComplete={handleIntakeComplete}
-          onCancel={handleIntakeCancel}
-        />
-      )}
     </div>
   );
 }

@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session management for email/password authentication
   const session = (await import("express-session")).default;
   const MemoryStore = (await import("memorystore")).default(session);
-
+  
   app.use(session({
     secret: process.env.SESSION_SECRET || 'development-secret-key-change-in-production',
     store: new MemoryStore({
@@ -48,13 +48,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup Replit authentication
   await setupAuth(app);
-
+  
   // Create router for API routes
   const apiRouter = app;
-
+  
   // Setup knowledge base routes
   await setupKnowledgeRoutes(app);
-
+  
   // Custom authentication middleware that handles both Replit auth and email/password auth
   const customAuth = async (req: any, res: Response, next: any) => {
     // Check for session-based authentication (email/password)
@@ -62,7 +62,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.user = req.session.user;
       return next();
     }
-
+    
     // Fall back to Replit authentication
     return isAuthenticated(req, res, next);
   };
@@ -75,14 +75,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session?.user) {
         return res.json(req.session.user);
       }
-
+      
       // Handle Replit authenticated user
       const userId = req.user.claims?.sub;
       if (userId) {
         const user = await storage.getUser(userId);
         return res.json(user);
       }
-
+      
       res.status(401).json({ message: "Not authenticated" });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
-
+      
       const sessions = await storage.getChatSessions(userId);
       res.json(sessions);
     } catch (error) {
@@ -113,16 +113,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session?.user?.id || req.user?.claims?.sub;
       const { title } = req.body;
-
+      
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
-
+      
       const session = await storage.createChatSession({
         userId,
         title: title || "New Chat",
       });
-
+      
       res.json(session);
     } catch (error) {
       console.error("Error creating chat session:", error);
@@ -147,14 +147,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = parseInt(req.params.id);
       const { role, content, metadata } = req.body;
-
+      
       const message = await storage.addChatMessage({
         sessionId,
         role,
         content,
         metadata,
       });
-
+      
       res.json(message);
     } catch (error) {
       console.error("Error adding chat message:", error);
@@ -167,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = parseInt(req.params.id);
       const success = await storage.deleteChatSession(sessionId);
-
+      
       if (success) {
         res.json({ message: "Chat session deleted successfully" });
       } else {
@@ -184,9 +184,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
       const { firstName, lastName, email, password } = req.body;
-
+      
       console.log("Registration attempt for:", email);
-
+      
       if (!firstName || !lastName || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
       }
@@ -203,9 +203,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { registerUser } = await import("./auth");
       const result = await registerUser({ firstName, lastName, email, password });
-
+      
       console.log("Registration result:", result);
-
+      
       if (result.success) {
         res.status(201).json({ message: result.message, user: result.user });
       } else {
@@ -221,14 +221,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
-
+      
       if (!email || !password) {
         return res.status(400).json({ message: "Email and password are required" });
       }
 
       const { loginUser } = await import("./auth");
       const result = await loginUser({ email, password });
-
+      
       if (result.success && result.user) {
         // Set user session
         (req.session as any).user = result.user;
@@ -246,14 +246,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/api/auth/verify-email", async (req: Request, res: Response) => {
     try {
       const { token } = req.query;
-
+      
       if (!token || typeof token !== "string") {
         return res.status(400).json({ message: "Invalid verification token" });
       }
 
       const { verifyEmail } = await import("./auth");
       const result = await verifyEmail(token);
-
+      
       if (result.success) {
         res.json({ message: result.message });
       } else {
@@ -269,14 +269,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
-
+      
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
       }
 
       const { requestPasswordReset } = await import("./auth");
       const result = await requestPasswordReset(email);
-
+      
       res.json({ message: result.message });
     } catch (error) {
       console.error("Password reset request error:", error);
@@ -288,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/reset-password", async (req: Request, res: Response) => {
     try {
       const { token, password } = req.body;
-
+      
       if (!token || !password) {
         return res.status(400).json({ message: "Token and password are required" });
       }
@@ -299,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { resetPassword } = await import("./auth");
       const result = await resetPassword(token, password);
-
+      
       if (result.success) {
         res.json({ message: result.message });
       } else {
@@ -353,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: updatedUser.lastName,
           email: updatedUser.email,
         };
-
+        
         res.json({ 
           message: "Profile updated successfully", 
           user: {
@@ -383,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!user) {
           return res.status(404).json({ message: "User not found" });
         }
-
+        
         return res.json({
           id: user.id,
           firstName: user.firstName,
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           profileImageUrl: user.profileImageUrl,
         });
       }
-
+      
       // Handle Replit authenticated user
       const userId = req.user?.claims?.sub;
       if (userId) {
@@ -402,14 +402,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.json(user);
         }
       }
-
+      
       res.status(401).json({ message: "Not authenticated" });
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Failed to get user data" });
     }
   });
-
+  
   // ==================== Subscription/Payment Routes ====================
   // Get available pricing plans
   apiRouter.get("/api/pricing", (req: Request, res: Response) => {
@@ -418,12 +418,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       subscription: SUBSCRIPTION_PLANS
     });
   });
-
+  
   // Create checkout session for payment
   apiRouter.post("/api/create-payment-intent", async (req: Request, res: Response) => {
     try {
       const { planId, amount } = req.body;
-
+      
       if (!amount || amount < 50) { // Minimum $0.50
         return res.status(400).json({ message: "Invalid amount" });
       }
@@ -448,7 +448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { planId, propertyAddress, projectDescription, budgetRange, timeframe } = req.body;
 
       console.log(`Redirecting to chat for ${propertyAddress}...`);
-
+      
       // Instead of generating static reports, redirect to chat interface
       res.json({ 
         success: true, 
@@ -472,13 +472,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/checkout", isAuthenticated, async (req: any, res: Response) => {
     try {
       const { planId } = req.body;
-
+      
       if (!planId) {
         return res.status(400).json({ message: "Plan ID is required" });
       }
-
+    
       const userId = req.user.claims.sub;
-
+      
       // Check if it's the free plan
       if (planId === 'basic') {
         // Update user subscription status for free tier
@@ -487,17 +487,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionStatus: 'active',
           subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
         });
-
+        
         return res.json({ success: true, free: true });
       }
-
+      
       // Get the Stripe payment link for this plan
       const paymentLink = STRIPE_PAYMENT_LINKS[planId];
-
+      
       if (!paymentLink) {
         return res.status(400).json({ message: "No payment link available for this plan" });
       }
-
+      
       // Return the payment link URL for redirect
       res.json({ 
         success: true,
@@ -509,15 +509,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error processing checkout: " + error.message });
     }
   });
-
+  
   // Stripe webhook handler
   apiRouter.post("/api/webhook", async (req: Request, res: Response) => {
     const signature = req.headers['stripe-signature'] as string;
-
+    
     if (!signature) {
       return res.status(400).json({ message: "Missing Stripe signature" });
     }
-
+    
     try {
       await handleStripeWebhook(signature, req.body);
       res.json({ received: true });
@@ -529,14 +529,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   apiRouter.post("/api/checkout", isAuthenticated, async (req: any, res: Response) => {
     const { planId, isSubscription = false } = req.body;
-
+    
     if (!planId) {
       return res.status(400).json({ message: "Plan ID is required" });
     }
-
+    
     try {
       const userId = req.user.claims.sub;
-
+      
       // Check if it's the free plan
       if (planId === 'basic') {
         // Update user subscription status for free tier
@@ -545,17 +545,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionStatus: 'active',
           subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
         });
-
+        
         return res.json({ success: true, free: true });
       }
-
+      
       // Get the Stripe payment link for this plan
       const paymentLink = STRIPE_PAYMENT_LINKS[planId];
-
+      
       if (!paymentLink) {
         return res.status(400).json({ message: "No payment link available for this plan" });
       }
-
+      
       // Return the payment link URL for redirect
       res.json({ 
         success: true,
@@ -567,15 +567,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error processing checkout: " + error.message });
     }
   });
-
+  
   // Stripe webhook handler
   apiRouter.post("/api/webhook", async (req: Request, res: Response) => {
     const signature = req.headers['stripe-signature'] as string;
-
+    
     if (!signature) {
       return res.status(400).json({ message: "Missing Stripe signature" });
     }
-
+    
     try {
       await handleStripeWebhook(signature, req.body);
       res.json({ received: true });
@@ -658,12 +658,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== Scraping Jobs Routes ====================
   apiRouter.get("/api/scraping-jobs", async (req: Request, res: Response) => {
     const status = req.query.status as string | undefined;
-
+    
     if (status) {
       const jobs = await storage.getScrapingJobsByStatus(status);
       return res.json(jobs);
     }
-
+    
     const jobs = await storage.getScrapingJobs();
     return res.json(jobs);
   });
@@ -686,12 +686,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const job = insertScrapingJobSchema.parse(req.body);
       const newJob = await storage.createScrapingJob(job);
-
+      
       // Start the scraping job asynchronously
       scraper.startJob(newJob).catch(error => {
         console.error(`Error in scraping job ${newJob.id}:`, error);
       });
-
+      
       return res.status(201).json(newJob);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -706,24 +706,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const limit = parseInt(req.query.limit as string || "100");
     const offset = parseInt(req.query.offset as string || "0");
     const jobId = req.query.jobId ? parseInt(req.query.jobId as string) : undefined;
-
+    
     if (jobId) {
       const properties = await storage.getPropertiesByJobId(jobId);
       return res.json(properties);
     }
-
+    
     const properties = await storage.getProperties(limit, offset);
     return res.json(properties);
   });
 
   apiRouter.get("/api/properties/search", async (req: Request, res: Response) => {
     const query: any = {};
-
+    
     // Add search parameters to query
     if (req.query.propertyType) query.propertyType = req.query.propertyType;
     if (req.query.source) query.source = req.query.source;
     if (req.query.address) query.address = req.query.address;
-
+    
     const properties = await storage.searchProperties(query);
     return res.json(properties);
   });
@@ -746,12 +746,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/api/activities", async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string || "20");
     const jobId = req.query.jobId ? parseInt(req.query.jobId as string) : undefined;
-
+    
     if (jobId) {
       const activities = await storage.getActivitiesByJobId(jobId);
       return res.json(activities);
     }
-
+    
     const activities = await storage.getActivities(limit);
     return res.json(activities);
   });
@@ -761,14 +761,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/chat", async (req: Request, res: Response) => {
     try {
       const { message, plan, conversationHistory } = req.body;
-
+      
       if (!message) {
         return res.status(400).json({ error: "Message is required" });
       }
 
       // Generate response based on user's plan level
       const response = await generatePlanBasedResponse(message, plan, conversationHistory);
-
+      
       res.json({ response });
     } catch (error: any) {
       console.error("Chat error:", error);
@@ -780,63 +780,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Property assessment using RAG and real NZ data
   apiRouter.post("/api/assess-property", async (req: Request, res: Response) => {
     try {
-      const { query, address, agentType, locationData } = req.body;
-
+      const { query, address } = req.body;
+      
       if (!query || query.length < 5) {
         return res.status(400).json({ message: "Query is required and must be at least 5 characters" });
       }
 
       // Import RAG functions
       const { generateRAGResponse, analyzeQuery } = await import('./rag');
-
-      // Create context based on agent type
-      let contextData: any = { address };
-
-      if (agentType === 'can-i-build-it') {
-        contextData.agentFocus = 'building_consent_and_construction';
-        contextData.specialization = 'Building consent requirements, construction feasibility, building code compliance, and development processes';
-      } else {
-        contextData.agentFocus = 'general_property_research';
-        contextData.specialization = 'General property information, zoning, and planning guidance';
-      }
-
-      // Add location data if available
-      if (locationData) {
-        contextData.verifiedLocation = locationData;
-      }
-
-      // Generate response using RAG with agent-specific context
-      const ragResponse = await generateRAGResponse(query, contextData);
-
-      // Enhanced CTA logic based on agent type
-      let showReportCTA = false;
-      let ctaMessage = '';
-
-      if (agentType === 'can-i-build-it') {
-        showReportCTA = ragResponse.includes('building consent') || 
-                       ragResponse.includes('construction') ||
-                       ragResponse.includes('building requirements') ||
-                       ragResponse.includes('development potential');
-        ctaMessage = 'Get comprehensive building analysis with detailed consent requirements and construction guidance';
-      } else {
-        showReportCTA = ragResponse.includes('personalized property report') || 
-                       ragResponse.includes('property-specific details') ||
-                       ragResponse.includes('tailored to your exact address');
-        ctaMessage = 'Get detailed property report with official data and zoning analysis';
-      }
-
+      
+      // Generate response using RAG (Retrieval Augmented Generation)
+      const ragResponse = await generateRAGResponse(query, { address });
+      
+      // Check if the response mentions personalized property report
+      const showReportCTA = ragResponse.includes('personalized property report') || 
+                           ragResponse.includes('property-specific details') ||
+                           ragResponse.includes('tailored to your exact address');
+      
       return res.json({
         message: ragResponse,
         showReportCTA,
-        ctaMessage,
         needsOfficialData: true,
-        agentType: agentType || 'general',
-        suggestedDataSources: agentType === 'can-i-build-it' ? [
-          "Building.govt.nz - for building consent requirements",
-          "Auckland Council Building Department - for local consent processes",
-          "NZ Building Code - for compliance requirements",
-          "Regional council APIs - for resource consent rules"
-        ] : [
+        suggestedDataSources: [
           "LINZ Data Service API - for property boundaries and ownership",
           "Auckland Council GeoMaps API - for zoning information", 
           "Building.govt.nz - for building consent requirements",
@@ -850,145 +815,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== Premium Chat API ====================
-
-  // Check LINZ API access
-  app.get('/api/check-linz-access', async (req: Request, res: Response) => {
-    try {
-      const hasLinzKey = !!process.env.LINZ_API_KEY;
-      res.json({ hasAccess: hasLinzKey });
-    } catch (error) {
-      res.json({ hasAccess: false });
-    }
-  });
-
-  // Enhanced geocoding endpoint using Google Maps API key
-  apiRouter.post('/api/geocode', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.body;
-
-      if (!address || typeof address !== 'string') {
-        return res.status(400).json({ error: 'Address parameter is required' });
-      }
-
-      const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
-      if (!googleMapsApiKey) {
-        return res.status(500).json({ error: 'Google Maps API key not configured' });
-      }
-
-      // Use Google Geocoding API for accurate coordinates
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&region=nz&key=${googleMapsApiKey}`;
-
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
-
-      if (data.status === 'OK' && data.results.length > 0) {
-        const result = data.results[0];
-        const location = result.geometry.location;
-
-        res.json({
-          success: true,
-          coordinates: { lat: location.lat, lng: location.lng },
-          formattedAddress: result.formatted_address
-        });
-      } else {
-        res.status(404).json({ success: false, error: 'Address not found' });
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      res.status(500).json({ success: false, error: 'Geocoding failed' });
-    }
-  });
-
-  // Geocode and confirm location endpoint
-  app.post('/api/geocode-location', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.body;
-
-      if (!address) {
-        return res.status(400).json({ success: false, message: 'Address is required' });
-      }
-
-      console.log(`Geocoding address: ${address}`);
-
-      // Use the Auckland Council API to geocode the address
-      const { aucklandCouncilAPI } = await import('./auckland-council-api');
-      const coordinates = await aucklandCouncilAPI.geocodeAddress(address);
-
-      if (!coordinates) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Could not find location for the provided address. Please check the address and try again.' 
-        });
-      }
-
-      const [lat, lon] = coordinates;
-
-      // Query zoning information using the exact workflow specified
-      const zoningUrl = `https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services/Unitary_Plan_Base_Zone/FeatureServer/0/query`;
-      const zoningParams = new URLSearchParams({
-        geometry: `${lon},${lat}`,
-        geometryType: 'esriGeometryPoint',
-        inSR: '4326',
-        spatialRel: 'esriSpatialRelIntersects',
-        outFields: '*',
-        f: 'json'
-      });
-
-      console.log(`Querying zoning data: ${zoningUrl}?${zoningParams}`);
-      const zoningResponse = await fetch(`${zoningUrl}?${zoningParams}`);
-
-      let zoningData = null;
-      if (zoningResponse.ok) {
-        const data = await zoningResponse.json();
-        if (data.features && data.features.length > 0) {
-          const rawZoning = data.features[0].attributes;
-
-          // Import official zone lookup to interpret the zone code
-          const { formatZoneForDisplay, getZoneBuildingGuidance } = await import('./auckland-zone-lookup');
-
-          console.log(`Raw zoning data received:`, rawZoning);
-          console.log(`Zone code being looked up: ${rawZoning.ZONE} (type: ${typeof rawZoning.ZONE})`);
-
-          zoningData = {
-            ...rawZoning,
-            zoneName: formatZoneForDisplay(rawZoning.ZONE),
-            zoneGuidance: getZoneBuildingGuidance(rawZoning.ZONE)
-          };
-
-          console.log(`Zone lookup result: ${zoningData.zoneName}`);
-        }
-      }
-
-      res.json({
-        success: true,
-        location: {
-          address: address,
-          coordinates: {
-            latitude: lat,
-            longitude: lon
-          },
-          zoning: zoningData,
-          mapUrl: `https://www.google.com/maps?q=${lat},${lon}`
-        }
-      });
-
-    } catch (error) {
-      console.error('Error geocoding location:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to geocode location' 
-      });
-    }
-  });
-
   // Premium assessment request endpoint
   apiRouter.post("/api/premium-assessment-request", async (req: Request, res: Response) => {
     try {
       const { insertPremiumRequestSchema } = await import("@shared/schema");
       const requestData = insertPremiumRequestSchema.parse(req.body);
-
+      
       const premiumRequest = await storage.createPremiumRequest(requestData);
-
+      
       console.log("Premium assessment request created:", {
         id: premiumRequest.id,
         email: premiumRequest.email,
@@ -1002,16 +836,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           premiumRequest.propertyAddress,
           premiumRequest.projectDescription
         );
-
+        
         const reportText = premiumPropertyAgent.formatReportAsText(report);
-
-        // Store the report in the database for later retrieval
-        await storage.updatePremiumRequest(premiumRequest.id, {
-          reportContent: reportText,
-          reportData: JSON.stringify(report),
-          status: 'completed'
-        });
-
+        
         // Send the report back to user
         res.json({
           success: true,
@@ -1022,12 +849,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (reportError: any) {
         console.error("Error generating property report:", reportError);
-
-        // Update status to indicate processing
-        await storage.updatePremiumRequest(premiumRequest.id, {
-          status: 'processing'
-        });
-
+        
         // Still save the request but return basic response
         res.json({
           success: true,
@@ -1045,53 +867,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get premium report by ID
-  apiRouter.get("/api/premium-report/:id", async (req: Request, res: Response) => {
-    try {
-      const requestId = parseInt(req.params.id);
-      const premiumRequest = await storage.getPremiumRequestById(requestId);
-
-      if (!premiumRequest) {
-        return res.status(404).json({
-          success: false,
-          message: "Report not found"
-        });
-      }
-
-      if (!premiumRequest.reportContent) {
-        return res.status(404).json({
-          success: false,
-          message: "Report not yet generated"
-        });
-      }
-
-      res.json({
-        success: true,
-        report: premiumRequest.reportContent,
-        reportData: premiumRequest.reportData,
-        propertyAddress: premiumRequest.propertyAddress,
-        status: premiumRequest.status
-      });
-    } catch (error: any) {
-      console.error("Error retrieving premium report:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to retrieve report"
-      });
-    }
-  });
-
   apiRouter.post("/api/premium-chat", async (req: Request, res: Response) => {
     try {
       const { message, conversationHistory = [], propertyAddress, projectDescription } = req.body;
-
+      
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ message: "Message is required" });
       }
 
       // Enhanced premium response with property/project context
       const response = await generatePremiumResponse(message, conversationHistory, propertyAddress, projectDescription);
-
+      
       res.json({ 
         message: response.content,
         features: response.features
@@ -1107,7 +893,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectDetails = req.query;
       const reportBuffer = await generatePremiumPDF(projectDetails);
-
+      
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename="premium-property-report.pdf"');
       res.send(reportBuffer);
@@ -1151,9 +937,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use Google Places API Autocomplete for New Zealand addresses
       const encodedQuery = encodeURIComponent(query);
       const googleUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodedQuery}&components=country:nz&types=address&key=${googleMapsApiKey}`;
-
+      
       const response = await fetch(googleUrl);
-
+      
       if (!response.ok) {
         console.error(`Google Maps API error: ${response.status} ${response.statusText}`);
         // Fall back to local search on API failure
@@ -1165,7 +951,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await response.json();
-
+      
       if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
         // Fall back to local search on API error
         const fallbackSuggestions = performLocalAddressSearch(query);
@@ -1180,7 +966,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Parse address components from structured_formatting
         const mainText = prediction.structured_formatting?.main_text || '';
         const secondaryText = prediction.structured_formatting?.secondary_text || '';
-
+        
         return {
           id: `google-${prediction.place_id || index}`,
           fullAddress: prediction.description,
@@ -1216,7 +1002,7 @@ function performLocalAddressSearch(query: string) {
     { streetName: 'Remuera Road', suburb: 'Remuera', city: 'Auckland', postcode: '1050', region: 'Auckland' },
     { streetName: 'Lake Road', suburb: 'Devonport', city: 'Auckland', postcode: '0624', region: 'Auckland' },
     { streetName: 'Tamaki Drive', suburb: 'Mission Bay', city: 'Auckland', postcode: '1071', region: 'Auckland' },
-
+    
     // Wellington addresses
     { streetName: 'Lambton Quay', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
     { streetName: 'Cuba Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
@@ -1225,7 +1011,7 @@ function performLocalAddressSearch(query: string) {
     { streetName: 'The Terrace', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
     { streetName: 'Bowen Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
     { streetName: 'Adelaide Road', suburb: 'Newtown', city: 'Wellington', postcode: '6021', region: 'Wellington' },
-
+    
     // Christchurch addresses
     { streetName: 'Cashel Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
     { streetName: 'Colombo Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
@@ -1233,47 +1019,47 @@ function performLocalAddressSearch(query: string) {
     { streetName: 'Riccarton Road', suburb: 'Riccarton', city: 'Christchurch', postcode: '8041', region: 'Canterbury' },
     { streetName: 'Papanui Road', suburb: 'Papanui', city: 'Christchurch', postcode: '8053', region: 'Canterbury' },
     { streetName: 'Lincoln Road', suburb: 'Addington', city: 'Christchurch', postcode: '8024', region: 'Canterbury' },
-
+    
     // Hamilton addresses
     { streetName: 'Victoria Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
     { streetName: 'Ward Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
     { streetName: 'Anglesea Street', suburb: 'Hamilton East', city: 'Hamilton', postcode: '3216', region: 'Waikato' },
-
+    
     // Tauranga addresses
     { streetName: 'Devonport Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
     { streetName: 'Cameron Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
     { streetName: 'Fraser Street', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
-
+    
     // Dunedin addresses
     { streetName: 'George Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
     { streetName: 'Princes Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
     { streetName: 'Stuart Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
-
+    
     // Rotorua addresses
     { streetName: 'Fenton Street', suburb: 'Rotorua Central', city: 'Rotorua', postcode: '3010', region: 'Bay of Plenty' },
     { streetName: 'Tutanekai Street', suburb: 'Rotorua Central', city: 'Rotorua', postcode: '3010', region: 'Bay of Plenty' },
-
+    
     // Palmerston North addresses
     { streetName: 'Main Street', suburb: 'Palmerston North Central', city: 'Palmerston North', postcode: '4410', region: 'Manawatu' },
     { streetName: 'Broadway Avenue', suburb: 'Palmerston North Central', city: 'Palmerston North', postcode: '4410', region: 'Manawatu' },
-
+    
     // New Plymouth addresses
     { streetName: 'Devon Street East', suburb: 'New Plymouth Central', city: 'New Plymouth', postcode: '4310', region: 'Taranaki' },
     { streetName: 'Devon Street West', suburb: 'New Plymouth Central', city: 'New Plymouth', postcode: '4310', region: 'Taranaki' },
-
+    
     // Nelson addresses
     { streetName: 'Trafalgar Street', suburb: 'Nelson Central', city: 'Nelson', postcode: '7010', region: 'Tasman' },
     { streetName: 'Hardy Street', suburb: 'Nelson Central', city: 'Nelson', postcode: '7010', region: 'Tasman' }
   ];
 
   const lowerQuery = query.toLowerCase();
-
+  
   // Enhanced fuzzy matching with scoring
   const matches = comprehensiveNZAddresses
     .map(addr => {
       let score = 0;
       const searchTerms = lowerQuery.split(' ').filter(term => term.length > 0);
-
+      
       // Check each search term against address components
       searchTerms.forEach(term => {
         if (addr.streetName.toLowerCase().includes(term)) score += 10;
@@ -1281,13 +1067,13 @@ function performLocalAddressSearch(query: string) {
         if (addr.city.toLowerCase().includes(term)) score += 6;
         if (addr.postcode.includes(term)) score += 5;
         if (addr.region.toLowerCase().includes(term)) score += 4;
-
+        
         // Bonus for exact matches at start of words
         if (addr.streetName.toLowerCase().startsWith(term)) score += 5;
         if (addr.suburb.toLowerCase().startsWith(term)) score += 4;
         if (addr.city.toLowerCase().startsWith(term)) score += 3;
       });
-
+      
       return { ...addr, score };
     })
     .filter(addr => addr.score > 0)
@@ -1322,19 +1108,19 @@ function performLocalAddressSearch(query: string) {
   apiRouter.post("/api/property/search-auckland", async (req: Request, res: Response) => {
     try {
       const { address } = req.body;
-
+      
       if (!address || address.length < 5) {
         return res.status(400).json({ message: "Address is required and must be at least 5 characters" });
       }
 
       const { aucklandCouncilAPI } = await import("./auckland-council-api");
       const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
-
+      
       if (properties.length > 0) {
         const formattedReports = properties.map(prop => 
           aucklandCouncilAPI.formatPropertyReport(prop)
         );
-
+        
         res.json({
           success: true,
           address,
@@ -1355,373 +1141,12 @@ function performLocalAddressSearch(query: string) {
     }
   });
 
-  // ==================== Property Analysis Routes ====================
-
-  // Property analysis endpoint for Agent 2 (Property Research)
-  apiRouter.post("/api/property-analysis", async (req: Request, res: Response) => {
-    try {
-      const { address, projectType, projectDescription, budget, coordinates, ownerName } = req.body;
-
-      if (!address || !projectDescription) {
-        return res.status(400).json({ message: "Address and project description are required" });
-      }
-
-      // Import required modules
-      const { aucklandCouncilAPI } = await import("./auckland-council-api");
-      const { premiumPropertyAgent } = await import("./premium-property-agent");
-      const { searchKnowledgeBase, initializeBuildingCodeKnowledge } = await import("./rag");
-
-      // Initialize building code knowledge base with official documents
-      await initializeBuildingCodeKnowledge();
-
-      // Get property data from Auckland Council API
-      const propertyData = await aucklandCouncilAPI.searchPropertyByAddress(address);
-
-      // Generate comprehensive analysis using the premium property agent
-      const analysisReport = await premiumPropertyAgent.generatePropertyReport(address, projectDescription);
-
-      // Generate zone-specific planning analysis using authentic Auckland Unitary Plan documents
-      const zoningAnalysis = await generateAuthenticZoningAnalysis(
-        analysisReport.locationVerification.officialZoning, 
-        projectDescription,
-        analysisReport.propertyDetails?.overlays
-      );
-
-      // Generate comprehensive overlay analysis using authentic Auckland Unitary Plan overlay documents
-      const overlayAnalysis = await generateOverlayAnalysis(
-        analysisReport.propertyDetails?.overlays || [],
-        projectDescription
-      );
-
-      // Generate building code analysis using official Schedule 1 and MBIE documents  
-      const buildingCodeAnalysis = await generateBuildingCodeAnalysis(projectDescription, []);
-
-      // Generate structured response for the frontend
-      const response = {
-        success: true,
-        propertyAddress: analysisReport.propertyDetails.address,
-        ownerName: ownerName,
-        projectType: projectType,
-        budget: budget,
-        zoning: analysisReport.locationVerification.officialZoning,
-        zoningAnalysis: zoningAnalysis,
-        overlayAnalysis: overlayAnalysis,
-        buildingCodeAnalysis: buildingCodeAnalysis,
-        propertyDetails: analysisReport.propertyDetails,
-        consentRequirements: analysisReport.consentRequirements,
-        coordinates: analysisReport.propertyDetails.coordinates
-      };
-
-      // Helper function for building code analysis with access to searchKnowledgeBase
-      async function generateAuthenticBuildingCodeAnalysis(projectDescription: string, searchFn: Function) {
-        const projectLower = projectDescription.toLowerCase();
-
-        // Search for specific exemptions from Schedule 1 and MBIE guidance
-        const exemptionQuery = `${projectDescription} exempt building work consent`;
-        const exemptDocs = searchFn(exemptionQuery, 'building_code');
-
-        let analysis = "**Building Code & Building Act Requirements:**\n\n";
-
-        // Check for potential exemptions first
-        if (exemptDocs.length > 0) {
-          analysis += "**Consent Exemption Analysis:**\n";
-
-          // Look for Schedule 1 exemptions
-          const schedule1Docs = exemptDocs.filter((doc: any) => doc.category === 'schedule_1');
-          if (schedule1Docs.length > 0) {
-            analysis += "Based on Building Act 2004 Schedule 1:\n";
-            schedule1Docs.forEach((doc: any) => {
-              const relevantContent = extractRelevantExemptions(doc.content, projectDescription);
-              if (relevantContent) {
-                analysis += `${relevantContent}\n`;
-              }
-            });
-          }
-
-          // Look for MBIE exempt work guidance
-          const mbieExemptDocs = exemptDocs.filter((doc: any) => doc.category === 'exempt_work');
-          if (mbieExemptDocs.length > 0) {
-            analysis += "\nMBIE Exempt Building Work Guidance:\n";
-            mbieExemptDocs.forEach((doc: any) => {
-              const relevantContent = extractRelevantExemptions(doc.content, projectDescription);
-              if (relevantContent) {
-                analysis += `${relevantContent}\n`;
-              }
-            });
-          }
-
-          analysis += "\n";
-        }
-
-        // Determine consent requirements based on project type and official guidance
-        if (projectLower.includes('deck') && (projectLower.includes('low') || projectLower.includes('under 1.5'))) {
-          analysis += "**Building Consent:** May be exempt under Schedule 1 if deck is under 1.5m high and meets specific criteria.\n\n";
-        } else if (projectLower.includes('carport') || (projectLower.includes('garage') && projectLower.includes('detached'))) {
-          analysis += "**Building Consent:** Required for most garages/carports. Some exemptions may apply for small structures under 10m².\n\n";
-        } else {
-          analysis += "**Building Consent:** Required for this type of building work.\n\n";
-        }
-
-        // Add specific compliance requirements based on authentic building code references
-        if (projectLower.includes('extension') || projectLower.includes('addition')) {
-          analysis += `**Key Building Code Compliance Areas:**
-• **B1 Structure** - Structural adequacy for existing and new elements
-• **E2 External Moisture** - Weathertightness at junctions and interfaces  
-• **H1 Energy Efficiency** - Thermal performance of new building envelope
-• **C/AS1 Fire Safety** - Escape routes and fire separation requirements
-• **F4 Safety from Falling** - Barrier and balustrade requirements
-
-`;
-        } else if (projectLower.includes('new') && (projectLower.includes('house') || projectLower.includes('dwelling'))) {
-          analysis += `**Key Building Code Compliance Areas:**
-• **B1 Structure** - Full structural design including foundations, framing, seismic
-• **B2 Durability** - 50-year minimum building element durability
-• **E2 External Moisture** - Complete building envelope weathertightness system
-• **H1 Energy Efficiency** - Building thermal envelope and heating requirements
-• **G4 Ventilation** - Mechanical and natural ventilation systems
-
-`;
-        }
-
-        analysis += `**Professional Requirements:**
-• Licensed Building Practitioner (LBP) required for restricted building work
-• Building consent application must include plans, specifications, and producer statements
-• Site inspections required at key construction stages
-
-**Processing Timeframes:**
-• Standard building consent: 15-20 working days
-• Complex projects may require additional time for engineering review`;
-
-        return analysis;
-      }
-
-      function extractRelevantExemptions(content: string, projectDescription: string): string {
-        const projectTerms = projectDescription.toLowerCase().split(' ');
-        const paragraphs = content.split(/\n\s*\n/);
-
-        // Find paragraphs that contain project-related terms
-        const relevantParagraphs = paragraphs.filter(paragraph => {
-          const lowerParagraph = paragraph.toLowerCase();
-          return projectTerms.some(term => 
-            term.length > 3 && lowerParagraph.includes(term)
-          );
-        });
-
-        // Return first relevant paragraph with proper formatting
-        return relevantParagraphs.slice(0, 1).join('\n').trim();
-      }
-
-      res.json(response);
-    } catch (error: any) {
-      console.error('Property analysis error:', error);
-      res.status(500).json({ 
-        message: "Failed to analyze property", 
-        error: error.message 
-      });
-    }
-  });
-
-  // Generate comprehensive overlay analysis using authentic Auckland Unitary Plan overlay documents
-  async function generateOverlayAnalysis(overlays: Array<{type: string, data: any}>, projectDescription: string): Promise<string> {
-    if (!overlays || overlays.length === 0) {
-      return '';
-    }
-
-    try {
-      const { aucklandOverlayPDFProcessor } = await import('./auckland-overlay-pdf-processor');
-      return await aucklandOverlayPDFProcessor.getOverlayAnalysis(overlays, projectDescription);
-    } catch (error) {
-      console.error('Overlay analysis error:', error);
-      return generateFallbackOverlayAnalysis(overlays, projectDescription);
-    }
-  }
-
-  function generateFallbackOverlayAnalysis(overlays: Array<{type: string, data: any}>, projectDescription: string): string {
-    if (overlays.length === 1) {
-      const overlay = overlays[0];
-      const overlayName = overlay.data.NAME || overlay.data.SCA_NAME || overlay.data.HERITAGE_NAME || 'planning overlay';
-      return `Your property is subject to a ${overlayName} that imposes additional planning requirements beyond the base zoning. These overlay provisions must be considered for any development and may require special consent processes.`;
-    } else {
-      return `Your property is subject to ${overlays.length} planning overlays that impose additional requirements beyond the base zoning. Where multiple overlays apply, the most restrictive requirements will take precedence. Professional planning advice is recommended to determine compliance with all applicable overlay provisions.`;
-    }
-  }
-
-  // Helper functions for property analysis
-  async function generateAuthenticZoningAnalysis(officialZoning: string, projectDescription: string, overlays?: any[]): Promise<string> {
-    try {
-      const { getZoneInfo } = await import('./auckland-zone-pdf-mapping');
-      const zoneInfo = getZoneInfo(officialZoning);
-
-      // Check for Special Character Areas overlay
-      const specialCharacterArea = overlays?.find(overlay => overlay.type === 'special_character_areas');
-
-      if (zoneInfo) {
-        return generateAuthenticZoneAnalysis(officialZoning, projectDescription, zoneInfo, specialCharacterArea);
-      } else {
-        return generateFallbackZoningAnalysis(officialZoning, projectDescription);
-      }
-    } catch (error) {
-      console.error('Auckland zone mapping error:', error);
-      return generateFallbackZoningAnalysis(officialZoning, projectDescription);
-    }
-  }
-
-  function generateAuthenticZoneAnalysis(officialZoning: string, projectDescription: string, zoneInfo: any, specialCharacterArea?: any): string {
-    const cleanZoneName = officialZoning.replace(/\s*\(Zone\s*\d+\)$/i, '').trim();
-    const projectLower = projectDescription.toLowerCase();
-
-    let analysis = '';
-
-    // Handle Special Character Areas overlay if present
-    if (specialCharacterArea?.data?.NAME) {
-      const specialAreaName = specialCharacterArea.data.NAME;
-      analysis = `Your property has a ${cleanZoneName} base zoning with an additional ${specialAreaName} overlay. The base zone allows `;
-    } else {
-      analysis = `According to the Auckland Unitary Plan ${zoneInfo.zone_code} ${cleanZoneName} document, `;
-    }
-
-    // Rural zones (H19)
-    if (zoneInfo.zone_code === 'H19') {
-      if (projectLower.includes('garage') || projectLower.includes('shed')) {
-        analysis += `accessory buildings including garages and storage buildings are permitted activities subject to development standards. Maximum building height is typically 8 metres with building coverage limited to 10% of the site area. Minimum setbacks of 10 metres from boundaries apply for buildings over 20 square metres. Rural character must be maintained and buildings should be designed to integrate with the rural environment.`;
-      } else if (projectLower.includes('extension') || projectLower.includes('addition')) {
-        analysis += `residential extensions are permitted activities provided they comply with height, coverage and setback requirements. Building coverage is limited to 10% with maximum height of 8 metres for residential buildings. Extensions must maintain rural character and may require increased setbacks to preserve rural amenity. Site coverage calculations include all buildings and impervious surfaces.`;
-      } else if (projectLower.includes('deck') || projectLower.includes('platform')) {
-        analysis += `outdoor living spaces including decks are permitted subject to setback and height requirements. Decks attached to dwellings are included in building coverage calculations. Rural zones require generous setbacks to maintain privacy and rural character, typically 10 metres from boundaries for substantial structures.`;
-      } else {
-        analysis += `rural residential activities are permitted with generous site requirements. Maximum building height is 8 metres with building coverage limited to 10% of the site area. Substantial setbacks of 10 metres from boundaries are required to maintain rural character and amenity.`;
-      }
-    }
-    // Residential zones (H1-H6)
-    else if (zoneInfo.zone_category === 'Residential') {
-      if (projectLower.includes('garage') || projectLower.includes('carport')) {
-        analysis += `accessory buildings including garages are permitted activities subject to height and setback standards. Maximum height for accessory buildings is typically 4 metres with minimum setbacks of 1 metre from side and rear boundaries. Building coverage limits vary by zone but generally range from 35-50% of the site area.`;
-      } else if (projectLower.includes('extension') || projectLower.includes('addition')) {
-        analysis += `residential alterations and additions are permitted activities provided they comply with height in relation to boundary, building coverage, and setback requirements. Height limits range from 8-11 metres depending on the specific residential zone. Building coverage limits and outdoor living space requirements must be maintained.`;
-      } else if (projectLower.includes('deck') || projectLower.includes('outdoor')) {
-        analysis += `outdoor living spaces including decks and patios are required for residential development and count toward site coverage calculations. Minimum outdoor living space requirements apply with specific dimensions and accessibility standards. Privacy and outlook protection measures may be required.`;
-      } else {
-        analysis += `residential activities are the primary permitted use with development standards for height, coverage, and setbacks. Building height limits typically range from 8-11 metres with coverage restrictions of 35-50% depending on the specific residential zone classification.`;
-      }
-    }
-    // Business zones (H8-H17)
-    else if (zoneInfo.zone_category === 'Business') {
-      if (projectLower.includes('commercial') || projectLower.includes('business')) {
-        analysis += `business activities are the primary permitted use with specific development standards for height, coverage, and parking. Height limits vary significantly by business zone type from 18 metres in local centres to unlimited in the city centre. Parking requirements and urban design standards apply.`;
-      } else if (projectLower.includes('residential') || projectLower.includes('apartment')) {
-        analysis += `residential activities may be permitted depending on the specific business zone. Mixed use development is encouraged in many business zones with specific design and amenity requirements. Resource consent may be required for residential activities in some business zones.`;
-      } else {
-        analysis += `development standards include specific requirements for height, site coverage, parking provision, and urban design. Business zones have varying height limits and development intensities depending on their role in the centres hierarchy.`;
-      }
-    }
-
-    analysis += ` Professional planning advice is recommended to ensure full compliance with all applicable Auckland Unitary Plan provisions for your specific project.`;
-
-    return analysis;
-  }
-
-  function generateFallbackZoningAnalysis(officialZoning: string, projectDescription: string): string {
-    const cleanZoneName = officialZoning?.replace(/\s*\(Zone\s*\d+\)$/i, '').trim() || 'Unknown Zone';
-
-    if (cleanZoneName.includes('Rural')) {
-      return `Your property is in a ${cleanZoneName} which typically allows rural residential activities and ${projectDescription} projects subject to larger site requirements and rural character considerations. Height limits are generally 8-10 metres with building coverage restrictions of 10-15% and substantial setback requirements from boundaries. Development must maintain the rural character and may require resource consent for certain activities.`;
-    }
-
-    if (cleanZoneName.includes('Residential')) {
-      return `Your property is in a ${cleanZoneName} which permits residential activities including ${projectDescription} projects. Standard residential development rules apply including height limits typically 8-11 metres, site coverage restrictions of 35-50%, and boundary setback requirements of 1-3 metres. Your project should comply with zone-specific development standards detailed in the Auckland Unitary Plan.`;
-    }
-
-    if (cleanZoneName.includes('Business')) {
-      return `Your property is in a ${cleanZoneName} which allows business activities and may permit certain residential or mixed-use developments. Development standards for ${projectDescription} projects include specific height limits, site coverage requirements, and parking provisions. Resource consent may be required depending on the specific nature and scale of your project.`;
-    }
-
-    return `Your property is in a ${cleanZoneName}. Planning provisions for your ${projectDescription} project are subject to the zone's specific development standards including height, coverage, and setback requirements. Professional planning advice is recommended to ensure compliance with all applicable Auckland Unitary Plan provisions for this zone.`;
-  }
-
-  function generateZoningAnalysis(zoningData: any, projectDescription: string, planningInfo: any[]) {
-    if (!zoningData) {
-      return "Retrieving official zoning information for your property. This will include what activities are permitted in your zone and any specific restrictions that apply to your project type.";
-    }
-
-    let analysis = `Your property is zoned as **${zoningData.currentZoning}**.\n\n`;
-
-    if (zoningData.permittedUses && zoningData.permittedUses.length > 0) {
-      analysis += `**What's allowed in your zone:**\n`;
-      zoningData.permittedUses.forEach((use: string) => {
-        analysis += `• ${use}\n`;
-      });
-      analysis += '\n';
-    }
-
-    if (zoningData.buildingRestrictions && zoningData.buildingRestrictions.length > 0) {
-      analysis += `**Building restrictions that may affect your project:**\n`;
-      zoningData.buildingRestrictions.forEach((restriction: string) => {
-        analysis += `• ${restriction}\n`;
-      });
-      analysis += '\n';
-    }
-
-    // Analyze project compatibility with zone
-    const projectLower = projectDescription.toLowerCase();
-    if (projectLower.includes('extension') || projectLower.includes('addition')) {
-      analysis += `**For your extension project:** Most residential zones allow extensions as a permitted activity, subject to building setbacks, height limits, and site coverage requirements.\n\n`;
-    } else if (projectLower.includes('new') && (projectLower.includes('house') || projectLower.includes('dwelling'))) {
-      analysis += `**For your new dwelling:** This is typically a permitted activity in residential zones, subject to compliance with development standards.\n\n`;
-    }
-
-    if (zoningData.developmentPotential) {
-      analysis += `**Development opportunities:** ${zoningData.developmentPotential}`;
-    }
-
-    return analysis;
-  }
-
-  async function generateBuildingCodeAnalysis(projectDescription: string, buildingCodeInfo: any[]) {
-    const projectLower = projectDescription.toLowerCase();
-
-    // Provide authentic building code analysis based on official Schedule 1 and MBIE guidance
-    let analysis = "";
-
-    // Analyze project type against authentic Schedule 1 Building Act 2004 exemptions
-    if (projectLower.includes('shed') || projectLower.includes('storage')) {
-      analysis = `According to Schedule 1 Part 1(1) of the Building Act 2004, detached buildings with floor area not exceeding 10m² and not intended for human habitation are exempt from building consent. MBIE exempt building work guidance specifies that such buildings must comply with boundary setbacks and height restrictions typically under 3 metres. The building must still comply with Building Code requirements for structural adequacy under Clause B1, and if attached to existing buildings, building consent may be required regardless of size.`;
-    } else if (projectLower.includes('deck') || projectLower.includes('platform')) {
-      analysis = `Under Schedule 1 Part 1(3) of the Building Act 2004, verandas, porches, decks, steps, or landings not more than 1.5 metres above ground are exempt from building consent. MBIE guidance emphasizes that appropriate barriers are required if fall risk exists, weatherproofing standards must be maintained, and structural design must be adequate. Building Code Clause F4 Safety from Falling applies where barriers are required for heights exceeding specified thresholds.`;
-    } else if (projectLower.includes('garage') || projectLower.includes('carport')) {
-      analysis = `Schedule 1 Part 1(2) of the Building Act 2004 exempts carports not exceeding 20m² in floor area with no walls or walls on not more than 2 sides. MBIE guidance indicates that garages typically require building consent, and professional structural design by a Licensed Building Practitioner is required for most garage construction. Fire separation distances must comply with Building Code requirements, and Clause B1 Structure compliance is mandatory for all building work.`;
-    } else if (projectLower.includes('fence') || projectLower.includes('retaining wall')) {
-      analysis = `Schedule 1 Part 2 of the Building Act 2004 covers boundary structures. Clause 4 exempts fences not exceeding 2.5 metres in height, while Clause 5 exempts retaining walls not exceeding 1.5 metres in height. MBIE guidance notes that pool fencing has specific safety requirements under the Building Code, and professional engineering advice is recommended for retaining walls near the height limits or supporting significant loads.`;
-    } else {
-      analysis = `Building consent is required for most building work unless specifically exempted under Schedule 1 of the Building Act 2004. MBIE building consent guidance indicates that Licensed Building Practitioner involvement is required for restricted building work, and all work must comply with relevant Building Code clauses including B1 Structure, B2 Durability, E2 External Moisture, and other applicable performance requirements. Building consent processing typically takes 15-20 working days with required inspections at key construction stages.`;
-    }
-
-    return analysis;
-  }
-
-  function extractRelevantExemptions(content: string, projectDescription: string): string {
-    const projectTerms = projectDescription.toLowerCase().split(' ');
-    const paragraphs = content.split(/\n\s*\n/);
-
-    // Find paragraphs that contain project-related terms
-    const relevantParagraphs = paragraphs.filter(paragraph => {
-      const lowerParagraph = paragraph.toLowerCase();
-      return projectTerms.some(term => 
-        term.length > 3 && lowerParagraph.includes(term)
-      );
-    });
-
-    // Return first relevant paragraph with proper formatting
-    return relevantParagraphs.slice(0, 1).join('\n').trim();
-  }
-
-  // ==================== Stats Routes ====================
-
   // ==================== Stats Routes ====================
   apiRouter.get("/api/stats", async (req: Request, res: Response) => {
     const totalScans = await storage.getTotalScans();
     const totalRecords = await storage.getTotalRecords();
     const totalDataSources = await storage.getTotalDataSources();
-
+    
     return res.json({
       totalScans,
       totalRecords,
@@ -1736,14 +1161,14 @@ function performLocalAddressSearch(query: string) {
       const activity = await storage.getActivities().then(activities => 
         activities.find(a => a.id === parseInt(id))
       );
-
+      
       if (!activity || !activity.metadata.reportData) {
         return res.status(404).json({ message: "Report not found" });
       }
-
+      
       const reportData = activity.metadata.reportData;
       const pdfBuffer = await generatePDF(reportData);
-
+      
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="property-report-${reportData.propertyAddress.replace(/\s+/g, '-')}.pdf"`);
       res.send(pdfBuffer);
@@ -1752,343 +1177,6 @@ function performLocalAddressSearch(query: string) {
       res.status(500).json({ message: "Error generating PDF: " + error.message });
     }
   });
-
-  // LINZ Parcel Data Endpoint - Step 3b from specification
-  apiRouter.post("/api/linz-parcel", async (req: Request, res: Response) => {
-    try {
-      const { lat, lng, address } = req.body;
-
-      if (!lat || !lng) {
-        return res.status(400).json({ error: "Coordinates are required" });
-      }
-
-      console.log(`Querying LINZ Property Parcels for: ${lat}, ${lng}`);
-
-      const { linzPropertyAPI } = await import('./linz-api');
-      const parcelData = await linzPropertyAPI.getPropertyParcel(lat, lng);
-
-      if (parcelData) {
-        res.json({
-          success: true,
-          lotDp: parcelData.lotDp,
-          surveyArea: parcelData.surveyArea,
-          landDistrict: parcelData.landDistrict,
-          titles: parcelData.titles,
-          geometry: parcelData.geometry
-        });
-      } else {
-        res.json({
-          success: false,
-          message: "No LINZ parcel data found for coordinates"
-        });
-      }
-    } catch (error) {
-      console.error("LINZ parcel query error:", error);
-      res.status(500).json({ error: "Failed to retrieve LINZ parcel data" });
-    }
-  });
-
-  // Enhanced Comprehensive Property Analysis with Authentic Data Extraction
-  apiRouter.post("/api/comprehensive-property-analysis", async (req: Request, res: Response) => {
-    try {
-      const { address, coordinates, parcelGeometry, projectDescription } = req.body;
-
-      if (!address || !coordinates) {
-        return res.status(400).json({ error: "Address and coordinates are required" });
-      }
-
-      console.log(`Enhanced comprehensive analysis for: ${address} at ${coordinates.lat}, ${coordinates.lng}`);
-
-      // 1. Get authentic LINZ parcel data
-      const linzData = await getLINZParcelData(coordinates.lat, coordinates.lng);
-
-      // 2. Get authentic Auckland Unitary Plan zoning
-      const zoningData = await getAucklandZoning(coordinates.lat, coordinates.lng);
-
-      // 3. Get authentic special character areas
-      const specialCharacterData = await getSpecialCharacterAreas(coordinates.lat, coordinates.lng);
-
-      // 4. Get authentic aquifer management areas
-      const aquiferData = await getAquiferManagementAreas(coordinates.lat, coordinates.lng);
-
-      // Generate comprehensive authentic response
-      const response = {
-        success: true,
-        address: address,
-        zoning: zoningData.zoneName,
-        lotDp: linzData.lotDp,
-        overlays: [
-          ...specialCharacterData.map(name => `Special Character Areas: ${name}`),
-          ...aquiferData.map(name => `Natural Resources: ${name}`)
-        ],
-        buildingControls: generateAuthenticBuildingControls(zoningData.zoneName),
-        floodData: {
-          catchment: 'Auckland Regional Catchment',
-          floodProne: false,
-          details: 'Property is outside identified flood hazard areas'
-        },
-        overlandFlow: 'No overland flow paths detected',
-        naturalHazards: ['No natural hazard overlays detected'],
-        specialCharacterAreas: specialCharacterData,
-        climateZones: getClimateZones(coordinates.lat, coordinates.lng),
-        infrastructure: {
-          arterialRoad: false,
-          stormwater: false,
-          wastewater: false
-        }
-      };
-
-      res.json(response);
-    } catch (error) {
-      console.error("Enhanced comprehensive property analysis error:", error);
-      res.status(500).json({ error: "Failed to complete enhanced comprehensive property analysis" });
-    }
-  });
-
-  // Authentic data extraction functions
-  async function getLINZParcelData(lat: number, lng: number): Promise<{ lotDp: string; surveyArea: number }> {
-    try {
-      const params = new URLSearchParams({
-        key: process.env.LINZ_API_KEY || '',
-        layer: '51571',
-        x: lng.toString(),
-        y: lat.toString(),
-        max_results: '1',
-        radius: '100'
-      });
-
-      const response = await fetch(`https://data.linz.govt.nz/services/query/v1/vector.json?${params}`);
-      const data = await response.json() as any;
-
-      if (data.vectorQuery?.layers?.['51571']?.features?.length > 0) {
-        const feature = data.vectorQuery.layers['51571'].features[0];
-        return {
-          lotDp: feature.properties.appellation || 'Not available',
-          surveyArea: feature.properties.survey_area || 0
-        };
-      }
-    } catch (error) {
-      console.error('LINZ data extraction error:', error);
-    }
-    return { lotDp: 'Not available', surveyArea: 0 };
-  }
-
-  async function getAucklandZoning(lat: number, lng: number): Promise<{ zoneName: string; zoneCode: number }> {
-    try {
-      const url = 'https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services/Unitary_Plan_Base_Zone/FeatureServer/0/query';
-      const params = new URLSearchParams({
-        f: 'json',
-        geometry: `${lng},${lat}`,
-        geometryType: 'esriGeometryPoint',
-        inSR: '4326',
-        spatialRel: 'esriSpatialRelIntersects',
-        outFields: '*',
-        returnGeometry: 'false'
-      });
-
-      const response = await fetch(`${url}?${params}`);
-      const data = await response.json();
-
-      if (data.features && data.features.length > 0) {
-        const zoneCode = data.features[0].attributes?.ZONE;
-        return {
-          zoneCode,
-          zoneName: decodeAucklandZoneCode(zoneCode)
-        };
-      }
-    } catch (error) {
-      console.error('Auckland zoning extraction error:', error);
-    }
-    return { zoneName: 'Unknown Zone', zoneCode: 0 };
-  }
-
-  async function getSpecialCharacterAreas(lat: number, lng: number): Promise<string[]> {
-    try {
-      const url = 'https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services/Special_Character_Areas_Overlay_Residential_and_Business/FeatureServer/0/query';
-      const params = new URLSearchParams({
-        f: 'json',
-        geometry: `${lng},${lat}`,
-        geometryType: 'esriGeometryPoint',
-        inSR: '4326',
-        spatialRel: 'esriSpatialRelIntersects',
-        outFields: '*',
-        returnGeometry: 'false'
-      });
-
-      const response = await fetch(`${url}?${params}`);
-      const data = await response.json();
-
-      if (data.features && data.features.length > 0) {
-        return data.features.map((feature: any) => {
-          const typeCode = feature.attributes?.TYPE;
-          return decodeSpecialCharacterAreaCode(typeCode);
-        }).filter(Boolean);
-      }
-    } catch (error) {
-      console.error('Special character areas extraction error:', error);
-    }
-    return [];
-  }
-
-  async function getAquiferManagementAreas(lat: number, lng: number): Promise<string[]> {
-    // For now return placeholder - would need correct API endpoint
-    // This represents the "Quality-Sensitive Aquifer Management Areas Overlay - Western Springs Volcanic Aquifer"
-    if (lat > -36.9 && lat < -36.89 && lng > 174.74 && lng < 174.75) {
-      return ['Quality-Sensitive Aquifer Management Areas Overlay - Western Springs Volcanic Aquifer'];
-    }
-    return [];
-  }
-
-  function decodeAucklandZoneCode(zoneCode: number): string {
-    const zoneMap: Record<number, string> = {
-      19: "Residential - Single House Zone",
-      18: "Residential - Mixed Housing Suburban Zone",
-      60: "Residential - Mixed Housing Urban Zone",
-      8: "Residential - Terrace Housing and Apartment Building Zone",
-      23: "Residential - Large Lot Zone",
-      3: "Rural - Countryside Living Zone",
-      49: "Business - General Business Zone",
-      35: "Business - City Centre Zone"
-    };
-
-    return zoneMap[zoneCode] || `Zone Code ${zoneCode}`;
-  }
-
-  function decodeSpecialCharacterAreaCode(typeCode: number): string {
-    const specialCharacterMap: Record<number, string> = {
-      37: "General Balmoral tram Suburb East",
-      40: "Residential Balmoral Tram Suburb West",
-      29: "Residential General",
-      26: "General",
-      14: "Business Balmoral"
-    };
-
-    return specialCharacterMap[typeCode] || '';
-  }
-
-  function generateAuthenticBuildingControls(zoning: string): string[] {
-    if (zoning.includes('Single House')) {
-      return [
-        'Maximum building height: 8 metres',
-        'Building coverage: 35% maximum',
-        'Minimum setbacks: 1.5m front, 1m side boundaries',
-        'Single dwelling per site',
-        'Residential activities permitted'
-      ];
-    }
-
-    if (zoning.includes('Mixed Housing Suburban')) {
-      return [
-        'Maximum building height: 11 metres',
-        'Building coverage: 40% maximum',
-        'Minimum setbacks: 1.5m front, 1m side boundaries'
-      ];
-    }
-
-    return ['Standard residential building controls apply'];
-  }
-
-  // Helper functions for authentic data analysis
-  function generateBuildingControlsForZone(zoning: string): string[] {
-    const controls: string[] = [];
-
-    if (!zoning) return ['Zoning information not available'];
-
-    if (zoning.includes('Residential')) {
-      controls.push('Maximum building height: 8-11 metres (depending on specific zone)');
-      controls.push('Building coverage: 35-45% maximum');
-      controls.push('Minimum setbacks: 1.5m front, 1m side boundaries');
-    } else if (zoning.includes('Business')) {
-      controls.push('Maximum building height: varies by zone (8-32 metres)');
-      controls.push('Floor area ratio controls apply');
-      controls.push('Minimum building setbacks from boundaries');
-    } else if (zoning.includes('Rural')) {
-      controls.push('Maximum building height: 8 metres');
-      controls.push('Building coverage: 10% maximum');
-      controls.push('Minimum setbacks: 10 metres from boundaries');
-    }
-
-    return controls;
-  }
-
-  function analyzeFloodHazards(overlays: any[]): any {
-    const floodOverlays = overlays.filter(overlay => 
-      overlay.type.includes('flood') || overlay.type.includes('Flood')
-    );
-
-    return {
-      catchment: 'Auckland Regional Catchment',
-      floodProne: floodOverlays.length > 0,
-      details: floodOverlays.length > 0 
-        ? `Property intersects ${floodOverlays.length} flood-related overlay(s)`
-        : 'Property is outside identified flood hazard areas'
-    };
-  }
-
-  function analyzeOverlandFlow(overlays: any[]): string {
-    const flowOverlays = overlays.filter(overlay => 
-      overlay.type.includes('overland') || overlay.type.includes('flow')
-    );
-
-    return flowOverlays.length > 0 
-      ? 'Overland flow paths detected on property'
-      : 'No overland flow paths detected';
-  }
-
-  function analyzeNaturalHazards(overlays: any[]): string[] {
-    const hazards: string[] = [];
-
-    overlays.forEach(overlay => {
-      if (overlay.type.includes('liquefaction')) {
-        hazards.push('Liquefaction vulnerability identified');
-      }
-      if (overlay.type.includes('geotechnical')) {
-        hazards.push('Geotechnical considerations apply');
-      }
-      if (overlay.type.includes('coastal')) {
-        hazards.push('Coastal hazard overlay');
-      }
-    });
-
-    return hazards.length > 0 ? hazards : ['No natural hazard overlays detected'];
-  }
-
-  function analyzeSpecialCharacterAreas(overlays: any[]): string[] {
-    const characterAreas: string[] = [];
-
-    overlays.forEach(overlay => {
-      if (overlay.type.includes('special_character') && overlay.data) {
-        // Decode the TYPE code from the overlay data
-        const typeCode = overlay.data.attributes?.TYPE;
-        if (typeCode === 37) {
-          characterAreas.push('General Balmoral tram Suburb East');
-        } else if (typeCode === 40) {
-          characterAreas.push('Residential Balmoral Tram Suburb West');
-        } else {
-          characterAreas.push(`Special Character Area (Type ${typeCode})`);
-        }
-      }
-    });
-
-    return characterAreas;
-  }
-
-  function getClimateZones(lat: number, lng: number): any {
-    return {
-      wind: 'Zone 3 (High Wind)',
-      earthquake: 'Zone 3 (High Seismic)',
-      snow: 'Zone 1 (No Snow Loading)',
-      corrosion: lat < -36.7 ? 'Zone C (Coastal - High Corrosion)' : 'Zone B (Moderate Corrosion)'
-    };
-  }
-
-  function analyzeInfrastructure(overlays: any[]): any {
-    return {
-      arterialRoad: overlays.some(overlay => overlay.type.includes('arterial')),
-      stormwater: overlays.some(overlay => overlay.type.includes('stormwater')),
-      wastewater: overlays.some(overlay => overlay.type.includes('wastewater'))
-    };
-  }
 
   const httpServer = createServer(app);
   return httpServer;
@@ -2103,15 +1191,15 @@ async function generatePropertyReport(data: {
   planId: string;
 }) {
   console.log(`Generating report for ${data.propertyAddress}...`);
-
+  
   // Get property data from GIS sources
   const propertyData = await getPropertyData(data.propertyAddress);
-
+  
   // Generate AI response using RAG for the user's project
   const aiAnalysis = await generateRAGResponse(
     `Property: ${data.propertyAddress}. Project: ${data.projectDescription}. Budget: ${data.budgetRange}. Timeframe: ${data.timeframe}. Provide detailed analysis for New Zealand building regulations, consent requirements, and development guidance.`
   );
-
+  
   const report = {
     id: Date.now().toString(),
     propertyAddress: data.propertyAddress,
@@ -2120,7 +1208,7 @@ async function generatePropertyReport(data: {
     timeframe: data.timeframe,
     planId: data.planId,
     generatedAt: new Date().toISOString(),
-
+    
     // Property Information
     propertyData: {
       address: data.propertyAddress,
@@ -2130,15 +1218,15 @@ async function generatePropertyReport(data: {
       districtPlan: propertyData.districtPlan || "Still to come",
       gisData: propertyData.gisData || "Still to come"
     },
-
+    
     // AI Analysis
     analysis: {
       buildingConsent: aiAnalysis.includes("building consent") ? 
         aiAnalysis.substring(0, 500) + "..." : 
         "Based on your project description, building consent requirements will depend on the specific scope of work. Our AI analysis suggests reviewing the Building Act 2004 requirements for your project type.",
-
+      
       zoneCompliance: "Zoning compliance analysis will be provided once GIS data integration is complete. This will include permitted activities, height restrictions, and setback requirements.",
-
+      
       recommendations: [
         "Consult with a licensed building practitioner for detailed plans",
         "Check with local council for specific district plan requirements", 
@@ -2146,10 +1234,10 @@ async function generatePropertyReport(data: {
         "Review wind zone requirements for building design"
       ]
     },
-
+    
     // Project Specific
     projectGuidance: aiAnalysis,
-
+    
     // Regulatory Requirements
     consents: {
       buildingConsent: "Assessment pending - will depend on project scope",
@@ -2157,7 +1245,7 @@ async function generatePropertyReport(data: {
       otherPermits: "To be determined based on project specifics"
     }
   };
-
+  
   return report;
 }
 
@@ -2181,7 +1269,7 @@ async function sendReportEmail(email: string, propertyAddress: string, reportDat
     console.log("SendGrid not configured - skipping email");
     return;
   }
-
+  
   // This would send the actual email with SendGrid
   console.log(`Email would be sent to ${email} for property ${propertyAddress}`);
 }
@@ -2233,7 +1321,7 @@ Other Permits: ${reportData.consents.otherPermits}
 ---
 Report generated by Can I Build It? NZ Property Assessment Platform
   `;
-
+  
   // Convert text to Buffer (in production, use proper PDF library)
   return Buffer.from(pdfContent, 'utf-8');
 }
@@ -2241,14 +1329,14 @@ Report generated by Can I Build It? NZ Property Assessment Platform
 // Premium response generator with enhanced features
 async function generatePremiumResponse(message: string, conversationHistory: any[], propertyAddress?: string, projectDescription?: string) {
   const context = conversationHistory.map(msg => `${msg.type}: ${msg.content}`).join('\n');
-
+  
   // ALWAYS research property data when address is provided - this is critical for premium service
   let propertyResearchData = null;
   if (propertyAddress && propertyAddress.trim()) {
     try {
       console.log(`=== STARTING COMPREHENSIVE PROPERTY RESEARCH FOR: ${propertyAddress} ===`);
       const { researchProperty } = await import('./property-research');
-      propertyResearchData = await researchProperty(propertyAddress.trim(), undefined, undefined);
+      propertyResearchData = await researchProperty(propertyAddress.trim());
       console.log('=== PROPERTY RESEARCH COMPLETED ===');
       console.log('Research results:', JSON.stringify(propertyResearchData, null, 2));
     } catch (error) {
@@ -2257,10 +1345,10 @@ async function generatePremiumResponse(message: string, conversationHistory: any
   } else {
     console.log('No property address provided - skipping research');
   }
-
+  
   // Enhanced system prompt with property-specific context - same style as basic agent
   const premiumSystemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive premium guidance.
-
+    
     You provide detailed, helpful analysis including:
     - Comprehensive building consent guidance and requirements
     - Detailed zoning information and compliance
@@ -2270,13 +1358,13 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     - Cost estimates and timeline guidance
     - Regulatory compliance advice
     - Enhanced premium features with specific calculations and professional recommendations
-
+    
     Be thorough and helpful. This is a premium service designed to provide maximum value to property owners.
     Focus on actionable advice and clear explanations of New Zealand building regulations.
-
+    
     ${propertyAddress ? `Property: ${propertyAddress}` : ''}
     ${projectDescription ? `Project: ${projectDescription}` : ''}
-
+    
     ${propertyResearchData ? `
     COMPREHENSIVE PROPERTY RESEARCH DATA:
     Property Address: ${propertyResearchData.propertyAddress}
@@ -2295,9 +1383,9 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     Building Code Requirements: ${propertyResearchData.buildingCodeRequirements.join('; ')}
     Consent Requirements: ${propertyResearchData.consentRequirements.join('; ')}
     Additional Research Findings: ${propertyResearchData.additionalResearch.slice(0, 3).join('; ')}
-
+    
     Use this comprehensive data to provide specific, accurate advice about building consent requirements and building code compliance for this exact property and location.` : ''}
-
+    
     FORMATTING RULES:
     - Write in clear, natural language without markdown formatting
     - Do not use # hashtags, ## headings, #### subheadings, or ** bold formatting
@@ -2306,9 +1394,9 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     - Use simple dashes (-) for bullet points when needed
     - Focus on clear, readable content without formatting symbols
     - Write in the same conversational style as the basic agent
-
+    
     CITATION REQUIREMENTS:
-    - Always include specific source references forall building regulations mentioned
+    - Always include specific source references for all building regulations mentioned
     - Cite official websites like building.govt.nz, aucklandcouncil.govt.nz
     - Reference specific Building Act 2004 sections and Building Code clauses
     - Include links to MBIE guidance documents where relevant
@@ -2316,7 +1404,7 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     - Format citations naturally within the text, not as a separate section`;
 
   let enhancedQuery = `${premiumSystemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide detailed premium analysis.`;
-
+  
   // Check if this is an automatic comprehensive report request
   if (message.includes("comprehensive building consent assessment") && propertyAddress && projectDescription) {
     enhancedQuery = `${premiumSystemPrompt}
@@ -2346,7 +1434,7 @@ Write in a conversational, helpful tone. Include all the specific property detai
 
   try {
     const response = await generateRAGResponse(enhancedQuery);
-
+    
     // Comprehensive cleanup of all markdown formatting symbols
     let cleanResponse = response
       // First pass: Convert headers to bullet points
@@ -2366,7 +1454,7 @@ Write in a conversational, helpful tone. Include all the specific property detai
       .replace(/\*{1,2}/g, '')
       .replace(/#{1,6}/g, '')
       .trim();
-
+    
     // Analyze response to determine features used
     const features = {
       hasCalculations: cleanResponse.includes('$') || cleanResponse.includes('cost') || cleanResponse.includes('budget'),
@@ -2374,7 +1462,7 @@ Write in a conversational, helpful tone. Include all the specific property detai
       hasRegulations: cleanResponse.includes('consent') || cleanResponse.includes('code') || cleanResponse.includes('regulation'),
       hasDocuments: true // Premium always includes documentation capability
     };
-
+    
     return {
       content: cleanResponse,
       features
@@ -2442,15 +1530,15 @@ This premium report provides professional-grade analysis suitable for decision-m
 // Audio transcription using OpenAI Whisper
 async function transcribeAudioFile(req: any): Promise<string> {
   const OpenAI = require('openai');
-
+  
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('OpenAI API key is required for audio transcription');
   }
-
+  
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-
+  
   try {
     // In a real implementation, you'd handle multipart form data properly
     // For now, we'll return a placeholder that works with the frontend
@@ -2458,7 +1546,7 @@ async function transcribeAudioFile(req: any): Promise<string> {
       file: req.file || req.body, // This would need proper file handling
       model: "whisper-1",
     });
-
+    
     return transcription.text || "Could not transcribe audio. Please try typing your message.";
   } catch (error) {
     console.error('Whisper transcription error:', error);
@@ -2470,10 +1558,10 @@ async function transcribeAudioFile(req: any): Promise<string> {
 async function generatePlanBasedResponse(message: string, plan: string, conversationHistory: any[]) {
   // Build context from conversation history
   const context = conversationHistory.map(msg => `${msg.type}: ${msg.content}`).join('\n');
-
+  
   // Free comprehensive guidance system prompt
   const systemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive free guidance.
-
+    
     You provide detailed, helpful analysis including:
     - Comprehensive building consent guidance and requirements
     - Detailed zoning information and compliance
@@ -2482,10 +1570,10 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     - Development potential assessment
     - Cost estimates and timeline guidance
     - Regulatory compliance advice
-
+    
     Be thorough and helpful. This is a free service designed to provide maximum value to property owners.
     Focus on actionable advice and clear explanations of New Zealand building regulations.
-
+    
     FORMATTING RULES:
     - Write in clear, natural language without markdown formatting
     - Do not use # hashtags, ## headings, #### subheadings, or ** bold formatting
@@ -2493,7 +1581,7 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     - Write section titles as plain text followed by a colon
     - Use simple dashes (-) for bullet points when needed
     - Focus on clear, readable content without formatting symbols
-
+    
     If the user needs a comprehensive written report, suggest they use the "Generate Report" feature which creates a detailed PDF document.`;
 
   // Enhanced query for RAG system
@@ -2502,7 +1590,7 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
   try {
     // Use RAG system for informed responses
     const response = await generateRAGResponse(enhancedQuery);
-
+    
     // Comprehensive cleanup of all markdown formatting symbols
     let cleanResponse = response
       // First pass: Convert headers to bullet points
@@ -2522,7 +1610,7 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
       .replace(/\*{1,2}/g, '')
       .replace(/#{1,6}/g, '')
       .trim();
-
+    
     // Return comprehensive free guidance
     return cleanResponse;
   } catch (error) {
@@ -2531,4 +1619,4 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
   }
 }
 
-// The coordinates are now used for the researchProperty call.
+
