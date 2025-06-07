@@ -42,8 +42,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax'
+    },
+    name: 'canibuild.session'
   }));
 
   // Setup Replit authentication
@@ -63,13 +65,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return next();
     }
     
-    // Fall back to Replit authentication
-    return isAuthenticated(req, res, next);
+    // Check for Replit authentication
+    if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+      return next();
+    }
+    
+    // If neither auth method is available, return 401
+    return res.status(401).json({ message: "Authentication required" });
   };
 
   // ==================== Authentication Routes ====================
   // User info route - returns the current authenticated user
-  apiRouter.get("/api/auth/user", customAuth, async (req: any, res: Response) => {
+  apiRouter.get("/api/auth/user", async (req: any, res: Response) => {
     try {
       // Handle session-based user (email/password auth)
       if (req.session?.user) {
@@ -77,10 +84,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Handle Replit authenticated user
-      const userId = req.user.claims?.sub;
-      if (userId) {
-        const user = await storage.getUser(userId);
-        return res.json(user);
+      if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        const userId = req.user.claims?.sub;
+        if (userId) {
+          const user = await storage.getUser(userId);
+          if (user) {
+            return res.json(user);
+          }
+        }
       }
       
       res.status(401).json({ message: "Not authenticated" });
@@ -375,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get current user (for both session-based and Replit auth)
-  apiRouter.get("/api/auth/me", customAuth, async (req: any, res: Response) => {
+  apiRouter.get("/api/auth/me", async (req: any, res: Response) => {
     try {
       // Handle session-based user (email/password auth)
       if (req.session?.user) {
@@ -395,11 +406,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Handle Replit authenticated user
-      const userId = req.user?.claims?.sub;
-      if (userId) {
-        const user = await storage.getUser(userId);
-        if (user) {
-          return res.json(user);
+      if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        const userId = req.user?.claims?.sub;
+        if (userId) {
+          const user = await storage.getUser(userId);
+          if (user) {
+            return res.json(user);
+          }
         }
       }
       
