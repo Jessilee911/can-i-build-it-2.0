@@ -769,6 +769,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.json(activities);
   });
 
+  // ==================== PDF Reading Routes ====================
+  // Read uploaded PDF files
+  apiRouter.post("/api/read-pdf", async (req: Request, res: Response) => {
+    try {
+      const { filename } = req.body;
+
+      if (!filename) {
+        return res.status(400).json({ error: "Filename is required" });
+      }
+
+      const { PDFReader } = await import('./pdf-reader');
+      const content = await PDFReader.readUploadedFile(filename);
+
+      if (content) {
+        res.json({ 
+          success: true, 
+          filename, 
+          content: content.substring(0, 5000), // Return first 5000 chars
+          length: content.length 
+        });
+      } else {
+        res.status(404).json({ error: `Could not read file: ${filename}` });
+      }
+    } catch (error: any) {
+      console.error("PDF reading error:", error);
+      res.status(500).json({ error: "Failed to read PDF file" });
+    }
+  });
+
+  // Find specific Building Code clause in uploaded PDFs
+  apiRouter.post("/api/find-clause", async (req: Request, res: Response) => {
+    try {
+      const { clauseNumber, uploadedFiles } = req.body;
+
+      if (!clauseNumber) {
+        return res.status(400).json({ error: "Clause number is required" });
+      }
+
+      const { PDFReader } = await import('./pdf-reader');
+      const question = `What is ${clauseNumber}?`;
+      const response = await PDFReader.answerBuildingCodeQuestion(question, uploadedFiles);
+
+      res.json({ 
+        success: true, 
+        clauseNumber, 
+        response 
+      });
+    } catch (error: any) {
+      console.error("Clause search error:", error);
+      res.status(500).json({ error: "Failed to find clause" });
+    }
+  });
+
+  // Get list of available PDF files
+  apiRouter.get("/api/available-pdfs", async (req: Request, res: Response) => {
+    try {
+      const { PDFReader } = await import('./pdf-reader');
+      const availablePDFs = PDFReader.getAvailablePDFs();
+
+      res.json({ 
+        success: true, 
+        files: availablePDFs,
+        count: availablePDFs.length 
+      });
+    } catch (error: any) {
+      console.error("PDF listing error:", error);
+      res.status(500).json({ error: "Failed to list PDF files" });
+    }
+  });
+
   // ==================== Chat Routes ====================
   // Chat endpoint for plan-based conversational agent
   apiRouter.post("/api/chat", async (req: Request, res: Response) => {
@@ -779,8 +849,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message is required" });
       }
 
-      // Generate response based on user's plan level
-      const response = await generatePlanBasedResponse(message, plan, conversationHistory);
+      // Check if message is asking for specific Building Code clause
+      const { PDFReader } = await import('./pdf-reader');
+      const clauseMatch = message.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
+
+      let response;
+      if (clauseMatch) {
+        // Try to answer from uploaded PDFs first
+        const pdfResponse = await PDFReader.answerBuildingCodeQuestion(message);
+        if (pdfResponse && !pdfResponse.includes('not found')) {
+          response = pdfResponse;
+        } else {
+          // Fall back to RAG system
+          response = await generatePlanBasedResponse(message, plan, conversationHistory);
+        }
+      } else {
+        // Generate response based on user's plan level
+        response = await generatePlanBasedResponse(message, plan, conversationHistory);
+      }
 
       res.json({ response });
     } catch (error: any) {
@@ -1626,8 +1712,7 @@ async function transcribeAudioFile(req: any): Promise<string> {
 }
 
 // Generate helpful property advice responses
-async function generatePlanBasedResponse(message: string, plan: string, conversationHistoryImplementing RAG for building regulations, adding PDF processing, and creating building code question endpoints.```text
-: any[]) {
+async function generatePlanBasedResponse(message: string, plan: string, conversationHistory: any[]) {
   // Build context from conversation history
   const context = conversationHistory.map(msg => `${msg.type}: ${msg.content}`).join('\n');
 
