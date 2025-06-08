@@ -17,8 +17,266 @@ interface ExtractedContent {
   consentRequirements: InsertConsentRequirement[];
 }
 
+interface BuildingCodeClause {
+  clauseNumber: string;
+  title: string;
+  content: string;
+  pageNumber: number;
+
+  /**
+   * Extract text from PDF buffer using simple text extraction
+   */
+  private async extractTextFromPDF(pdfBuffer: Buffer): Promise<string> {
+    try {
+      const pdf = await import('pdf-parse');
+      const data = await pdf.default(pdfBuffer);
+      return data.text;
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      return '';
+    }
+  }
+
+  /**
+   * Determine document category from building code
+   */
+  private determineCategoryFromCode(clauseNumber: string): string {
+    const code = clauseNumber.charAt(0);
+    switch (code) {
+      case 'A': return 'general';
+      case 'B': return 'structural';
+      case 'C': return 'fire';
+      case 'D': return 'access';
+      case 'E': return 'weathertightness';
+      case 'F': return 'safety';
+      case 'G': return 'services';
+      case 'H': return 'energy';
+      default: return 'other';
+    }
+  }
+
+  documentSource: string;
+  clauseLevel: number;
+  parentClause?: string;
+  subsections: string[];
+  relatedClauses: string[];
+  tables: string[];
+  figures: string[];
+  metadata: Record<string, any>;
+}
+
 export class PDFProcessor {
   
+  private clausePatterns = {
+    // Main clauses like D1, E2, B1, etc.
+    mainClause: /^([A-Z]\d+)\s+(.+?)(?:\n|$)/gm,
+    // Sub-clauses like D1.1, E2.3, etc.
+    subClause: /^([A-Z]\d+\.\d+)\s+(.+?)(?:\n|$)/gm,
+    // Sub-sub-clauses like D1.3.3, E2.1.4, etc.
+    subSubClause: /^([A-Z]\d+\.\d+\.\d+)\s+(.+?)(?:\n|$)/gm,
+    // Performance criteria like D1/AS1, E2/AS2
+    performanceClause: /^([A-Z]\d+\/AS\d+)\s+(.+?)(?:\n|$)/gm,
+    // Verification methods like D1/VM1
+    verificationClause: /^([A-Z]\d+\/VM\d+)\s+(.+?)(?:\n|$)/gm
+  };
+
+  private contentPatterns = {
+    table: /Table\s+[A-Z]?\d+(?:\.\d+)*(?:[a-z])?/gi,
+    figure: /Figure\s+[A-Z]?\d+(?:\.\d+)*(?:[a-z])?/gi,
+    crossReference: /([A-Z]\d+(?:\.\d+)*(?:\.\d+)*)/g
+  };
+
+  /**
+   * Extract structured clauses from PDF text using advanced pattern recognition
+   */
+  private extractBuildingCodeClauses(text: string): BuildingCodeClause[] {
+    const clauses: BuildingCodeClause[] = [];
+    const allMatches: Array<{
+      clauseNumber: string;
+      title: string;
+      startPos: number;
+      patternType: string;
+    }> = [];
+
+    // Find all clause matches
+    Object.entries(this.clausePatterns).forEach(([patternName, pattern]) => {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        allMatches.push({
+          clauseNumber: match[1],
+          title: match[2].trim(),
+          startPos: match.index,
+          patternType: patternName
+        });
+      }
+    });
+
+    // Sort by position in document
+    allMatches.sort((a, b) => a.startPos - b.startPos);
+
+    // Extract content for each clause
+    allMatches.forEach((match, index) => {
+      const startPos = match.startPos;
+      const endPos = index + 1 < allMatches.length ? allMatches[index + 1].startPos : text.length;
+      const content = text.slice(startPos, endPos).trim();
+
+      const clause: BuildingCodeClause = {
+        clauseNumber: match.clauseNumber,
+        title: match.title,
+        content: this.cleanClauseContent(content),
+        pageNumber: this.estimatePageNumber(startPos, text),
+        documentSource: '',
+        clauseLevel: this.determineClauseLevel(match.clauseNumber),
+        parentClause: this.findParentClause(match.clauseNumber),
+        subsections: this.extractSubsections(content),
+        relatedClauses: this.findRelatedClauses(content),
+        tables: this.extractTableReferences(content),
+        figures: this.extractFigureReferences(content),
+        metadata: this.extractClauseMetadata(content)
+      };
+
+      clauses.push(clause);
+    });
+
+    return clauses;
+  }
+
+  private cleanClauseContent(content: string): string {
+    // Remove excessive whitespace
+    content = content.replace(/\n\s*\n\s*\n/g, '\n\n');
+    content = content.replace(/[ \t]+/g, ' ');
+    
+    // Fix common OCR issues
+    content = content.replace(/'/g, "'");
+    content = content.replace(/'/g, "'");
+    content = content.replace(/"/g, '"');
+    content = content.replace(/"/g, '"');
+    
+    return content.trim();
+  }
+
+  private determineClauseLevel(clauseNumber: string): number {
+    if (/^[A-Z]\d+$/.test(clauseNumber)) return 1;
+    if (/^[A-Z]\d+\.\d+$/.test(clauseNumber)) return 2;
+    if (/^[A-Z]\d+\.\d+\.\d+$/.test(clauseNumber)) return 3;
+    if (/^[A-Z]\d+\/[A-Z]+\d+$/.test(clauseNumber)) return 2;
+    return 0;
+  }
+
+  private findParentClause(clauseNumber: string): string | undefined {
+    if (/^[A-Z]\d+\.\d+\.\d+$/.test(clauseNumber)) {
+      return clauseNumber.split('.').slice(0, -1).join('.');
+    }
+    if (/^[A-Z]\d+\.\d+$/.test(clauseNumber)) {
+      return clauseNumber.split('.')[0];
+    }
+    return undefined;
+  }
+
+  private extractSubsections(content: string): string[] {
+    const subsections: string[] = [];
+    const letterMatches = content.match(/\(([a-z])\)/g) || [];
+    const romanMatches = content.match(/\(([ivx]+)\)/g) || [];
+    
+    subsections.push(...letterMatches.map(m => m.slice(1, -1)));
+    subsections.push(...romanMatches.map(m => m.slice(1, -1)));
+    
+    return [...new Set(subsections)];
+  }
+
+  private findRelatedClauses(content: string): string[] {
+    const matches = content.match(this.contentPatterns.crossReference) || [];
+    return [...new Set(matches.filter(ref => /^[A-Z]\d+(?:\.\d+)*$/.test(ref)))];
+  }
+
+  private extractTableReferences(content: string): string[] {
+    return content.match(this.contentPatterns.table) || [];
+  }
+
+  private extractFigureReferences(content: string): string[] {
+    return content.match(this.contentPatterns.figure) || [];
+  }
+
+  private extractClauseMetadata(content: string): Record<string, any> {
+    return {
+      wordCount: content.split(/\s+/).length,
+      hasTables: this.contentPatterns.table.test(content),
+      hasFigures: this.contentPatterns.figure.test(content),
+      hasCrossReferences: this.contentPatterns.crossReference.test(content),
+      contentType: this.determineContentType(content)
+    };
+  }
+
+  private determineContentType(content: string): string {
+    const lower = content.toLowerCase();
+    if (lower.includes('performance') && lower.includes('shall')) return 'performance_requirement';
+    if (lower.includes('acceptable solution')) return 'acceptable_solution';
+    if (lower.includes('verification method')) return 'verification_method';
+    if (lower.includes('definition') || lower.includes('means')) return 'definition';
+    return 'general_content';
+  }
+
+  private estimatePageNumber(position: number, text: string): number {
+    const textBeforePosition = text.slice(0, position);
+    const estimatedPage = Math.floor(textBeforePosition.length / 2000) + 1;
+    return estimatedPage;
+  }
+
+  /**
+   * Create optimized chunks for RAG system with precise clause extraction
+   */
+  private createRAGChunks(clauses: BuildingCodeClause[], documentTitle: string): Array<Record<string, any>> {
+    const chunks: Array<Record<string, any>> = [];
+
+    clauses.forEach(clause => {
+      // Main clause chunk
+      const mainChunk = {
+        id: `${documentTitle}_${clause.clauseNumber}`,
+        clauseNumber: clause.clauseNumber,
+        title: clause.title,
+        content: clause.content,
+        pageNumber: clause.pageNumber,
+        documentSource: documentTitle,
+        chunkType: 'main_clause',
+        metadata: {
+          clauseLevel: clause.clauseLevel,
+          parentClause: clause.parentClause,
+          relatedClauses: clause.relatedClauses,
+          tables: clause.tables,
+          figures: clause.figures,
+          ...clause.metadata
+        }
+      };
+      chunks.push(mainChunk);
+
+      // Create sub-chunks for long content
+      if (clause.content.length > 2000) {
+        const paragraphs = clause.content.split('\n\n');
+        paragraphs.forEach((paragraph, index) => {
+          if (paragraph.trim().length > 100) {
+            const subChunk = {
+              id: `${documentTitle}_${clause.clauseNumber}_p${index + 1}`,
+              clauseNumber: clause.clauseNumber,
+              title: `${clause.title} (Part ${index + 1})`,
+              content: paragraph.trim(),
+              pageNumber: clause.pageNumber,
+              documentSource: documentTitle,
+              chunkType: 'paragraph',
+              metadata: {
+                parentClauseId: `${documentTitle}_${clause.clauseNumber}`,
+                paragraphIndex: index + 1,
+                ...clause.metadata
+              }
+            };
+            chunks.push(subChunk);
+          }
+        });
+      }
+    });
+
+    return chunks;
+  }
+
   /**
    * Process a PDF document and extract structured building/planning information
    */
@@ -51,18 +309,50 @@ export class PDFProcessor {
       const pdfBuffer = fs.readFileSync(filePath);
       const base64Pdf = pdfBuffer.toString('base64');
 
-      const extractedContent = await this.extractContentWithAI(base64Pdf, documentInfo);
-
-      // Store extracted content in database
+      // First try advanced clause extraction for building codes
       let sectionsCount = 0;
+      
+      if (documentInfo.documentType === 'building_code') {
+        // Use advanced clause extraction
+        const pdfText = await this.extractTextFromPDF(pdfBuffer);
+        const clauses = this.extractBuildingCodeClauses(pdfText);
+        
+        // Convert clauses to building code sections
+        for (const clause of clauses) {
+          await storage.createBuildingCodeSection({
+            code: clause.clauseNumber.split('.')[0], // e.g., "D1" from "D1.3.3"
+            title: clause.title,
+            section: clause.clauseNumber,
+            content: clause.content,
+            category: this.determineCategoryFromCode(clause.clauseNumber),
+            subcategory: clause.title,
+            applicableTo: ['residential', 'commercial'],
+            requirements: [clause.content],
+            acceptableSolutions: [],
+            verificationMethods: [],
+            sourceDocument: documentInfo.title,
+            documentVersion: documentInfo.version,
+            isActive: true
+          });
+          sectionsCount++;
+        }
+        
+        // Create RAG chunks for enhanced search
+        const ragChunks = this.createRAGChunks(clauses, documentInfo.title);
+        console.log(`Created ${ragChunks.length} RAG chunks for ${documentInfo.title}`);
+        
+      } else {
+        // Fallback to AI extraction for other document types
+        const extractedContent = await this.extractContentWithAI(base64Pdf, documentInfo);
 
-      // Process building code sections
-      for (const section of extractedContent.buildingCodeSections) {
-        await storage.createBuildingCodeSection({
-          ...section,
-          sourceDocument: documentInfo.title
-        });
-        sectionsCount++;
+        // Process building code sections
+        for (const section of extractedContent.buildingCodeSections) {
+          await storage.createBuildingCodeSection({
+            ...section,
+            sourceDocument: documentInfo.title
+          });
+          sectionsCount++;
+        }
       }
 
       // Process planning rules

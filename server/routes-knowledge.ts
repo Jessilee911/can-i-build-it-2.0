@@ -86,3 +86,74 @@ export async function setupKnowledgeRoutes(app: any) {
     }
   });
 }
+import { mbieMonitor } from './mbie-monitor';
+
+// Add these routes after the existing routes
+
+  // MBIE Monitoring endpoints
+  app.post('/api/admin/start-mbie-monitoring', async (req: Request, res: Response) => {
+    try {
+      mbieMonitor.startMonitoring();
+      res.json({ 
+        success: true, 
+        message: 'MBIE monitoring started',
+        status: mbieMonitor.getStatus()
+      });
+    } catch (error: any) {
+      console.error('Error starting MBIE monitoring:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error?.message || 'Failed to start monitoring' 
+      });
+    }
+  });
+
+  app.post('/api/admin/stop-mbie-monitoring', async (req: Request, res: Response) => {
+    try {
+      mbieMonitor.stopMonitoring();
+      res.json({ 
+        success: true, 
+        message: 'MBIE monitoring stopped' 
+      });
+    } catch (error: any) {
+      console.error('Error stopping MBIE monitoring:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error?.message || 'Failed to stop monitoring' 
+      });
+    }
+  });
+
+  app.get('/api/admin/mbie-monitoring-status', async (req: Request, res: Response) => {
+    try {
+      const status = mbieMonitor.getStatus();
+      res.json(status);
+    } catch (error: any) {
+      console.error('Error getting monitoring status:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error?.message || 'Failed to get status' 
+      });
+    }
+  });
+
+  app.post('/api/admin/check-mbie-updates', async (req: Request, res: Response) => {
+    try {
+      const updates = await mbieMonitor.checkForUpdates();
+      res.json({ 
+        success: true, 
+        message: `Found ${updates.length} updates`,
+        updates: updates.map(doc => ({
+          title: doc.title,
+          type: doc.documentType,
+          url: doc.url
+        }))
+      });
+    } catch (error: any) {
+      console.error('Error checking for updates:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error?.message || 'Failed to check for updates' 
+      });
+    }
+  });
