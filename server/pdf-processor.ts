@@ -8,7 +8,13 @@ import type {
   InsertConsentRequirement,
   InsertDocumentSource 
 } from '../shared/schema';
-import pdfParse from 'pdf-parse';
+// Import pdf-parse dynamically to avoid test file loading issues
+let pdfParse: any;
+try {
+  pdfParse = require('pdf-parse');
+} catch (error) {
+  console.warn('pdf-parse import warning:', error.message);
+}
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -555,6 +561,24 @@ ${content}`
   }
 
   /**
+   * Extract text from PDF buffer
+   */
+  async extractTextFromPDF(filePath: string): Promise<string> {
+    try {
+      if (!pdfParse) {
+        throw new Error('pdf-parse module not available');
+      }
+      
+      const dataBuffer = fs.readFileSync(filePath);
+      const pdfData = await pdfParse(dataBuffer);
+      return pdfData.text;
+    } catch (error) {
+      console.error('PDF text extraction error:', error);
+      throw new Error(`Failed to extract text from PDF: ${error.message}`);
+    }
+  }
+
+  /**
    * Read and extract text from uploaded PDF
    */
   async readUploadedPDF(filename: string): Promise<string | null> {
@@ -564,6 +588,11 @@ ${content}`
 
       if (!fs.existsSync(filePath)) {
         console.log(`❌ File not found: ${filename}`);
+        return null;
+      }
+
+      if (!pdfParse) {
+        console.log(`❌ pdf-parse not available for ${filename}`);
         return null;
       }
 

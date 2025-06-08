@@ -24,9 +24,12 @@ export class PDFReader {
       // Read file based on extension
       if (filename.toLowerCase().endsWith('.pdf')) {
         // Use existing PDF processor for PDF files
-        const content = await pdfProcessor.extractTextFromPDF(filePath);
-        console.log(`✅ Read PDF ${filename}: ${content.length} characters`);
-        return content;
+        const content = await pdfProcessor.readUploadedPDF(filename);
+        if (content) {
+          console.log(`✅ Read PDF ${filename}: ${content.length} characters`);
+          return content;
+        }
+        return null;
       } else {
         // Read text files directly
         const content = fs.readFileSync(filePath, 'utf8');
