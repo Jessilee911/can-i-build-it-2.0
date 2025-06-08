@@ -12,6 +12,8 @@ interface Message {
   content: string;
   timestamp: Date;
   planLevel?: string;
+  sources?: string[];
+  clauseReferences?: Array<{ clause: string; source: string }>;
 }
 
 export default function Chat() {
@@ -43,7 +45,7 @@ export default function Chat() {
     // Check for project details from the property form
     const projectDetails = sessionStorage.getItem('projectDetails');
     let welcomeMessage = getWelcomeMessage();
-    
+
     if (projectDetails) {
       const details = JSON.parse(projectDetails);
       welcomeMessage = `Hi! I see you're interested in developing the property at ${details.propertyAddress}. ${welcomeMessage.replace('Hi! ', '')} 
@@ -54,7 +56,7 @@ Timeframe: ${details.timeframe}
 
 Let me help you understand the building regulations, consent requirements, and development opportunities for this specific project. What would you like to know first?`;
     }
-    
+
     setConversation([{
       id: Date.now().toString(),
       type: 'agent',
@@ -80,7 +82,7 @@ Let me help you understand the building regulations, consent requirements, and d
       if (match.index > lastIndex) {
         parts.push(content.slice(lastIndex, match.index));
       }
-      
+
       // Add the upgrade button
       const [, planId, buttonText] = match;
       parts.push(
@@ -95,15 +97,15 @@ Let me help you understand the building regulations, consent requirements, and d
           </Button>
         </div>
       );
-      
+
       lastIndex = buttonRegex.lastIndex;
     }
-    
+
     // Add remaining text
     if (lastIndex < content.length) {
       parts.push(content.slice(lastIndex));
     }
-    
+
     return parts.length > 1 ? parts : content;
   };
 
@@ -111,7 +113,7 @@ Let me help you understand the building regulations, consent requirements, and d
     try {
       // Store the current plan selection
       sessionStorage.setItem('selectedPlan', planId);
-      
+
       // Redirect to pricing page for the upgrade
       setLocation('/pricing');
     } catch (error) {
@@ -135,6 +137,41 @@ Let me help you understand the building regulations, consent requirements, and d
     setIsLoading(true);
 
     try {
+      // First try building code question endpoint for clause-specific queries
+      const clauseMatch = message.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
+
+      if (clauseMatch || message.toLowerCase().includes('building code') || message.toLowerCase().includes('clause')) {
+        const response = await fetch('/api/building-code-question', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: message }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // Add bot response with sources
+          let responseContent = data.answer;
+          if (data.sources.length > 0) {
+            responseContent += `\n\n**Sources:** ${data.sources.map(source => `[${source}](rag://${source})`).join(', ')}`;
+          }
+
+          const agentMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            type: 'agent',
+            content: responseContent,
+            timestamp: new Date(),
+            planLevel: userPlan || undefined,
+            sources: data.sources,
+            clauseReferences: data.clauseReferences
+          };
+
+          setConversation(prev => [...prev, agentMessage]);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -154,7 +191,9 @@ Let me help you understand the building regulations, consent requirements, and d
         type: 'agent',
         content: data.response,
         timestamp: new Date(),
-        planLevel: userPlan || undefined
+        planLevel: userPlan || undefined,
+        sources: [],
+        clauseReferences: []
       };
 
       setConversation(prev => [...prev, agentMessage]);
@@ -201,7 +240,7 @@ Let me help you understand the building regulations, consent requirements, and d
                 <h1 className="text-lg md:text-2xl font-bold text-gray-900">Property Assessment Chat</h1>
                 <p className="text-sm md:text-base text-gray-600">Your AI-powered property development advisor</p>
               </div>
-              
+
               {userPlan && (
                 <div className={`px-4 py-2 rounded-full text-sm font-medium ${getPlanBadgeColor(userPlan)}`}>
                   {userPlan.charAt(0).toUpperCase() + userPlan.slice(1)} Plan
@@ -213,7 +252,7 @@ Let me help you understand the building regulations, consent requirements, and d
 
         {/* Chat Container */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
-          
+
           {/* Messages */}
           <div className="h-80 md:h-96 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4">
             {conversation.length === 0 && (
@@ -247,7 +286,7 @@ Let me help you understand the building regulations, consent requirements, and d
                       <Bot className="w-3 h-3 md:w-4 md:h-4 text-white" />
                     )}
                   </div>
-                  
+
                   <div className={`px-3 md:px-4 py-2 md:py-3 rounded-2xl ${
                     msg.type === 'user' 
                       ? 'bg-blue-600 text-white' 
@@ -258,6 +297,18 @@ Let me help you understand the building regulations, consent requirements, and d
                         <div className="whitespace-pre-wrap text-xs md:text-sm">
                           {renderMessageWithUpgradeButtons(msg.content)}
                         </div>
+
+                         {/* Show clause references if available */}
+                         {msg.clauseReferences && msg.clauseReferences.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-gray-300">
+                              <div className="text-xs font-semibold text-gray-600 mb-1">Referenced Clauses:</div>
+                              {msg.clauseReferences.map((ref, index) => (
+                                <div key={index} className="text-xs text-gray-600">
+                                  {ref.clause} - {ref.source}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         <div className="text-xs opacity-70 mt-1">
                           {msg.timestamp.toLocaleTimeString()}
                         </div>
@@ -328,7 +379,7 @@ Let me help you understand the building regulations, consent requirements, and d
           >
             Back to Assessment
           </Button>
-          
+
           <Button
             onClick={() => setLocation('/reports')}
             className="bg-blue-600 hover:bg-blue-700"

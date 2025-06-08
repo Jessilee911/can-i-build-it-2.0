@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session management for email/password authentication
   const session = (await import("express-session")).default;
   const MemoryStore = (await import("memorystore")).default(session);
-  
+
   app.use(session({
     secret: process.env.SESSION_SECRET || 'development-secret-key-change-in-production',
     store: new MemoryStore({
@@ -50,13 +50,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup Replit authentication
   await setupAuth(app);
-  
+
   // Create router for API routes
   const apiRouter = app;
-  
+
   // Setup knowledge base routes
   await setupKnowledgeRoutes(app);
-  
+
   // Custom authentication middleware that handles both Replit auth and email/password auth
   const customAuth = async (req: any, res: Response, next: any) => {
     // Check for session-based authentication (email/password)
@@ -64,12 +64,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.user = req.session.user;
       return next();
     }
-    
+
     // Check for Replit authentication
     if (req.isAuthenticated && req.isAuthenticated() && req.user) {
       return next();
     }
-    
+
     // If neither auth method is available, return 401
     return res.status(401).json({ message: "Authentication required" });
   };
@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session?.user) {
         return res.json(req.session.user);
       }
-      
+
       // Handle Replit authenticated user
       if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         const userId = req.user.claims?.sub;
@@ -93,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       res.status(401).json({ message: "Not authenticated" });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -110,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
-      
+
       const sessions = await storage.getChatSessions(userId);
       res.json(sessions);
     } catch (error) {
@@ -124,16 +124,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session?.user?.id || req.user?.claims?.sub;
       const { title } = req.body;
-      
+
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
-      
+
       const session = await storage.createChatSession({
         userId,
         title: title || "New Chat",
       });
-      
+
       res.json(session);
     } catch (error) {
       console.error("Error creating chat session:", error);
@@ -158,14 +158,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = parseInt(req.params.id);
       const { role, content, metadata } = req.body;
-      
+
       const message = await storage.addChatMessage({
         sessionId,
         role,
         content,
         metadata,
       });
-      
+
       res.json(message);
     } catch (error) {
       console.error("Error adding chat message:", error);
@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = parseInt(req.params.id);
       const success = await storage.deleteChatSession(sessionId);
-      
+
       if (success) {
         res.json({ message: "Chat session deleted successfully" });
       } else {
@@ -195,9 +195,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
       const { firstName, lastName, email, password } = req.body;
-      
+
       console.log("Registration attempt for:", email);
-      
+
       if (!firstName || !lastName || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
       }
@@ -214,9 +214,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { registerUser } = await import("./auth");
       const result = await registerUser({ firstName, lastName, email, password });
-      
+
       console.log("Registration result:", result);
-      
+
       if (result.success) {
         res.status(201).json({ message: result.message, user: result.user });
       } else {
@@ -232,14 +232,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
-      
+
       if (!email || !password) {
         return res.status(400).json({ message: "Email and password are required" });
       }
 
       const { loginUser } = await import("./auth");
       const result = await loginUser({ email, password });
-      
+
       if (result.success && result.user) {
         // Set user session
         (req.session as any).user = result.user;
@@ -257,14 +257,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/api/auth/verify-email", async (req: Request, res: Response) => {
     try {
       const { token } = req.query;
-      
+
       if (!token || typeof token !== "string") {
         return res.status(400).json({ message: "Invalid verification token" });
       }
 
       const { verifyEmail } = await import("./auth");
       const result = await verifyEmail(token);
-      
+
       if (result.success) {
         res.json({ message: result.message });
       } else {
@@ -280,14 +280,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
       }
 
       const { requestPasswordReset } = await import("./auth");
       const result = await requestPasswordReset(email);
-      
+
       res.json({ message: result.message });
     } catch (error) {
       console.error("Password reset request error:", error);
@@ -299,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/auth/reset-password", async (req: Request, res: Response) => {
     try {
       const { token, password } = req.body;
-      
+
       if (!token || !password) {
         return res.status(400).json({ message: "Token and password are required" });
       }
@@ -310,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { resetPassword } = await import("./auth");
       const result = await resetPassword(token, password);
-      
+
       if (result.success) {
         res.json({ message: result.message });
       } else {
@@ -364,7 +364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: updatedUser.lastName,
           email: updatedUser.email,
         };
-        
+
         res.json({ 
           message: "Profile updated successfully", 
           user: {
@@ -394,7 +394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!user) {
           return res.status(404).json({ message: "User not found" });
         }
-        
+
         return res.json({
           id: user.id,
           firstName: user.firstName,
@@ -404,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           profileImageUrl: user.profileImageUrl,
         });
       }
-      
+
       // Handle Replit authenticated user
       if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         const userId = req.user?.claims?.sub;
@@ -415,14 +415,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       res.status(401).json({ message: "Not authenticated" });
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Failed to get user data" });
     }
   });
-  
+
   // ==================== Subscription/Payment Routes ====================
   // Get available pricing plans
   apiRouter.get("/api/pricing", (req: Request, res: Response) => {
@@ -431,12 +431,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       subscription: SUBSCRIPTION_PLANS
     });
   });
-  
+
   // Create checkout session for payment
   apiRouter.post("/api/create-payment-intent", async (req: Request, res: Response) => {
     try {
       const { planId, amount } = req.body;
-      
+
       if (!amount || amount < 50) { // Minimum $0.50
         return res.status(400).json({ message: "Invalid amount" });
       }
@@ -461,7 +461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { planId, propertyAddress, projectDescription, budgetRange, timeframe } = req.body;
 
       console.log(`Redirecting to chat for ${propertyAddress}...`);
-      
+
       // Instead of generating static reports, redirect to chat interface
       res.json({ 
         success: true, 
@@ -485,13 +485,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/checkout", isAuthenticated, async (req: any, res: Response) => {
     try {
       const { planId } = req.body;
-      
+
       if (!planId) {
         return res.status(400).json({ message: "Plan ID is required" });
       }
-    
+
       const userId = req.user.claims.sub;
-      
+
       // Check if it's the free plan
       if (planId === 'basic') {
         // Update user subscription status for free tier
@@ -500,17 +500,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionStatus: 'active',
           subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
         });
-        
+
         return res.json({ success: true, free: true });
       }
-      
+
       // Get the Stripe payment link for this plan
       const paymentLink = STRIPE_PAYMENT_LINKS[planId];
-      
+
       if (!paymentLink) {
         return res.status(400).json({ message: "No payment link available for this plan" });
       }
-      
+
       // Return the payment link URL for redirect
       res.json({ 
         success: true,
@@ -522,15 +522,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error processing checkout: " + error.message });
     }
   });
-  
+
   // Stripe webhook handler
   apiRouter.post("/api/webhook", async (req: Request, res: Response) => {
     const signature = req.headers['stripe-signature'] as string;
-    
+
     if (!signature) {
       return res.status(400).json({ message: "Missing Stripe signature" });
     }
-    
+
     try {
       await handleStripeWebhook(signature, req.body);
       res.json({ received: true });
@@ -542,14 +542,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   apiRouter.post("/api/checkout", isAuthenticated, async (req: any, res: Response) => {
     const { planId, isSubscription = false } = req.body;
-    
+
     if (!planId) {
       return res.status(400).json({ message: "Plan ID is required" });
     }
-    
+
     try {
       const userId = req.user.claims.sub;
-      
+
       // Check if it's the free plan
       if (planId === 'basic') {
         // Update user subscription status for free tier
@@ -558,17 +558,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionStatus: 'active',
           subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
         });
-        
+
         return res.json({ success: true, free: true });
       }
-      
+
       // Get the Stripe payment link for this plan
       const paymentLink = STRIPE_PAYMENT_LINKS[planId];
-      
+
       if (!paymentLink) {
         return res.status(400).json({ message: "No payment link available for this plan" });
       }
-      
+
       // Return the payment link URL for redirect
       res.json({ 
         success: true,
@@ -580,15 +580,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error processing checkout: " + error.message });
     }
   });
-  
+
   // Stripe webhook handler
   apiRouter.post("/api/webhook", async (req: Request, res: Response) => {
     const signature = req.headers['stripe-signature'] as string;
-    
+
     if (!signature) {
       return res.status(400).json({ message: "Missing Stripe signature" });
     }
-    
+
     try {
       await handleStripeWebhook(signature, req.body);
       res.json({ received: true });
@@ -671,12 +671,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== Scraping Jobs Routes ====================
   apiRouter.get("/api/scraping-jobs", async (req: Request, res: Response) => {
     const status = req.query.status as string | undefined;
-    
+
     if (status) {
       const jobs = await storage.getScrapingJobsByStatus(status);
       return res.json(jobs);
     }
-    
+
     const jobs = await storage.getScrapingJobs();
     return res.json(jobs);
   });
@@ -699,12 +699,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const job = insertScrapingJobSchema.parse(req.body);
       const newJob = await storage.createScrapingJob(job);
-      
+
       // Start the scraping job asynchronously
       scraper.startJob(newJob).catch(error => {
         console.error(`Error in scraping job ${newJob.id}:`, error);
       });
-      
+
       return res.status(201).json(newJob);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -719,24 +719,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const limit = parseInt(req.query.limit as string || "100");
     const offset = parseInt(req.query.offset as string || "0");
     const jobId = req.query.jobId ? parseInt(req.query.jobId as string) : undefined;
-    
+
     if (jobId) {
       const properties = await storage.getPropertiesByJobId(jobId);
       return res.json(properties);
     }
-    
+
     const properties = await storage.getProperties(limit, offset);
     return res.json(properties);
   });
 
   apiRouter.get("/api/properties/search", async (req: Request, res: Response) => {
     const query: any = {};
-    
+
     // Add search parameters to query
     if (req.query.propertyType) query.propertyType = req.query.propertyType;
     if (req.query.source) query.source = req.query.source;
     if (req.query.address) query.address = req.query.address;
-    
+
     const properties = await storage.searchProperties(query);
     return res.json(properties);
   });
@@ -759,12 +759,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.get("/api/activities", async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string || "20");
     const jobId = req.query.jobId ? parseInt(req.query.jobId as string) : undefined;
-    
+
     if (jobId) {
       const activities = await storage.getActivitiesByJobId(jobId);
       return res.json(activities);
     }
-    
+
     const activities = await storage.getActivities(limit);
     return res.json(activities);
   });
@@ -774,14 +774,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/chat", async (req: Request, res: Response) => {
     try {
       const { message, plan, conversationHistory } = req.body;
-      
+
       if (!message) {
         return res.status(400).json({ error: "Message is required" });
       }
 
       // Generate response based on user's plan level
       const response = await generatePlanBasedResponse(message, plan, conversationHistory);
-      
+
       res.json({ response });
     } catch (error: any) {
       console.error("Chat error:", error);
@@ -794,22 +794,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.post("/api/assess-property", async (req: Request, res: Response) => {
     try {
       const { query, address } = req.body;
-      
+
       if (!query || query.length < 5) {
         return res.status(400).json({ message: "Query is required and must be at least 5 characters" });
       }
 
       // Import RAG functions
       const { generateRAGResponse, analyzeQuery } = await import('./rag');
-      
+
       // Generate response using RAG (Retrieval Augmented Generation)
       const ragResponse = await generateRAGResponse(query, { address });
-      
+
       // Check if the response mentions personalized property report
       const showReportCTA = ragResponse.includes('personalized property report') || 
                            ragResponse.includes('property-specific details') ||
                            ragResponse.includes('tailored to your exact address');
-      
+
       return res.json({
         message: ragResponse,
         showReportCTA,
@@ -833,9 +833,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { insertPremiumRequestSchema } = await import("@shared/schema");
       const requestData = insertPremiumRequestSchema.parse(req.body);
-      
+
       const premiumRequest = await storage.createPremiumRequest(requestData);
-      
+
       console.log("Premium assessment request created:", {
         id: premiumRequest.id,
         email: premiumRequest.email,
@@ -849,9 +849,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           premiumRequest.propertyAddress,
           premiumRequest.projectDescription
         );
-        
+
         const reportText = premiumPropertyAgent.formatReportAsText(report);
-        
+
         // Send the report back to user
         res.json({
           success: true,
@@ -862,7 +862,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (reportError: any) {
         console.error("Error generating property report:", reportError);
-        
+
         // Still save the request but return basic response
         res.json({
           success: true,
@@ -880,17 +880,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test PDF reading endpoint
+  apiRouter.get("/api/test-pdfs", async (req: Request, res: Response) => {
+    try {
+      const { PDFProcessor } = await import("./pdf-processor");
+      const processor = new PDFProcessor();
+
+      const availablePDFs = processor.getAvailablePDFs();
+
+      // Test reading first PDF
+      if (availablePDFs.length > 0) {
+        const firstPDF = availablePDFs[0];
+        const content = await processor.readUploadedPDF(firstPDF);
+
+        res.json({
+          availablePDFs,
+          testFile: firstPDF,
+          contentLength: content ? content.length : 0,
+          contentPreview: content ? content.substring(0, 500) + '...' : 'Could not read file'
+        });
+      } else {
+        res.json({
+          availablePDFs: [],
+          message: "No PDFs found in attached_assets"
+        });
+      }
+    } catch (error) {
+      console.error("PDF test error:", error);
+      res.status(500).json({ error: "Failed to test PDF processing" });
+    }
+  });
+
+  // Building code question endpoint
+  apiRouter.post("/api/building-code-question", async (req: Request, res: Response) => {
+    try {
+      const { question } = req.body;
+
+      if (!question) {
+        return res.status(400).json({ message: "Question is required" });
+      }
+
+      const { BuildingCodeRAGService } = await import("./rag");
+      const ragService = new BuildingCodeRAGService();
+
+      const result = await ragService.answerBuildingCodeQuestion(question);
+
+      res.json(result);
+    } catch (error) {
+      console.error("Building code question error:", error);
+      res.status(500).json({ 
+        message: "Failed to process building code question",
+        answer: "An error occurred while searching the building code documents.",
+        sources: [],
+        clauseReferences: []
+      });
+    }
+  });
+
+  // Premium chat endpoint
   apiRouter.post("/api/premium-chat", async (req: Request, res: Response) => {
     try {
       const { message, conversationHistory = [], propertyAddress, projectDescription } = req.body;
-      
+
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ message: "Message is required" });
       }
 
       // Enhanced premium response with property/project context
       const response = await generatePremiumResponse(message, conversationHistory, propertyAddress, projectDescription);
-      
+
       res.json({ 
         message: response.content,
         features: response.features
@@ -906,7 +964,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectDetails = req.query;
       const reportBuffer = await generatePremiumPDF(projectDetails);
-      
+
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename="premium-property-report.pdf"');
       res.send(reportBuffer);
@@ -950,9 +1008,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use Google Places API Autocomplete for New Zealand addresses
       const encodedQuery = encodeURIComponent(query);
       const googleUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodedQuery}&components=country:nz&types=address&key=${googleMapsApiKey}`;
-      
+
       const response = await fetch(googleUrl);
-      
+
       if (!response.ok) {
         console.error(`Google Maps API error: ${response.status} ${response.statusText}`);
         // Fall back to local search on API failure
@@ -964,7 +1022,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await response.json();
-      
+
       if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
         // Fall back to local search on API error
         const fallbackSuggestions = performLocalAddressSearch(query);
@@ -979,7 +1037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Parse address components from structured_formatting
         const mainText = prediction.structured_formatting?.main_text || '';
         const secondaryText = prediction.structured_formatting?.secondary_text || '';
-        
+
         return {
           id: `google-${prediction.place_id || index}`,
           fullAddress: prediction.description,
@@ -1015,7 +1073,7 @@ function performLocalAddressSearch(query: string) {
     { streetName: 'Remuera Road', suburb: 'Remuera', city: 'Auckland', postcode: '1050', region: 'Auckland' },
     { streetName: 'Lake Road', suburb: 'Devonport', city: 'Auckland', postcode: '0624', region: 'Auckland' },
     { streetName: 'Tamaki Drive', suburb: 'Mission Bay', city: 'Auckland', postcode: '1071', region: 'Auckland' },
-    
+
     // Wellington addresses
     { streetName: 'Lambton Quay', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
     { streetName: 'Cuba Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
@@ -1024,7 +1082,7 @@ function performLocalAddressSearch(query: string) {
     { streetName: 'The Terrace', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
     { streetName: 'Bowen Street', suburb: 'Wellington Central', city: 'Wellington', postcode: '6011', region: 'Wellington' },
     { streetName: 'Adelaide Road', suburb: 'Newtown', city: 'Wellington', postcode: '6021', region: 'Wellington' },
-    
+
     // Christchurch addresses
     { streetName: 'Cashel Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
     { streetName: 'Colombo Street', suburb: 'Christchurch Central', city: 'Christchurch', postcode: '8011', region: 'Canterbury' },
@@ -1032,47 +1090,47 @@ function performLocalAddressSearch(query: string) {
     { streetName: 'Riccarton Road', suburb: 'Riccarton', city: 'Christchurch', postcode: '8041', region: 'Canterbury' },
     { streetName: 'Papanui Road', suburb: 'Papanui', city: 'Christchurch', postcode: '8053', region: 'Canterbury' },
     { streetName: 'Lincoln Road', suburb: 'Addington', city: 'Christchurch', postcode: '8024', region: 'Canterbury' },
-    
+
     // Hamilton addresses
     { streetName: 'Victoria Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
     { streetName: 'Ward Street', suburb: 'Hamilton Central', city: 'Hamilton', postcode: '3204', region: 'Waikato' },
     { streetName: 'Anglesea Street', suburb: 'Hamilton East', city: 'Hamilton', postcode: '3216', region: 'Waikato' },
-    
+
     // Tauranga addresses
     { streetName: 'Devonport Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
     { streetName: 'Cameron Road', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
     { streetName: 'Fraser Street', suburb: 'Tauranga', city: 'Tauranga', postcode: '3110', region: 'Bay of Plenty' },
-    
+
     // Dunedin addresses
     { streetName: 'George Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
     { streetName: 'Princes Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
     { streetName: 'Stuart Street', suburb: 'Dunedin Central', city: 'Dunedin', postcode: '9016', region: 'Otago' },
-    
+
     // Rotorua addresses
     { streetName: 'Fenton Street', suburb: 'Rotorua Central', city: 'Rotorua', postcode: '3010', region: 'Bay of Plenty' },
     { streetName: 'Tutanekai Street', suburb: 'Rotorua Central', city: 'Rotorua', postcode: '3010', region: 'Bay of Plenty' },
-    
+
     // Palmerston North addresses
     { streetName: 'Main Street', suburb: 'Palmerston North Central', city: 'Palmerston North', postcode: '4410', region: 'Manawatu' },
     { streetName: 'Broadway Avenue', suburb: 'Palmerston North Central', city: 'Palmerston North', postcode: '4410', region: 'Manawatu' },
-    
+
     // New Plymouth addresses
     { streetName: 'Devon Street East', suburb: 'New Plymouth Central', city: 'New Plymouth', postcode: '4310', region: 'Taranaki' },
     { streetName: 'Devon Street West', suburb: 'New Plymouth Central', city: 'New Plymouth', postcode: '4310', region: 'Taranaki' },
-    
+
     // Nelson addresses
     { streetName: 'Trafalgar Street', suburb: 'Nelson Central', city: 'Nelson', postcode: '7010', region: 'Tasman' },
     { streetName: 'Hardy Street', suburb: 'Nelson Central', city: 'Nelson', postcode: '7010', region: 'Tasman' }
   ];
 
   const lowerQuery = query.toLowerCase();
-  
+
   // Enhanced fuzzy matching with scoring
   const matches = comprehensiveNZAddresses
     .map(addr => {
       let score = 0;
       const searchTerms = lowerQuery.split(' ').filter(term => term.length > 0);
-      
+
       // Check each search term against address components
       searchTerms.forEach(term => {
         if (addr.streetName.toLowerCase().includes(term)) score += 10;
@@ -1080,13 +1138,13 @@ function performLocalAddressSearch(query: string) {
         if (addr.city.toLowerCase().includes(term)) score += 6;
         if (addr.postcode.includes(term)) score += 5;
         if (addr.region.toLowerCase().includes(term)) score += 4;
-        
+
         // Bonus for exact matches at start of words
         if (addr.streetName.toLowerCase().startsWith(term)) score += 5;
         if (addr.suburb.toLowerCase().startsWith(term)) score += 4;
         if (addr.city.toLowerCase().startsWith(term)) score += 3;
       });
-      
+
       return { ...addr, score };
     })
     .filter(addr => addr.score > 0)
@@ -1121,19 +1179,19 @@ function performLocalAddressSearch(query: string) {
   apiRouter.post("/api/property/search-auckland", async (req: Request, res: Response) => {
     try {
       const { address } = req.body;
-      
+
       if (!address || address.length < 5) {
         return res.status(400).json({ message: "Address is required and must be at least 5 characters" });
       }
 
       const { aucklandCouncilAPI } = await import("./auckland-council-api");
       const properties = await aucklandCouncilAPI.searchPropertyByAddress(address);
-      
+
       if (properties.length > 0) {
         const formattedReports = properties.map(prop => 
           aucklandCouncilAPI.formatPropertyReport(prop)
         );
-        
+
         res.json({
           success: true,
           address,
@@ -1159,7 +1217,7 @@ function performLocalAddressSearch(query: string) {
     const totalScans = await storage.getTotalScans();
     const totalRecords = await storage.getTotalRecords();
     const totalDataSources = await storage.getTotalDataSources();
-    
+
     return res.json({
       totalScans,
       totalRecords,
@@ -1174,14 +1232,14 @@ function performLocalAddressSearch(query: string) {
       const activity = await storage.getActivities().then(activities => 
         activities.find(a => a.id === parseInt(id))
       );
-      
+
       if (!activity || !activity.metadata.reportData) {
         return res.status(404).json({ message: "Report not found" });
       }
-      
+
       const reportData = activity.metadata.reportData;
       const pdfBuffer = await generatePDF(reportData);
-      
+
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="property-report-${reportData.propertyAddress.replace(/\s+/g, '-')}.pdf"`);
       res.send(pdfBuffer);
@@ -1204,15 +1262,15 @@ async function generatePropertyReport(data: {
   planId: string;
 }) {
   console.log(`Generating report for ${data.propertyAddress}...`);
-  
+
   // Get property data from GIS sources
   const propertyData = await getPropertyData(data.propertyAddress);
-  
+
   // Generate AI response using RAG for the user's project
   const aiAnalysis = await generateRAGResponse(
     `Property: ${data.propertyAddress}. Project: ${data.projectDescription}. Budget: ${data.budgetRange}. Timeframe: ${data.timeframe}. Provide detailed analysis for New Zealand building regulations, consent requirements, and development guidance.`
   );
-  
+
   const report = {
     id: Date.now().toString(),
     propertyAddress: data.propertyAddress,
@@ -1221,7 +1279,7 @@ async function generatePropertyReport(data: {
     timeframe: data.timeframe,
     planId: data.planId,
     generatedAt: new Date().toISOString(),
-    
+
     // Property Information
     propertyData: {
       address: data.propertyAddress,
@@ -1231,15 +1289,15 @@ async function generatePropertyReport(data: {
       districtPlan: propertyData.districtPlan || "Still to come",
       gisData: propertyData.gisData || "Still to come"
     },
-    
+
     // AI Analysis
     analysis: {
       buildingConsent: aiAnalysis.includes("building consent") ? 
         aiAnalysis.substring(0, 500) + "..." : 
         "Based on your project description, building consent requirements will depend on the specific scope of work. Our AI analysis suggests reviewing the Building Act 2004 requirements for your project type.",
-      
+
       zoneCompliance: "Zoning compliance analysis will be provided once GIS data integration is complete. This will include permitted activities, height restrictions, and setback requirements.",
-      
+
       recommendations: [
         "Consult with a licensed building practitioner for detailed plans",
         "Check with local council for specific district plan requirements", 
@@ -1247,10 +1305,10 @@ async function generatePropertyReport(data: {
         "Review wind zone requirements for building design"
       ]
     },
-    
+
     // Project Specific
     projectGuidance: aiAnalysis,
-    
+
     // Regulatory Requirements
     consents: {
       buildingConsent: "Assessment pending - will depend on project scope",
@@ -1258,7 +1316,7 @@ async function generatePropertyReport(data: {
       otherPermits: "To be determined based on project specifics"
     }
   };
-  
+
   return report;
 }
 
@@ -1282,7 +1340,7 @@ async function sendReportEmail(email: string, propertyAddress: string, reportDat
     console.log("SendGrid not configured - skipping email");
     return;
   }
-  
+
   // This would send the actual email with SendGrid
   console.log(`Email would be sent to ${email} for property ${propertyAddress}`);
 }
@@ -1334,7 +1392,7 @@ Other Permits: ${reportData.consents.otherPermits}
 ---
 Report generated by Can I Build It? NZ Property Assessment Platform
   `;
-  
+
   // Convert text to Buffer (in production, use proper PDF library)
   return Buffer.from(pdfContent, 'utf-8');
 }
@@ -1342,7 +1400,7 @@ Report generated by Can I Build It? NZ Property Assessment Platform
 // Premium response generator with enhanced features
 async function generatePremiumResponse(message: string, conversationHistory: any[], propertyAddress?: string, projectDescription?: string) {
   const context = conversationHistory.map(msg => `${msg.type}: ${msg.content}`).join('\n');
-  
+
   // ALWAYS research property data when address is provided - this is critical for premium service
   let propertyResearchData = null;
   if (propertyAddress && propertyAddress.trim()) {
@@ -1358,10 +1416,10 @@ async function generatePremiumResponse(message: string, conversationHistory: any
   } else {
     console.log('No property address provided - skipping research');
   }
-  
+
   // Enhanced system prompt with property-specific context - same style as basic agent
   const premiumSystemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive premium guidance.
-    
+
     You provide detailed, helpful analysis including:
     - Comprehensive building consent guidance and requirements
     - Detailed zoning information and compliance
@@ -1371,13 +1429,13 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     - Cost estimates and timeline guidance
     - Regulatory compliance advice
     - Enhanced premium features with specific calculations and professional recommendations
-    
+
     Be thorough and helpful. This is a premium service designed to provide maximum value to property owners.
     Focus on actionable advice and clear explanations of New Zealand building regulations.
-    
+
     ${propertyAddress ? `Property: ${propertyAddress}` : ''}
     ${projectDescription ? `Project: ${projectDescription}` : ''}
-    
+
     ${propertyResearchData ? `
     COMPREHENSIVE PROPERTY RESEARCH DATA:
     Property Address: ${propertyResearchData.propertyAddress}
@@ -1396,9 +1454,9 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     Building Code Requirements: ${propertyResearchData.buildingCodeRequirements.join('; ')}
     Consent Requirements: ${propertyResearchData.consentRequirements.join('; ')}
     Additional Research Findings: ${propertyResearchData.additionalResearch.slice(0, 3).join('; ')}
-    
+
     Use this comprehensive data to provide specific, accurate advice about building consent requirements and building code compliance for this exact property and location.` : ''}
-    
+
     FORMATTING RULES:
     - Write in clear, natural language without markdown formatting
     - Do not use # hashtags, ## headings, #### subheadings, or ** bold formatting
@@ -1407,7 +1465,7 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     - Use simple dashes (-) for bullet points when needed
     - Focus on clear, readable content without formatting symbols
     - Write in the same conversational style as the basic agent
-    
+
     CITATION REQUIREMENTS:
     - Always include specific source references for all building regulations mentioned
     - Cite official websites like building.govt.nz, aucklandcouncil.govt.nz
@@ -1417,7 +1475,7 @@ async function generatePremiumResponse(message: string, conversationHistory: any
     - Format citations naturally within the text, not as a separate section`;
 
   let enhancedQuery = `${premiumSystemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide detailed premium analysis.`;
-  
+
   // Check if this is an automatic comprehensive report request
   if (message.includes("comprehensive building consent assessment") && propertyAddress && projectDescription) {
     enhancedQuery = `${premiumSystemPrompt}
@@ -1447,7 +1505,7 @@ Write in a conversational, helpful tone. Include all the specific property detai
 
   try {
     const response = await generateRAGResponse(enhancedQuery);
-    
+
     // Comprehensive cleanup of all markdown formatting symbols
     let cleanResponse = response
       // First pass: Convert headers to bullet points
@@ -1467,7 +1525,7 @@ Write in a conversational, helpful tone. Include all the specific property detai
       .replace(/\*{1,2}/g, '')
       .replace(/#{1,6}/g, '')
       .trim();
-    
+
     // Analyze response to determine features used
     const features = {
       hasCalculations: cleanResponse.includes('$') || cleanResponse.includes('cost') || cleanResponse.includes('budget'),
@@ -1475,7 +1533,7 @@ Write in a conversational, helpful tone. Include all the specific property detai
       hasRegulations: cleanResponse.includes('consent') || cleanResponse.includes('code') || cleanResponse.includes('regulation'),
       hasDocuments: true // Premium always includes documentation capability
     };
-    
+
     return {
       content: cleanResponse,
       features
@@ -1543,15 +1601,15 @@ This premium report provides professional-grade analysis suitable for decision-m
 // Audio transcription using OpenAI Whisper
 async function transcribeAudioFile(req: any): Promise<string> {
   const OpenAI = require('openai');
-  
+
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('OpenAI API key is required for audio transcription');
   }
-  
+
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-  
+
   try {
     // In a real implementation, you'd handle multipart form data properly
     // For now, we'll return a placeholder that works with the frontend
@@ -1559,7 +1617,7 @@ async function transcribeAudioFile(req: any): Promise<string> {
       file: req.file || req.body, // This would need proper file handling
       model: "whisper-1",
     });
-    
+
     return transcription.text || "Could not transcribe audio. Please try typing your message.";
   } catch (error) {
     console.error('Whisper transcription error:', error);
@@ -1568,13 +1626,14 @@ async function transcribeAudioFile(req: any): Promise<string> {
 }
 
 // Generate helpful property advice responses
-async function generatePlanBasedResponse(message: string, plan: string, conversationHistory: any[]) {
+async function generatePlanBasedResponse(message: string, plan: string, conversationHistoryImplementing RAG for building regulations, adding PDF processing, and creating building code question endpoints.```text
+: any[]) {
   // Build context from conversation history
   const context = conversationHistory.map(msg => `${msg.type}: ${msg.content}`).join('\n');
-  
+
   // Free comprehensive guidance system prompt
   const systemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive free guidance.
-    
+
     You provide detailed, helpful analysis including:
     - Comprehensive building consent guidance and requirements
     - Detailed zoning information and compliance
@@ -1583,10 +1642,10 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     - Development potential assessment
     - Cost estimates and timeline guidance
     - Regulatory compliance advice
-    
+
     Be thorough and helpful. This is a free service designed to provide maximum value to property owners.
     Focus on actionable advice and clear explanations of New Zealand building regulations.
-    
+
     FORMATTING RULES:
     - Write in clear, natural language without markdown formatting
     - Do not use # hashtags, ## headings, #### subheadings, or ** bold formatting
@@ -1594,7 +1653,7 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     - Write section titles as plain text followed by a colon
     - Use simple dashes (-) for bullet points when needed
     - Focus on clear, readable content without formatting symbols
-    
+
     If the user needs a comprehensive written report, suggest they use the "Generate Report" feature which creates a detailed PDF document.`;
 
   // Enhanced query for RAG system
@@ -1603,7 +1662,7 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
   try {
     // Use RAG system for informed responses
     const response = await generateRAGResponse(enhancedQuery);
-    
+
     // Comprehensive cleanup of all markdown formatting symbols
     let cleanResponse = response
       // First pass: Convert headers to bullet points
@@ -1623,7 +1682,7 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
       .replace(/\*{1,2}/g, '')
       .replace(/#{1,6}/g, '')
       .trim();
-    
+
     // Return comprehensive free guidance
     return cleanResponse;
   } catch (error) {
@@ -1631,5 +1690,3 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     return "I'm here to help with your property development questions. Could you tell me more about what specific aspect of your property development you'd like guidance on?";
   }
 }
-
-

@@ -8,6 +8,7 @@ import type {
   InsertConsentRequirement,
   InsertDocumentSource 
 } from '../shared/schema';
+import pdfParse from 'pdf-parse';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -33,7 +34,7 @@ interface BuildingCodeClause {
 }
 
 export class PDFProcessor {
-  
+
   private clausePatterns = {
     // Main clauses like D1, E2, B1, etc.
     mainClause: /^([A-Z]\d+)\s+(.+?)(?:\n|$)/gm,
@@ -112,13 +113,13 @@ export class PDFProcessor {
     // Remove excessive whitespace
     content = content.replace(/\n\s*\n\s*\n/g, '\n\n');
     content = content.replace(/[ \t]+/g, ' ');
-    
+
     // Fix common OCR issues
     content = content.replace(/'/g, "'");
     content = content.replace(/'/g, "'");
     content = content.replace(/"/g, '"');
     content = content.replace(/"/g, '"');
-    
+
     return content.trim();
   }
 
@@ -144,10 +145,10 @@ export class PDFProcessor {
     const subsections: string[] = [];
     const letterMatches = content.match(/\(([a-z])\)/g) || [];
     const romanMatches = content.match(/\(([ivx]+)\)/g) || [];
-    
+
     subsections.push(...letterMatches.map(m => m.slice(1, -1)));
     subsections.push(...romanMatches.map(m => m.slice(1, -1)));
-    
+
     return [...new Set(subsections)];
   }
 
@@ -160,7 +161,7 @@ export class PDFProcessor {
     return content.match(this.contentPatterns.table) || [];
   }
 
-  private extractFigureReferences(content: string): string[] {
+  private extractFigureReferences(content: string[]): string[] {
     return content.match(this.contentPatterns.figure) || [];
   }
 
@@ -254,7 +255,7 @@ export class PDFProcessor {
     region?: string;
     version?: string;
   }): Promise<number> {
-    
+
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OpenAI API key is required for PDF processing');
     }
@@ -278,12 +279,12 @@ export class PDFProcessor {
 
       // First try advanced clause extraction for building codes
       let sectionsCount = 0;
-      
+
       if (documentInfo.documentType === 'building_code') {
         // Use advanced clause extraction
         const pdfText = await this.extractTextFromPDF(pdfBuffer);
         const clauses = this.extractBuildingCodeClauses(pdfText);
-        
+
         // Convert clauses to building code sections
         for (const clause of clauses) {
           await storage.createBuildingCodeSection({
@@ -303,11 +304,11 @@ export class PDFProcessor {
           });
           sectionsCount++;
         }
-        
+
         // Create RAG chunks for enhanced search
         const ragChunks = this.createRAGChunks(clauses, documentInfo.title);
         console.log(`Created ${ragChunks.length} RAG chunks for ${documentInfo.title}`);
-        
+
       } else {
         // Fallback to AI extraction for other document types
         const extractedContent = await this.extractContentWithAI(base64Pdf, documentInfo);
@@ -358,7 +359,7 @@ export class PDFProcessor {
    * Extract structured content from PDF using OpenAI
    */
   private async extractContentWithAI(base64Pdf: string, documentInfo: any): Promise<ExtractedContent> {
-    
+
     const systemPrompt = `You are an expert at extracting structured information from New Zealand building and planning documents. Extract relevant content and organize it into the appropriate categories.
 
 For Building Code documents, extract:
@@ -418,7 +419,7 @@ Return the extracted information as a JSON object with the following structure:
     });
 
     const extractedData = JSON.parse(response.choices[0].message.content);
-    
+
     return {
       buildingCodeSections: extractedData.buildingCodeSections || [],
       planningRules: extractedData.planningRules || [],
@@ -439,7 +440,7 @@ Return the extracted information as a JSON object with the following structure:
       version?: string;
     }
   ): Promise<number> {
-    
+
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OpenAI API key is required for content processing');
     }
@@ -531,12 +532,145 @@ ${content}`
     });
 
     const extractedData = JSON.parse(response.choices[0].message.content);
-    
+
     return {
       buildingCodeSections: extractedData.buildingCodeSections || [],
       planningRules: extractedData.planningRules || [],
       consentRequirements: extractedData.consentRequirements || []
     };
+  }
+
+  /**
+   * Get list of available PDF files
+   */
+  getAvailablePDFs(): string[] {
+    const assetsDir = path.join(process.cwd(), 'attached_assets');
+    if (!fs.existsSync(assetsDir)) {
+      return [];
+    }
+
+    return fs.readdirSync(assetsDir)
+      .filter(file => file.toLowerCase().endsWith('.pdf'))
+      .filter(file => !file.includes('_')); // Filter out duplicates with timestamps
+  }
+
+  /**
+   * Read and extract text from uploaded PDF
+   */
+  async readUploadedPDF(filename: string): Promise<string | null> {
+    try {
+      const assetsDir = path.join(process.cwd(), 'attached_assets');
+      const filePath = path.join(assetsDir, filename);
+
+      if (!fs.existsSync(filePath)) {
+        console.log(`❌ File not found: ${filename}`);
+        return null;
+      }
+
+      const dataBuffer = fs.readFileSync(filePath);
+      const pdfData = await pdfParse(dataBuffer);
+      const content = pdfData.text;
+
+      console.log(`✅ Read ${filename}: ${content.length} characters`);
+      return content;
+    } catch (error) {
+      console.log(`❌ Could not read ${filename}: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * Find specific building code clause in text
+   */
+  findClause(text: string, clauseNumber: string): { clauseNumber: string; content?: string; found: boolean; source?: string } {
+    // Handle both "D1 3.3" and "D1.3.3" formats
+    const normalized = clauseNumber.replace(/\s+/g, '.');
+
+    // Look for the clause in the text - more flexible pattern
+    const patterns = [
+      new RegExp(`${normalized}[^\\n]*([\\s\\S]*?)(?=\\n[A-Z]\\d+|$)`, 'i'),
+      new RegExp(`${clauseNumber}[^\\n]*([\\s\\S]*?)(?=\\n[A-Z]\\d+|$)`, 'i'),
+      new RegExp(`${normalized}[\\s\\S]*?(?=\\n\\d+\\.|\\n[A-Z]\\d+|$)`, 'i')
+    ];
+
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        return {
+          clauseNumber: normalized,
+          content: match[0].trim(),
+          found: true
+        };
+      }
+    }
+
+    return { clauseNumber: normalized, found: false };
+  }
+
+  /**
+   * Search for building code information across all PDFs
+   */
+  async searchBuildingCodes(query: string): Promise<{ results: any[], sources: string[] }> {
+    const availablePDFs = this.getAvailablePDFs();
+    const results: any[] = [];
+    const sources: string[] = [];
+
+    // Check for specific clause request
+    const clauseMatch = query.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
+
+    if (clauseMatch) {
+      const clauseNumber = clauseMatch[1];
+
+      // Search through uploaded files
+      for (const filename of availablePDFs) {
+        const content = await this.readUploadedPDF(filename);
+        if (content) {
+          const result = this.findClause(content, clauseNumber);
+          if (result.found) {
+            results.push({
+              clauseNumber: result.clauseNumber,
+              content: result.content,
+              source: filename,
+              type: 'building_code_clause'
+            });
+            sources.push(filename);
+          }
+        }
+      }
+    } else {
+      // General search across PDFs
+      const searchTerms = query.toLowerCase().split(' ');
+
+      for (const filename of availablePDFs) {
+        const content = await this.readUploadedPDF(filename);
+        if (content) {
+          const lowerContent = content.toLowerCase();
+          const matchCount = searchTerms.reduce((count, term) => {
+            return count + (lowerContent.match(new RegExp(term, 'g')) || []).length;
+          }, 0);
+
+          if (matchCount > 0) {
+            // Extract relevant sections (paragraphs containing search terms)
+            const paragraphs = content.split('\n\n');
+            const relevantParagraphs = paragraphs.filter(paragraph => 
+              searchTerms.some(term => paragraph.toLowerCase().includes(term))
+            ).slice(0, 3); // Limit to 3 most relevant paragraphs
+
+            if (relevantParagraphs.length > 0) {
+              results.push({
+                content: relevantParagraphs.join('\n\n'),
+                source: filename,
+                type: 'general_search',
+                relevance: matchCount
+              });
+              sources.push(filename);
+            }
+          }
+        }
+      }
+    }
+
+    return { results, sources };
   }
 }
 

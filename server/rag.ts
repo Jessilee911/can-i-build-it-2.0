@@ -47,11 +47,11 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     category: 'building_consent',
     lastUpdated: new Date()
   },
-  
+
   // Critical Infrastructure Constraints - Watercare Hibiscus Coast
   {
     id: 'infra_001',
-    content: 'HIBISCUS COAST WASTEWATER MORATORIUM - DEFINITIVE POLICY: Anyone with a building consent granted before 15 November 2024 will be able to connect when ready. If you have a resource consent issued before 15 November 2024 but no building consent yet, contact Watercare for case-by-case assessment of remaining Army Bay Treatment Plant capacity. Anyone applying for NEW resource consent to build homes or businesses in Hibiscus Coast will have a condition preventing connection to public wastewater network until Army Bay Wastewater Treatment Plant upgrade is completed (scheduled 2031, but exploring faster alternatives). Use Watercare online tool to check if your project is impacted.',
+    content: 'HIBISCUS COAST WASTEWATER MORATORIUM - DEFINITIVE POLICY: Anyone with a building consent granted before 15 November 2024 will be able to connect when ready. If you have a resource consent issued before 15 November 2024 but no building consent yet, contact Watercare for case-by-case assessment of remaining Army Bay Treatment Plant capacity. Anyone applying for NEW resource consent to build homes or businesses in Hibiscus Coast will have a condition preventing connection to public wastewater network until Army Bay Treatment Plant upgrade is completed (scheduled 2031, but exploring faster alternatives). Use Watercare online tool to check if your project is impacted.',
     source: 'https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast',
     category: 'infrastructure',
     region: 'Auckland - Hibiscus Coast',
@@ -244,15 +244,92 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
   }
 ];
 
+export class BuildingCodeRAGService {
+  private pdfProcessor: any;
+
+  constructor() {
+    // Import PDFProcessor dynamically to avoid circular dependencies
+    import('./pdf-processor').then(module => {
+      this.pdfProcessor = new module.PDFProcessor();
+    });
+  }
+
+  /**
+   * Answer building code questions using uploaded PDFs as RAG sources
+   */
+  async answerBuildingCodeQuestion(question: string): Promise<{
+    answer: string;
+    sources: string[];
+    clauseReferences: any[];
+  }> {
+    if (!this.pdfProcessor) {
+      return {
+        answer: "PDF processor not initialized. Please try again.",
+        sources: [],
+        clauseReferences: []
+      };
+    }
+
+    const { results, sources } = await this.pdfProcessor.searchBuildingCodes(question);
+
+    if (results.length === 0) {
+      return {
+        answer: "No relevant information found in the uploaded building code documents. Please check if the specific clause or topic exists in the uploaded PDFs.",
+        sources: [],
+        clauseReferences: []
+      };
+    }
+
+    // Check for specific clause request
+    const clauseMatch = question.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
+
+    if (clauseMatch) {
+      const clauseNumber = clauseMatch[1];
+      const clauseResults = results.filter(r => r.type === 'building_code_clause');
+
+      if (clauseResults.length > 0) {
+        const result = clauseResults[0];
+        return {
+          answer: `**${result.clauseNumber}**\n\n${result.content}\n\n*This information is from the New Zealand Building Code.*`,
+          sources: [result.source],
+          clauseReferences: [{ clause: result.clauseNumber, source: result.source }]
+        };
+      }
+    }
+
+    // General question handling with RAG
+    const relevantContent = results
+      .sort((a, b) => (b.relevance || 0) - (a.relevance || 0))
+      .slice(0, 3)
+      .map(r => `**From ${r.source}:**\n${r.content}`)
+      .join('\n\n---\n\n');
+
+    const answer = `Based on the building code documents, here is the relevant information:\n\n${relevantContent}\n\n*Sources: ${sources.join(', ')}*`;
+
+    return {
+      answer,
+      sources,
+      clauseReferences: results.filter(r => r.clauseNumber).map(r => ({
+        clause: r.clauseNumber,
+        source: r.source
+      }))
+    };
+  }
+}
+
+export class RAGService {
+  
+}
+
 /**
  * Search the knowledge base for relevant information based on query
  */
 export function searchKnowledgeBase(query: string, category?: KnowledgeBase['category']): KnowledgeBase[] {
   const searchTerms = query.toLowerCase().split(' ');
-  
+
   let results = nzBuildingKnowledge.filter(item => {
     if (category && item.category !== category) return false;
-    
+
     const contentLower = item.content.toLowerCase();
     return searchTerms.some(term => 
       contentLower.includes(term) || 
@@ -260,51 +337,51 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
       (item.source && item.source.toLowerCase().includes(term))
     );
   });
-  
+
   // Enhanced scoring system with infrastructure priority
   const analysis = analyzeQuery(query);
-  
+
   results = results.map(item => {
     const content = item.content.toLowerCase();
     let score = 0;
-    
+
     // CRITICAL: High priority for infrastructure constraints in specific locations
     if (item.category === 'infrastructure' && analysis.location) {
       if (item.region === analysis.location) {
         score += 1000; // Very high priority for location-specific infrastructure
       }
     }
-    
+
     // High priority for Hibiscus Coast infrastructure regardless of location detection
     if (item.category === 'infrastructure' && 
         (query.toLowerCase().includes('hibiscus') || query.toLowerCase().includes('orewa') || 
          query.toLowerCase().includes('silverdale') || query.toLowerCase().includes('whangaparaoa'))) {
       score += 1000;
     }
-    
+
     // Score based on term matches
     searchTerms.forEach(term => {
       if (content.includes(term)) {
         score += 10;
       }
     });
-    
+
     // Boost for exact query matches
     if (content.includes(query.toLowerCase())) {
       score += 50;
     }
-    
+
     // Boost for building type matches
     if (analysis.buildingType === 'minor_dwelling' && 
         (content.includes('minor dwelling') || content.includes('granny flat') || content.includes('secondary'))) {
       score += 30;
     }
-    
+
     return { ...item, score };
   })
   .filter(item => item.score > 0)
   .sort((a, b) => b.score - a.score);
-  
+
   return results.slice(0, 8); // Return top 8 most relevant
 }
 
@@ -339,9 +416,9 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Resource Management Act 1991 and planning rules
             - National Planning Standards and zone types
             - Council consent processes and requirements
-            
+
             When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
-            
+
             CRITICAL INFRASTRUCTURE CONSTRAINTS - PROVIDE EXACT DETAILS:
             - For Hibiscus Coast area (Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay): ALWAYS provide the specific Watercare policy details:
               * Building consents granted before 15 November 2024 can connect when ready
@@ -351,9 +428,9 @@ Would you like to set up AI assistance so I can provide detailed property and bu
               * Alternative wastewater solutions may be required during moratorium
             - ALWAYS include this exact link: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
             - Direct users to use Watercare's online tool to check if their project is impacted
-            
+
             When users ask about specific properties, addresses, or detailed project assessments, guide them toward getting a personalized property report for precise, property-specific information including zoning maps, consent histories, and local planning overlays. Always recommend consulting qualified professionals and suggest our personalized property reports for comprehensive analysis.
-            
+
             RESPONSE STYLE REQUIREMENTS:
             - Provide DEFINITIVE, SPECIFIC answers with exact details from official sources
             - Lead with the most critical information first (especially infrastructure constraints)
@@ -366,7 +443,7 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Do NOT use asterisk symbols (**, *) for bold or italic text
             - Use simple line breaks and colons for organization
             - Prioritize actionable next steps over general explanations
-            
+
             CITATION REQUIREMENTS:
             - Always include specific source references for building regulations
             - Cite official government websites like building.govt.nz
@@ -407,15 +484,15 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
 
   // Fallback to local knowledge base if API fails
   const relevantInfo = searchKnowledgeBase(query);
-  
+
   if (relevantInfo.length > 0) {
     let response = `Based on New Zealand building regulations and planning standards:\n\n`;
-    
+
     relevantInfo.forEach((info, index) => {
       response += `${index + 1}. ${info.content}\n`;
       response += `   (Source: ${info.source})\n\n`;
     });
-    
+
     response += `This information is based on current New Zealand legislation. For the most current details, I recommend checking official government websites.`;
     return response;
   }
@@ -433,12 +510,12 @@ export function analyzeQuery(query: string): {
   urgency?: 'immediate' | 'planning' | 'future';
 } {
   const queryLower = query.toLowerCase();
-  
+
   let type: any = 'general';
   let buildingType: any;
   let urgency: any = 'planning';
   let location: string | undefined;
-  
+
   // Determine location - prioritize specific areas with known constraints
   if (queryLower.includes('hibiscus coast') || queryLower.includes('orewa') || 
       queryLower.includes('silverdale') || queryLower.includes('whangaparaoa') ||
@@ -451,7 +528,7 @@ export function analyzeQuery(query: string): {
   } else if (queryLower.includes('christchurch')) {
     location = 'Christchurch';
   }
-  
+
   // Determine query type
   if (queryLower.includes('build') || queryLower.includes('new') || queryLower.includes('construct')) {
     type = 'new_build';
@@ -464,7 +541,7 @@ export function analyzeQuery(query: string): {
   } else if (queryLower.includes('consent')) {
     type = 'consent';
   }
-  
+
   // Determine building type
   if (queryLower.includes('house') || queryLower.includes('home') || queryLower.includes('dwelling')) {
     buildingType = 'house';
@@ -476,13 +553,13 @@ export function analyzeQuery(query: string): {
   } else if (queryLower.includes('apartment') || queryLower.includes('units')) {
     buildingType = 'multi_unit';
   }
-  
+
   // Determine urgency
   if (queryLower.includes('urgent') || queryLower.includes('asap') || queryLower.includes('immediately')) {
     urgency = 'immediate';
   } else if (queryLower.includes('planning') || queryLower.includes('future') || queryLower.includes('considering')) {
     urgency = 'future';
   }
-  
+
   return { type, buildingType, location, urgency };
 }
