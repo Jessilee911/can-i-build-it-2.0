@@ -47,10 +47,25 @@ export async function processBuildingCodeDocuments() {
     // Process NZS 4229 Concrete Masonry Buildings
     await processNZS4229ConcreteMasonry();
 
-    // Process BRANZ Plumbing and Drainage Guide
-    await processBRANZPlumbingGuide();
+    // Process additional Building Code sections
+    await processB2Durability();
+    await processD1AccessRoutes();
+    await processD2MechanicalInstallations();
+    await processE1SurfaceWater();
+    await processE3InternalMoisture();
+    await processF2HazardousMaterials();
+    await processF5ConstructionDemolition();
+    await processF7WarningSystems();
+    await processF9PoolAccess();
+    await processG1PersonalHygiene();
+    await processG3FoodPreparation();
+    await processG4Ventilation();
 
-    // Process NZ Metal Roof and Wall Cladding Code
+    // Process BRANZ documents
+    await processBRANZPlumbingGuide();
+    await processBRANZFlashingGuide();
+
+    // Process NZ Standards
     await processMetalRoofingCode();
 
     console.log('All Building Code documents processed successfully!');
@@ -471,6 +486,192 @@ async function processBRANZPlumbingGuide() {
     authority: 'BRANZ',
     documentType: 'guide',
     version: '3rd Edition 2024'
+  });
+}
+
+async function processB2Durability() {
+  console.log('Processing B2 Durability...');
+  
+  const b2Content = `
+B2 Durability - Second Edition Amendment 9
+
+OBJECTIVE
+Building elements must, with only normal maintenance, continue to satisfy the performance requirements of the Building Code for certain periods.
+
+FUNCTIONAL REQUIREMENTS
+B2.1 Building elements must, with only normal maintenance, continue to satisfy the performance requirements of the Building Code for the lesser of:
+(a) the specified intended life of the building
+(b) the periods specified in B2.3.1
+
+PERFORMANCE CRITERIA
+B2.3.1 Building elements (including building services) shall have a durability of not less than:
+(a) 5 years for components that are easily accessible and replaceable
+(b) 15 years for components that are moderately difficult to access or replace
+(c) 50 years for building elements that would be difficult or expensive to replace and that provide structural stability to the building or protect the structure from the effects of weather or moisture
+
+DURABILITY REQUIREMENTS:
+- Structure: 50 years minimum durability
+- Building envelope: 15 years minimum (50 years for primary weatherproofing)
+- Interior linings: 15 years minimum
+- Services: 15 years minimum (5 years for easily replaceable components)
+- Cladding systems: 15 years minimum performance
+
+ENVIRONMENTAL EXPOSURE:
+- Corrosion zones based on distance from coast
+- Marine exposure requires enhanced protection
+- Industrial exposure considerations
+- Alpine conditions requiring special materials
+
+MATERIALS SELECTION:
+- Appropriate grade for exposure environment
+- Compatibility between different materials
+- Galvanic corrosion prevention
+- UV resistance for exposed materials
+
+MAINTENANCE REQUIREMENTS:
+- Normal maintenance defined as routine inspection and cleaning
+- Replacement of consumable items (seals, gaskets, filters)
+- Does not include major repairs or component replacement
+- Building owner responsibilities for maintenance schedules
+`;
+
+  await pdfProcessor.processTextContent(b2Content, {
+    title: 'B2 Durability - Second Edition Amendment 9',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: 'Amendment 9'
+  });
+}
+
+async function processD1AccessRoutes() {
+  console.log('Processing D1 Access Routes...');
+  
+  await pdfProcessor.processPDF('attached_assets/D1 Access Routes 2nd Edition Amendment 6.pdf', {
+    title: 'D1 Access Routes - 2nd Edition Amendment 6',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '2nd Edition Amendment 6'
+  });
+}
+
+async function processD2MechanicalInstallations() {
+  console.log('Processing D2 Mechanical Installations for Access...');
+  
+  await pdfProcessor.processPDF('attached_assets/D2-mechanical-installations-for-access-2nd-edition-amendment7.pdf', {
+    title: 'D2 Mechanical installations for access - 2nd Edition Amendment 7',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '2nd Edition Amendment 7'
+  });
+}
+
+async function processE1SurfaceWater() {
+  console.log('Processing E1 Surface Water...');
+  
+  await pdfProcessor.processPDF('attached_assets/E1 Surface Water 1st Edition Amendment 11.pdf', {
+    title: 'E1 Surface Water - 1st Edition Amendment 11',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition Amendment 11'
+  });
+}
+
+async function processE3InternalMoisture() {
+  console.log('Processing E3 Internal Moisture...');
+  
+  await pdfProcessor.processPDF('attached_assets/E3 Internal Moisture 2nd Edition Amendment 7.pdf', {
+    title: 'E3 Internal Moisture - 2nd Edition Amendment 7',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '2nd Edition Amendment 7'
+  });
+}
+
+async function processF2HazardousMaterials() {
+  console.log('Processing F2 Hazardous Building Materials...');
+  
+  await pdfProcessor.processPDF('attached_assets/F2 Hazardous Building Materials 1st Edition Amendment 3.pdf', {
+    title: 'F2 Hazardous Building Materials - 1st Edition Amendment 3',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition Amendment 3'
+  });
+}
+
+async function processF5ConstructionDemolition() {
+  console.log('Processing F5 Construction and Demolition Hazards...');
+  
+  await pdfProcessor.processPDF('attached_assets/F5 Construction and Demolition Hazards.pdf', {
+    title: 'F5 Construction and Demolition Hazards',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition'
+  });
+}
+
+async function processF7WarningSystems() {
+  console.log('Processing F7 Warning Systems...');
+  
+  await pdfProcessor.processPDF('attached_assets/f7-as1-warning-systems-fifth-edition.pdf', {
+    title: 'F7 Warning Systems Acceptable Solution F7/AS1 - Fifth Edition',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: 'Fifth Edition'
+  });
+}
+
+async function processF9PoolAccess() {
+  console.log('Processing F9 Restricting Access to Residential Pools...');
+  
+  await pdfProcessor.processPDF('attached_assets/f9-restricting-access-to-residential-pools.pdf', {
+    title: 'F9 Restricting access to residential pools',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition'
+  });
+}
+
+async function processG1PersonalHygiene() {
+  console.log('Processing G1 Personal Hygiene...');
+  
+  await pdfProcessor.processPDF('attached_assets/G1-personal-hygiene-2nd-edition-amendment-6.pdf', {
+    title: 'G1 Personal Hygiene - 2nd Edition Amendment 6',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '2nd Edition Amendment 6'
+  });
+}
+
+async function processG3FoodPreparation() {
+  console.log('Processing G3 Food Preparation and Prevention of Contamination...');
+  
+  await pdfProcessor.processPDF('attached_assets/g3-food-preparation-prevention-contamination-1st-edition-amendment2.pdf', {
+    title: 'G3 Food preparation and prevention of contamination - 1st Edition Amendment 2',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '1st Edition Amendment 2'
+  });
+}
+
+async function processG4Ventilation() {
+  console.log('Processing G4 Ventilation...');
+  
+  await pdfProcessor.processPDF('attached_assets/G4 Ventilation 4th Edition.pdf', {
+    title: 'G4 Ventilation - 4th Edition',
+    authority: 'MBIE',
+    documentType: 'building_code',
+    version: '4th Edition'
+  });
+}
+
+async function processBRANZFlashingGuide() {
+  console.log('Processing BRANZ Build Flashing and Cladding Guide...');
+  
+  await pdfProcessor.processPDF('attached_assets/BRANZ Build Flashing and Cladding Guide.pdf', {
+    title: 'BRANZ Build Flashing and Cladding Guide',
+    authority: 'BRANZ',
+    documentType: 'guide',
+    version: 'Latest Edition'
   });
 }
 

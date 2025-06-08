@@ -122,6 +122,68 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     category: 'building_consent',
     lastUpdated: new Date()
   },
+  // Building Code B2 - Durability requirements
+  {
+    id: 'b2_001',
+    content: 'Building elements must have minimum durability periods: 5 years for easily replaceable components, 15 years for moderately difficult to replace, 50 years for structural and primary weatherproofing elements.',
+    source: 'Building Code B2 Durability',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'b2_002',
+    content: 'Coastal exposure requires enhanced corrosion protection. Buildings within 1km of coast are in corrosion zone C with specific material requirements.',
+    source: 'Building Code B2 Durability',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  // Building Code E1 - Surface Water
+  {
+    id: 'e1_001',
+    content: 'Site drainage must direct surface water away from buildings. Subfloor and foundation areas must be protected from surface water accumulation.',
+    source: 'Building Code E1 Surface Water',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  // Building Code E3 - Internal Moisture
+  {
+    id: 'e3_001',
+    content: 'Bathrooms and kitchens require mechanical ventilation or openable windows to manage internal moisture. Extractor fans must discharge to outside.',
+    source: 'Building Code E3 Internal Moisture',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  // Building Code G4 - Ventilation
+  {
+    id: 'g4_001',
+    content: 'Habitable rooms require natural ventilation of 5% of floor area or mechanical ventilation. Kitchens need 50L/s extraction rate during cooking.',
+    source: 'Building Code G4 Ventilation',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  // Building Code F9 - Pool Fencing
+  {
+    id: 'f9_001',
+    content: 'Swimming pools must be fenced with 1.2m high barriers, self-closing and self-latching gates. Pool fencing is required for pools capable of holding 400mm+ depth.',
+    source: 'Building Code F9 Pool Access',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  // NZS 3604 - Timber framed buildings
+  {
+    id: 'nzs3604_001',
+    content: 'NZS 3604 applies to timber-framed buildings up to 10m height and 300m² floor area. Provides deemed-to-comply solutions for residential construction.',
+    source: 'NZS 3604:2011 Timber-framed buildings',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'nzs3604_002',
+    content: 'Foundation systems must be designed for site conditions. Concrete pads, continuous footings or piles depending on soil bearing capacity and seismic zone.',
+    source: 'NZS 3604:2011 Timber-framed buildings',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
   // General building consent requirements
   {
     id: 'bc_001',
