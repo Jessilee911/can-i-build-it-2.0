@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import fs from 'fs';
 import path from 'path';
 import { createHash } from 'crypto';
@@ -65,7 +65,7 @@ export class MBIEUpdateMonitor {
   }
 
   private loadKnownDocuments() {
-    const knownDocsPath = path.join(__dirname, 'known_mbie_documents.json');
+    const knownDocsPath = path.join(import.meta.dirname || '.', 'known_mbie_documents.json');
     if (fs.existsSync(knownDocsPath)) {
       const knownDocs = JSON.parse(fs.readFileSync(knownDocsPath, 'utf-8'));
       this.knownDocuments = new Map(Object.entries(knownDocs));
@@ -73,7 +73,7 @@ export class MBIEUpdateMonitor {
   }
 
   private saveKnownDocuments() {
-    const knownDocsPath = path.join(__dirname, 'known_mbie_documents.json');
+    const knownDocsPath = path.join(import.meta.dirname || '.', 'known_mbie_documents.json');
     const knownDocsObj = Object.fromEntries(this.knownDocuments);
     fs.writeFileSync(knownDocsPath, JSON.stringify(knownDocsObj, null, 2));
   }

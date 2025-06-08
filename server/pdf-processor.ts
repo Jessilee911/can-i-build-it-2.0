@@ -22,39 +22,6 @@ interface BuildingCodeClause {
   title: string;
   content: string;
   pageNumber: number;
-
-  /**
-   * Extract text from PDF buffer using simple text extraction
-   */
-  private async extractTextFromPDF(pdfBuffer: Buffer): Promise<string> {
-    try {
-      const pdf = await import('pdf-parse');
-      const data = await pdf.default(pdfBuffer);
-      return data.text;
-    } catch (error) {
-      console.error('Error extracting text from PDF:', error);
-      return '';
-    }
-  }
-
-  /**
-   * Determine document category from building code
-   */
-  private determineCategoryFromCode(clauseNumber: string): string {
-    const code = clauseNumber.charAt(0);
-    switch (code) {
-      case 'A': return 'general';
-      case 'B': return 'structural';
-      case 'C': return 'fire';
-      case 'D': return 'access';
-      case 'E': return 'weathertightness';
-      case 'F': return 'safety';
-      case 'G': return 'services';
-      case 'H': return 'energy';
-      default: return 'other';
-    }
-  }
-
   documentSource: string;
   clauseLevel: number;
   parentClause?: string;

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { processBuildingCodeDocuments } from './process-building-codes';
 import { storage } from './storage';
+import { mbieMonitor } from './mbie-monitor';
 
 export async function setupKnowledgeRoutes(app: any) {
   
@@ -85,10 +86,6 @@ export async function setupKnowledgeRoutes(app: any) {
       res.status(500).json({ error: 'Failed to fetch document sources' });
     }
   });
-}
-import { mbieMonitor } from './mbie-monitor';
-
-// Add these routes after the existing routes
 
   // MBIE Monitoring endpoints
   app.post('/api/admin/start-mbie-monitoring', async (req: Request, res: Response) => {
