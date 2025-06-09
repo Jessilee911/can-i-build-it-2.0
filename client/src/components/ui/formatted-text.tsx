@@ -3,6 +3,11 @@ interface FormattedTextProps {
 }
 
 export function FormattedText({ content }: FormattedTextProps) {
+  // Handle undefined or null content
+  if (!content) {
+    return <div className="whitespace-pre-wrap"></div>;
+  }
+
   // Split content by markdown patterns including links
   const parts = content.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\))/);
 
