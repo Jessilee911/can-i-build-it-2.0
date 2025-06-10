@@ -47,7 +47,7 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     category: 'building_consent',
     lastUpdated: new Date()
   },
-  
+
   // Critical Infrastructure Constraints - Watercare Hibiscus Coast
   {
     id: 'infra_001',
@@ -255,9 +255,9 @@ export function extractBuildingCodeClauses(query: string): string[] {
     /NZBC\s+([A-Z]\d+(?:\.\d+)*)/gi,
     /clause\s+([A-Z]\d+(?:\.\d+)*)/gi
   ];
-  
+
   const clauses = new Set<string>();
-  
+
   clausePatterns.forEach(pattern => {
     const matches = query.matchAll(pattern);
     for (const match of matches) {
@@ -268,7 +268,7 @@ export function extractBuildingCodeClauses(query: string): string[] {
       }
     }
   });
-  
+
   return Array.from(clauses);
 }
 
@@ -277,13 +277,13 @@ export function extractBuildingCodeClauses(query: string): string[] {
  */
 export function searchKnowledgeBase(query: string, category?: KnowledgeBase['category']): KnowledgeBase[] {
   const searchTerms = query.toLowerCase().split(' ');
-  
+
   // Extract specific clauses mentioned in the query
   const requestedClauses = extractBuildingCodeClauses(query);
-  
+
   let results = nzBuildingKnowledge.filter(item => {
     if (category && item.category !== category) return false;
-    
+
     const contentLower = item.content.toLowerCase();
     return searchTerms.some(term => 
       contentLower.includes(term) || 
@@ -291,14 +291,14 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
       (item.source && item.source.toLowerCase().includes(term))
     );
   });
-  
+
   // Enhanced scoring system with clause-specific matching
   const analysis = analyzeQuery(query);
-  
+
   results = results.map(item => {
     const content = item.content.toLowerCase();
     let score = 0;
-    
+
     // HIGHEST PRIORITY: Exact clause matches
     if (requestedClauses.length > 0) {
       requestedClauses.forEach(clause => {
@@ -306,7 +306,7 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
         if (clausePattern.test(item.content) || clausePattern.test(item.source || '')) {
           score += 2000; // Extremely high priority for exact clause matches
         }
-        
+
         // Partial clause matches (e.g., B1 matches B1.3.1)
         const baseClause = clause.split('.')[0];
         if (item.content.includes(baseClause) || (item.source && item.source.includes(baseClause))) {
@@ -314,21 +314,21 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
         }
       });
     }
-    
+
     // CRITICAL: High priority for infrastructure constraints in specific locations
     if (item.category === 'infrastructure' && analysis.location) {
       if (item.region === analysis.location) {
         score += 1000;
       }
     }
-    
+
     // High priority for Hibiscus Coast infrastructure
     if (item.category === 'infrastructure' && 
         (query.toLowerCase().includes('hibiscus') || query.toLowerCase().includes('orewa') || 
          query.toLowerCase().includes('silverdale') || query.toLowerCase().includes('whangaparaoa'))) {
       score += 1000;
     }
-    
+
     // Building Code specific terms get higher priority
     const buildingCodeTerms = ['building code', 'nzbc', 'acceptable solution', 'verification method', 'compliance'];
     buildingCodeTerms.forEach(term => {
@@ -336,30 +336,30 @@ export function searchKnowledgeBase(query: string, category?: KnowledgeBase['cat
         score += 25;
       }
     });
-    
+
     // Score based on term matches
     searchTerms.forEach(term => {
       if (content.includes(term)) {
         score += 10;
       }
     });
-    
+
     // Boost for exact query matches
     if (content.includes(query.toLowerCase())) {
       score += 50;
     }
-    
+
     // Boost for building type matches
     if (analysis.buildingType === 'minor_dwelling' && 
         (content.includes('minor dwelling') || content.includes('granny flat') || content.includes('secondary'))) {
       score += 30;
     }
-    
+
     return { ...item, score };
   })
   .filter(item => item.score > 0)
   .sort((a, b) => b.score - a.score);
-  
+
   return results.slice(0, 12); // Return more results to ensure clause coverage
 }
 
@@ -370,12 +370,12 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
   // Always search local knowledge base first for specific clause information
   const relevantInfo = searchKnowledgeBase(query);
   const requestedClauses = extractBuildingCodeClauses(query);
-  
+
   // Build comprehensive context with specific clause information
   let clauseContext = '';
   if (requestedClauses.length > 0) {
     clauseContext = `\n\nSPECIFIC BUILDING CODE CLAUSES REQUESTED: ${requestedClauses.join(', ')}\n`;
-    
+
     // Find exact clause matches in knowledge base
     const clauseMatches = relevantInfo.filter(item => 
       requestedClauses.some(clause => 
@@ -383,7 +383,7 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
         (item.source && item.source.toLowerCase().includes(clause.toLowerCase()))
       )
     );
-    
+
     if (clauseMatches.length > 0) {
       clauseContext += '\nEXACT CLAUSE INFORMATION FROM BUILDING CODE:\n';
       clauseMatches.forEach(match => {
@@ -391,7 +391,7 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
       });
     }
   }
-  
+
   // Build knowledge base context
   let knowledgeContext = '';
   if (relevantInfo.length > 0) {
@@ -405,17 +405,17 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
     // Enhanced fallback response with specific clause information
     if (requestedClauses.length > 0 || relevantInfo.length > 0) {
       let response = `Based on New Zealand building regulations and the Building Code:\n\n`;
-      
+
       if (requestedClauses.length > 0) {
         response += `You asked about specific Building Code clauses: ${requestedClauses.join(', ')}\n\n`;
       }
-      
+
       response += clauseContext + knowledgeContext;
-      
+
       response += `\nFor the most current and complete clause text, please refer to the official Building Code documents at building.govt.nz. Always consult qualified professionals for specific project guidance.`;
       return response;
     }
-    
+
     return `To provide you with accurate information about New Zealand building regulations and property assessments, I need access to AI capabilities that can help analyze and provide guidance on building regulations.
 
 Would you like to set up AI assistance so I can provide detailed property and building regulation information?`;
@@ -431,16 +431,16 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Explain what the clause means in practical terms
             - Cite the exact source document and section
             - If a user asks "What does [clause] say" or "What is [clause]", lead with the direct quote
-            
+
             Your knowledge includes:
             - Building Act 2004 and Building Code requirements
             - Official MBIE exemptions guidance (Schedule 1)
             - Resource Management Act 1991 and planning rules
             - National Planning Standards and zone types
             - Council consent processes and requirements
-            
+
             When answering questions about building consent requirements, always reference the official MBIE exemptions guidance where applicable. Be specific about which exemptions apply and cite the official source.
-            
+
             CRITICAL INFRASTRUCTURE CONSTRAINTS - PROVIDE EXACT DETAILS:
             - For Hibiscus Coast area (Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay): ALWAYS provide the specific Watercare policy details:
               * Building consents granted before 15 November 2024 can connect when ready
@@ -450,7 +450,7 @@ Would you like to set up AI assistance so I can provide detailed property and bu
               * Alternative wastewater solutions may be required during moratorium
             - ALWAYS include this exact link: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
             - Direct users to use Watercare's online tool to check if their project is impacted
-            
+
             RESPONSE STYLE REQUIREMENTS:
             - Provide DEFINITIVE, SPECIFIC answers with exact details from official sources
             - When specific clauses are mentioned, quote them directly and prominently
@@ -464,7 +464,7 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Do NOT use asterisk symbols (**, *) for bold or italic text
             - Use simple line breaks and colons for organization
             - Prioritize actionable next steps over general explanations
-            
+
             CITATION REQUIREMENTS:
             - Always include specific source references for building regulations
             - Cite official government websites like building.govt.nz
@@ -511,8 +511,18 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
     const data = await response.json();
     const content = data.choices[0]?.message?.content;
 
+    console.log('RAG response received:', content ? content.length : 0, 'characters');
+
     if (content) {
-      return content;
+      // Basic cleanup without removing all content
+      let cleanResponse = content
+        .replace(/^#{1,6}\s+/gm, '') // Remove heading markers at start of lines
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold formatting
+        .replace(/\*(.*?)\*/g, '$1') // Remove italic formatting
+        .trim();
+
+        console.log('Cleaned response length:', cleanResponse.length);
+      return cleanResponse;
     }
   } catch (error) {
     console.error('OpenAI API error:', error);
@@ -521,13 +531,13 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
   // Enhanced fallback to local knowledge base with clause-specific formatting
   if (relevantInfo.length > 0) {
     let response = `Based on New Zealand building regulations and the Building Code:\n\n`;
-    
+
     if (requestedClauses.length > 0) {
       response += `You asked about specific Building Code clauses: ${requestedClauses.join(', ')}\n\n`;
     }
-    
+
     response += clauseContext + knowledgeContext;
-    
+
     response += `This information is based on current New Zealand legislation. For the most current details and complete clause text, I recommend checking official government websites like building.govt.nz. Always consult qualified professionals for specific project guidance.`;
     return response;
   }
@@ -545,12 +555,12 @@ export function analyzeQuery(query: string): {
   urgency?: 'immediate' | 'planning' | 'future';
 } {
   const queryLower = query.toLowerCase();
-  
+
   let type: any = 'general';
   let buildingType: any;
   let urgency: any = 'planning';
   let location: string | undefined;
-  
+
   // Determine location - prioritize specific areas with known constraints
   if (queryLower.includes('hibiscus coast') || queryLower.includes('orewa') || 
       queryLower.includes('silverdale') || queryLower.includes('whangaparaoa') ||
@@ -563,7 +573,7 @@ export function analyzeQuery(query: string): {
   } else if (queryLower.includes('christchurch')) {
     location = 'Christchurch';
   }
-  
+
   // Determine query type
   if (queryLower.includes('build') || queryLower.includes('new') || queryLower.includes('construct')) {
     type = 'new_build';
@@ -576,7 +586,7 @@ export function analyzeQuery(query: string): {
   } else if (queryLower.includes('consent')) {
     type = 'consent';
   }
-  
+
   // Determine building type
   if (queryLower.includes('house') || queryLower.includes('home') || queryLower.includes('dwelling')) {
     buildingType = 'house';
@@ -588,13 +598,13 @@ export function analyzeQuery(query: string): {
   } else if (queryLower.includes('apartment') || queryLower.includes('units')) {
     buildingType = 'multi_unit';
   }
-  
+
   // Determine urgency
   if (queryLower.includes('urgent') || queryLower.includes('asap') || queryLower.includes('immediately')) {
     urgency = 'immediate';
   } else if (queryLower.includes('planning') || queryLower.includes('future') || queryLower.includes('considering')) {
     urgency = 'future';
   }
-  
+
   return { type, buildingType, location, urgency };
 }

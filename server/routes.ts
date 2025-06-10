@@ -876,7 +876,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
         }
 
-        if (!response || typeof response !== 'string') {
+        console.log('Generated response length:', response ? response.length : 0);
+        console.log('Generated response preview:', response ? response.substring(0, 200) : 'No response');
+
+        if (!response || typeof response !== 'string' || response.trim().length === 0) {
+          console.log('Empty or invalid response, using fallback');
           response = "I'm here to help with your property development questions. Could you tell me more about what specific aspect you'd like guidance on?";
         }
 
