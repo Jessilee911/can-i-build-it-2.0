@@ -631,19 +631,17 @@ ${content}`
         return null;
       }
 
-      // Initialize PDF parser with better error handling
-      const parserReady = await initializePDFParser();
-      if (!parserReady || !pdfParse) {
-        console.log(`❌ PDF parser not available for ${filename}`);
+      // Use safe PDF parser that doesn't trigger test files
+      const { parsePDFSafely } = await import('./pdf-parser-safe');
+      const content = await parsePDFSafely(filePath);
+
+      if (content) {
+        console.log(`✅ Successfully parsed ${filename}: ${content.length} characters`);
+        return content;
+      } else {
+        console.log(`❌ Failed to parse ${filename}`);
         return null;
       }
-
-      const dataBuffer = fs.readFileSync(filePath);
-      const pdfData = await pdfParse(dataBuffer);
-      const content = pdfData.text;
-
-      console.log(`✅ Successfully parsed ${filename}: ${content.length} characters`);
-      return content;
     } catch (error: any) {
       console.log(`❌ Could not read ${filename}: ${error.message || error}`);
       return null;
