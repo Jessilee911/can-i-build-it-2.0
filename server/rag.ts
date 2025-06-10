@@ -499,7 +499,7 @@ Please provide specific information about New Zealand building regulations, cons
 IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
           }
         ],
-        max_tokens: 800,
+        max_tokens: 2000,
         temperature: 0.2,
       })
     });

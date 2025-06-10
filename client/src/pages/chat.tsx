@@ -222,7 +222,12 @@ Let me help you understand the building regulations, consent requirements, and d
         clauseReferences: []
       };
 
-      setConversation(prev => [...prev, agentMessage]);
+      console.log('Created agent message:', agentMessage);
+      setConversation(prev => {
+        const newConversation = [...prev, agentMessage];
+        console.log('New conversation state:', newConversation);
+        return newConversation;
+      });
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
