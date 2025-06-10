@@ -198,6 +198,7 @@ Let me help you understand the building regulations, consent requirements, and d
       console.log('Raw response content:', responseContent);
       console.log('Response content type:', typeof responseContent);
       console.log('Response content length:', responseContent?.length);
+      console.log('Full API response data:', JSON.stringify(data, null, 2));
       
       if (!responseContent || typeof responseContent !== 'string') {
         console.error('Invalid response format:', data);
@@ -208,6 +209,8 @@ Let me help you understand the building regulations, consent requirements, and d
         console.error('Empty response content');
         throw new Error('Empty response from server');
       }
+      
+      console.log('About to create agent message with content:', responseContent.substring(0, 100));
 
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
