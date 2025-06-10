@@ -198,6 +198,23 @@ export class PDFProcessor {
     return 'general_content';
   }
 
+  private determineCategoryFromCode(clauseNumber: string): string {
+    const code = clauseNumber.split('.')[0].toUpperCase();
+    
+    const categoryMap: Record<string, string> = {
+      'A': 'general',
+      'B': 'structure_and_durability',
+      'C': 'protection_from_fire',
+      'D': 'access',
+      'E': 'moisture',
+      'F': 'safety_hazards',
+      'G': 'services_and_facilities',
+      'H': 'energy_efficiency'
+    };
+    
+    return categoryMap[code[0]] || 'general';
+  }
+
   private estimatePageNumber(position: number, text: string): number {
     const textBeforePosition = text.slice(0, position);
     const estimatedPage = Math.floor(textBeforePosition.length / 2000) + 1;
@@ -645,20 +662,23 @@ ${content}`
   }
 
   /**
-   * Search for building code information across all PDFs
+   * Search for building code information across all PDFs with enhanced matching
    */
   async searchBuildingCodes(query: string): Promise<{ results: any[], sources: string[] }> {
     const availablePDFs = this.getAvailablePDFs();
     const results: any[] = [];
     const sources: string[] = [];
 
-    // Check for specific clause request
-    const clauseMatch = query.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
+    console.log(`Searching ${availablePDFs.length} PDFs for: "${query}"`);
+
+    // Check for specific clause request (e.g., B1, D1.3.3, E2/AS1)
+    const clauseMatch = query.match(/([A-Z]\d+(?:[\/\.]\w*\d*)*(?:\s+\d+(?:\.\d+)*)?)/i);
 
     if (clauseMatch) {
       const clauseNumber = clauseMatch[1];
+      console.log(`Looking for specific clause: ${clauseNumber}`);
 
-      // Search through uploaded files
+      // Search through uploaded files for specific clauses
       for (const filename of availablePDFs) {
         const content = await this.readUploadedPDF(filename);
         if (content) {
@@ -668,38 +688,10 @@ ${content}`
               clauseNumber: result.clauseNumber,
               content: result.content,
               source: filename,
-              type: 'building_code_clause'
+              type: 'building_code_clause',
+              relevance: 100
             });
-            sources.push(filename);
-          }
-        }
-      }
-    } else {
-      // General search across PDFs
-      const searchTerms = query.toLowerCase().split(' ');
-
-      for (const filename of availablePDFs) {
-        const content = await this.readUploadedPDF(filename);
-        if (content) {
-          const lowerContent = content.toLowerCase();
-          const matchCount = searchTerms.reduce((count, term) => {
-            return count + (lowerContent.match(new RegExp(term, 'g')) || []).length;
-          }, 0);
-
-          if (matchCount > 0) {
-            // Extract relevant sections (paragraphs containing search terms)
-            const paragraphs = content.split('\n\n');
-            const relevantParagraphs = paragraphs.filter(paragraph => 
-              searchTerms.some(term => paragraph.toLowerCase().includes(term))
-            ).slice(0, 3); // Limit to 3 most relevant paragraphs
-
-            if (relevantParagraphs.length > 0) {
-              results.push({
-                content: relevantParagraphs.join('\n\n'),
-                source: filename,
-                type: 'general_search',
-                relevance: matchCount
-              });
+            if (!sources.includes(filename)) {
               sources.push(filename);
             }
           }
@@ -707,7 +699,134 @@ ${content}`
       }
     }
 
-    return { results, sources };
+    // Enhanced general search with building-specific terms
+    const buildingTerms = this.extractBuildingTerms(query);
+    console.log('Building terms extracted:', buildingTerms);
+
+    for (const filename of availablePDFs) {
+      const content = await this.readUploadedPDF(filename);
+      if (content) {
+        const lowerContent = content.toLowerCase();
+        let matchScore = 0;
+
+        // Score based on building-specific terms
+        buildingTerms.forEach(term => {
+          const termMatches = (lowerContent.match(new RegExp(term.toLowerCase(), 'g')) || []).length;
+          matchScore += termMatches * (term.length > 4 ? 3 : 1); // Weight longer terms higher
+        });
+
+        if (matchScore > 2) { // Require minimum relevance
+          // Extract most relevant sections
+          const relevantSections = this.extractRelevantSections(content, buildingTerms);
+          
+          if (relevantSections.length > 0) {
+            const existingResult = results.find(r => r.source === filename);
+            if (existingResult) {
+              // Merge with existing clause result
+              existingResult.content += '\n\nAdditional relevant content:\n' + relevantSections.join('\n\n');
+              existingResult.relevance += matchScore;
+            } else {
+              // Add new general search result
+              results.push({
+                content: relevantSections.join('\n\n'),
+                source: filename,
+                type: 'general_search',
+                relevance: matchScore,
+                matchTerms: buildingTerms.filter(term => 
+                  lowerContent.includes(term.toLowerCase())
+                )
+              });
+            }
+            
+            if (!sources.includes(filename)) {
+              sources.push(filename);
+            }
+          }
+        }
+      }
+    }
+
+    // Sort results by relevance
+    results.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+
+    console.log(`Found ${results.length} results from ${sources.length} sources`);
+    return { results: results.slice(0, 8), sources }; // Limit to top 8 results
+  }
+
+  /**
+   * Extract building-specific terms from query
+   */
+  private extractBuildingTerms(query: string): string[] {
+    const terms = new Set<string>();
+    
+    // Standard query terms
+    const words = query.toLowerCase().split(/\s+/);
+    words.forEach(word => {
+      if (word.length > 3) {
+        terms.add(word);
+      }
+    });
+
+    // Building-specific patterns
+    const buildingPatterns = [
+      /building\s+consent/gi,
+      /resource\s+consent/gi,
+      /building\s+code/gi,
+      /ventilation/gi,
+      /structural/gi,
+      /foundation/gi,
+      /durability/gi,
+      /moisture/gi,
+      /fire\s+safety/gi,
+      /access/gi,
+      /drainage/gi,
+      /plumbing/gi,
+      /energy\s+efficiency/gi,
+      /timber\s+frame/gi,
+      /concrete/gi,
+      /weatherproofing/gi,
+      /insulation/gi
+    ];
+
+    buildingPatterns.forEach(pattern => {
+      const matches = query.match(pattern);
+      if (matches) {
+        matches.forEach(match => terms.add(match.toLowerCase()));
+      }
+    });
+
+    return Array.from(terms);
+  }
+
+  /**
+   * Extract relevant sections with better context
+   */
+  private extractRelevantSections(content: string, searchTerms: string[]): string[] {
+    const sections: string[] = [];
+    const sentences = content.split(/\.\s+/);
+    
+    for (let i = 0; i < sentences.length; i++) {
+      const sentence = sentences[i];
+      const sentenceLower = sentence.toLowerCase();
+      
+      // Check if sentence contains any search terms
+      const hasMatch = searchTerms.some(term => 
+        sentenceLower.includes(term.toLowerCase())
+      );
+      
+      if (hasMatch && sentence.length > 50) {
+        // Include context: previous and next sentences
+        const startIndex = Math.max(0, i - 1);
+        const endIndex = Math.min(sentences.length - 1, i + 2);
+        const contextualSection = sentences.slice(startIndex, endIndex + 1).join('. ');
+        
+        if (contextualSection.length > 100 && sections.length < 4) {
+          sections.push(contextualSection + '.');
+        }
+      }
+    }
+    
+    return sections;
   }
 }
 

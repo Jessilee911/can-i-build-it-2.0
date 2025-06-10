@@ -840,7 +840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== Chat Routes ====================
-  // Chat endpoint for plan-based conversational agent
+  // Chat endpoint for plan-based conversational agent with PDF integration
   apiRouter.post("/api/chat", async (req: Request, res: Response) => {
     try {
       const { message, plan, conversationHistory } = req.body;
@@ -851,42 +851,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Chat request received:', { message: message.substring(0, 100), plan });
 
-      // Check if message is asking for specific Building Code clause
-      const clauseMatch = message.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
-
       let response;
+      let sources: string[] = [];
+
       try {
-        if (clauseMatch) {
-          // Try to answer from uploaded PDFs first
-          try {
-            const { PDFReader } = await import('./pdf-reader');
-            const pdfResponse = await PDFReader.answerBuildingCodeQuestion(message);
-            if (pdfResponse && !pdfResponse.includes('not found')) {
-              response = pdfResponse;
-            } else {
-              // Fall back to RAG system
-              response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
-            }
-          } catch (pdfError) {
-            console.warn('PDF reader error, falling back to RAG:', pdfError);
-            response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
-          }
+        // First, search through uploaded PDF documents
+        const { pdfProcessor } = await import('./pdf-processor');
+        const pdfSearchResults = await pdfProcessor.searchBuildingCodes(message);
+        
+        console.log('PDF search results:', pdfSearchResults.results.length, 'found');
+
+        // Check if we found specific building code information
+        if (pdfSearchResults.results.length > 0) {
+          const relevantContent = pdfSearchResults.results
+            .slice(0, 3) // Limit to top 3 results
+            .map(result => {
+              if (result.type === 'building_code_clause') {
+                return `**${result.clauseNumber}**\n\n${result.content}\n\n*Source: ${result.source}*`;
+              } else {
+                return `${result.content}\n\n*Source: ${result.source}*`;
+              }
+            })
+            .join('\n\n---\n\n');
+
+          sources = pdfSearchResults.sources;
+
+          // Use the PDF content as context for RAG system
+          const enhancedQuery = `User question: ${message}
+
+RELEVANT BUILDING CODE INFORMATION FROM UPLOADED DOCUMENTS:
+${relevantContent}
+
+Based on this specific building code information and your knowledge of New Zealand building regulations, provide a comprehensive answer to the user's question. Reference the specific documents and clauses found.`;
+
+          response = await generatePlanBasedResponse(enhancedQuery, plan || 'basic', conversationHistory || []);
         } else {
-          // Generate response based on user's plan level
+          // No specific PDF matches, use standard RAG response
           response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
         }
 
         console.log('Generated response length:', response ? response.length : 0);
-        console.log('Generated response preview:', response ? response.substring(0, 200) : 'No response');
+        console.log('PDF sources used:', sources);
 
         if (!response || typeof response !== 'string' || response.trim().length === 0) {
           console.log('Empty or invalid response, using fallback');
           response = "I'm here to help with your property development questions. Could you tell me more about what specific aspect you'd like guidance on?";
         }
 
+        // Add source information if PDFs were used
+        if (sources.length > 0) {
+          response += `\n\n**Sources consulted:** ${sources.join(', ')}`;
+        }
+
         console.log('Chat response generated successfully, length:', response.length);
-        console.log('Sending response:', response.substring(0, 100) + '...');
-        return res.json({ response });
+        return res.json({ response, sources });
       } catch (responseError) {
         console.error("Response generation error:", responseError);
         const fallbackResponse = "I'm experiencing some technical difficulties right now. Please try rephrasing your question, and I'll do my best to help you with your property development needs.";
@@ -1734,26 +1752,39 @@ async function transcribeAudioFile(req: any): Promise<string> {
   }
 }
 
-// Generate helpful property advice responses
+// Generate helpful property advice responses with PDF document integration
 async function generatePlanBasedResponse(message: string, plan: string, conversationHistory: any[]) {
   try {
     // Build context from conversation history
     const context = conversationHistory?.map(msg => `${msg.type}: ${msg.content}`).join('\n') || '';
 
-    // Free comprehensive guidance system prompt
-    const systemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive free guidance.
+    // Enhanced system prompt with PDF document awareness
+    const systemPrompt = `You are an expert AI property advisor for New Zealand with access to comprehensive building code documents and regulations.
+
+    You have access to official New Zealand Building Code documents including:
+    - B1 Structure, B2 Durability 
+    - D1 Access Routes, D2 Mechanical installations
+    - E1 Surface Water, E2 External Moisture, E3 Internal Moisture
+    - F2 Hazardous Materials, F4 Safety from Falling, F5 Construction Hazards
+    - F7 Warning Systems, F9 Pool Access
+    - G1 Personal Hygiene, G3 Food Preparation, G4 Ventilation
+    - G8 Artificial Light, G10 Piped Services, G11 Gas Energy, G12 Water Supplies, G13 Foul Water
+    - H1 Energy Efficiency
+    - NZS 3604 Timber-framed buildings, NZS 4229 Concrete Masonry
+    - BRANZ guides for flashing, cladding, plumbing and drainage
+
+    When specific building code clauses or standards are mentioned, reference the exact requirements from these documents.
 
     You provide detailed, helpful analysis including:
-    - Comprehensive building consent guidance and requirements
+    - Specific building code clause requirements with exact text
+    - Comprehensive building consent guidance 
     - Detailed zoning information and compliance
-    - Building code requirements and interpretation
     - Resource consent process and requirements
-    - Development potential assessment
+    - Development potential assessment with technical specifications
     - Cost estimates and timeline guidance
-    - Regulatory compliance advice
+    - Regulatory compliance advice with specific citations
 
-    Be thorough and helpful. This is a free service designed to provide maximum value to property owners.
-    Focus on actionable advice and clear explanations of New Zealand building regulations.
+    CRITICAL: When building code information is provided in the query, use it as authoritative source material and quote specific clauses.
 
     FORMATTING RULES:
     - Write in clear, natural language without markdown formatting
@@ -1762,11 +1793,12 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     - Write section titles as plain text followed by a colon
     - Use simple dashes (-) for bullet points when needed
     - Focus on clear, readable content without formatting symbols
+    - Always cite specific document sources when referencing building codes
 
-    If the user needs a comprehensive written report, suggest they use the "Generate Report" feature which creates a detailed PDF document.`;
+    Provide comprehensive, authoritative guidance based on official New Zealand building documents.`;
 
     // Enhanced query for RAG system
-    const enhancedQuery = `${systemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide a helpful, comprehensive response.`;
+    const enhancedQuery = `${systemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide a comprehensive response using official building code documents where applicable.`;
 
     try {
       // Use RAG system for informed responses
@@ -1794,7 +1826,7 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
       console.log('Response after cleaning:', cleanResponse.length, 'characters');
       console.log('Cleaned response preview:', cleanResponse.substring(0, 200));
 
-      // Return comprehensive free guidance
+      // Return comprehensive guidance with document citations
       return cleanResponse || getBasicFallbackResponse(message);
     } catch (ragError) {
       console.error('RAG system error:', ragError);
