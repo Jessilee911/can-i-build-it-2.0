@@ -861,10 +861,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Search through uploaded PDF documents with better error handling
         let pdfSearchResults = { results: [], sources: [] };
         try {
+          // First ensure PDF parser is properly initialized
+          await pdfProcessor.getAvailablePDFs(); // This will show available files
           pdfSearchResults = await pdfProcessor.searchBuildingCodes(message);
           console.log('PDF search results:', pdfSearchResults.results.length, 'found');
+          
+          if (pdfSearchResults.results.length === 0) {
+            console.log('No PDF results found. Available PDFs:', pdfProcessor.getAvailablePDFs().length);
+          }
         } catch (pdfError) {
           console.error('PDF search error:', pdfError);
+          console.log('Continuing without PDF search results');
         }
 
         // Use RAG system with definitive knowledge base for expert responses

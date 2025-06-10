@@ -17,18 +17,18 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 async function initializePDFParser() {
   if (!pdfParse) {
     try {
+      // Import pdf-parse without triggering test file loading
       const pdfParseModule = await import('pdf-parse');
       pdfParse = pdfParseModule.default || pdfParseModule;
       console.log('✅ PDF parser initialized successfully');
+      return true;
     } catch (error) {
       console.warn('❌ Failed to initialize PDF parser:', error);
+      return false;
     }
   }
-  return pdfParse;
+  return true;
 }
-
-// Initialize immediately
-initializePDFParser();
 
 interface ExtractedContent {
   buildingCodeSections: InsertBuildingCodeSection[];
@@ -592,13 +592,24 @@ ${content}`
   /**
    * Extract text from PDF buffer
    */
-  async extractTextFromPDF(filePath: string): Promise<string> {
+  async extractTextFromPDF(filePathOrBuffer: string | Buffer): Promise<string> {
     try {
-      if (!pdfParse) {
+      // Ensure PDF parser is initialized
+      const initialized = await initializePDFParser();
+      if (!initialized || !pdfParse) {
         throw new Error('pdf-parse module not available');
       }
 
-      const dataBuffer = fs.readFileSync(filePath);
+      let dataBuffer: Buffer;
+      if (typeof filePathOrBuffer === 'string') {
+        if (!fs.existsSync(filePathOrBuffer)) {
+          throw new Error(`File not found: ${filePathOrBuffer}`);
+        }
+        dataBuffer = fs.readFileSync(filePathOrBuffer);
+      } else {
+        dataBuffer = filePathOrBuffer;
+      }
+
       const pdfData = await pdfParse(dataBuffer);
       return pdfData.text;
     } catch (error) {

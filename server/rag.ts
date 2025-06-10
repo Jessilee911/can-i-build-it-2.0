@@ -639,7 +639,9 @@ export function analyzeQuery(query: string): {
   // Determine building type
   if (queryLower.includes('house') || queryLower.includes('home') || queryLower.includes('dwelling')) {
     buildingType = 'house';
-  } else if (queryLower.includes('granny flat') || queryLower.includes('minor dwelling') || 
+  } else if (queryLower.includes('granny flat') || queryLower.includesEnhanced agent to analyze documents, ask questions for precise building code information.
+```typescript
+('minor dwelling') || 
              queryLower.includes('secondary') || queryLower.includes('sleep-out')) {
     buildingType = 'minor_dwelling';
   } else if (queryLower.includes('commercial') || queryLower.includes('office') || queryLower.includes('retail')) {
@@ -656,4 +658,38 @@ export function analyzeQuery(query: string): {
   }
 
   return { type, buildingType, location, urgency };
+}
+
+/**
+ * Analyze if the query needs clarification by asking questions.
+ */
+export function analyzeIfNeedsClarification(query: string): {
+  needsClarification: boolean;
+  suggestedQuestions: string[];
+} {
+  const queryLower = query.toLowerCase();
+  const suggestedQuestions: string[] = [];
+  let needsClarification = false;
+
+  if (!queryLower.includes('location') && !queryLower.includes('address') &&
+      !queryLower.includes('site') && !queryLower.includes('property')) {
+    suggestedQuestions.push('Could you please provide the location or address of the property?');
+    needsClarification = true;
+  }
+
+  if (!queryLower.includes('building type') && !queryLower.includes('house') &&
+      !queryLower.includes('dwelling') && !queryLower.includes('commercial') &&
+      !queryLower.includes('apartment')) {
+    suggestedQuestions.push('What type of building are you referring to (e.g., house, commercial building, apartment)?');
+    needsClarification = true;
+  }
+
+  if (!queryLower.includes('work type') && !queryLower.includes('new build') &&
+      !queryLower.includes('renovation') && !queryLower.includes('alteration') &&
+      !queryLower.includes('addition')) {
+    suggestedQuestions.push('What type of work are you planning (e.g., new build, renovation, alteration)?');
+    needsClarification = true;
+  }
+
+  return { needsClarification, suggestedQuestions };
 }
