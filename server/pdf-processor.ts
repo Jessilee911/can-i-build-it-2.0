@@ -8,15 +8,23 @@ import type {
   InsertConsentRequirement,
   InsertDocumentSource 
 } from '../shared/schema';
-// Import pdf-parse dynamically to avoid test file loading issues
-let pdfParse: any;
-try {
-  pdfParse = require('pdf-parse');
-} catch (error) {
-  console.warn('pdf-parse import warning:', error.message);
-}
+// PDF parse will be imported dynamically
+let pdfParse: any = null;
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Initialize PDF parser
+async function initializePDFParser() {
+  if (!pdfParse) {
+    try {
+      const pdfParseModule = await import('pdf-parse');
+      pdfParse = pdfParseModule.default || pdfParseModule;
+    } catch (error) {
+      console.warn('Failed to initialize PDF parser:', error);
+    }
+  }
+  return pdfParse;
+}
 
 interface ExtractedContent {
   buildingCodeSections: InsertBuildingCodeSection[];
@@ -568,7 +576,7 @@ ${content}`
       if (!pdfParse) {
         throw new Error('pdf-parse module not available');
       }
-      
+
       const dataBuffer = fs.readFileSync(filePath);
       const pdfData = await pdfParse(dataBuffer);
       return pdfData.text;

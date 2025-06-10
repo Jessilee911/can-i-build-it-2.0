@@ -845,32 +845,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message, plan, conversationHistory } = req.body;
 
-      if (!message) {
+      if (!message || typeof message !== 'string') {
         return res.status(400).json({ error: "Message is required" });
       }
 
+      console.log('Chat request received:', { message: message.substring(0, 100), plan });
+
       // Check if message is asking for specific Building Code clause
-      const { PDFReader } = await import('./pdf-reader');
       const clauseMatch = message.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
 
       let response;
-      if (clauseMatch) {
-        // Try to answer from uploaded PDFs first
-        const pdfResponse = await PDFReader.answerBuildingCodeQuestion(message);
-        if (pdfResponse && !pdfResponse.includes('not found')) {
-          response = pdfResponse;
+      try {
+        if (clauseMatch) {
+          // Try to answer from uploaded PDFs first
+          try {
+            const { PDFReader } = await import('./pdf-reader');
+            const pdfResponse = await PDFReader.answerBuildingCodeQuestion(message);
+            if (pdfResponse && !pdfResponse.includes('not found')) {
+              response = pdfResponse;
+            } else {
+              // Fall back to RAG system
+              response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
+            }
+          } catch (pdfError) {
+            console.warn('PDF reader error, falling back to RAG:', pdfError);
+            response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
+          }
         } else {
-          // Fall back to RAG system
-          response = await generatePlanBasedResponse(message, plan, conversationHistory);
+          // Generate response based on user's plan level
+          response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
         }
-      } else {
-        // Generate response based on user's plan level
-        response = await generatePlanBasedResponse(message, plan, conversationHistory);
-      }
 
-      res.json({ response });
+        if (!response || typeof response !== 'string') {
+          response = "I'm here to help with your property development questions. Could you tell me more about what specific aspect you'd like guidance on?";
+        }
+
+        console.log('Chat response generated successfully');
+        res.json({ response });
+      } catch (responseError) {
+        console.error("Response generation error:", responseError);
+        const fallbackResponse = "I'm experiencing some technical difficulties right now. Please try rephrasing your question, and I'll do my best to help you with your property development needs.";
+        res.json({ response: fallbackResponse });
+      }
     } catch (error: any) {
-      console.error("Chat error:", error);
+      console.error("Chat endpoint error:", error);
       res.status(500).json({ error: "Failed to generate response" });
     }
   });
@@ -1713,11 +1731,12 @@ async function transcribeAudioFile(req: any): Promise<string> {
 
 // Generate helpful property advice responses
 async function generatePlanBasedResponse(message: string, plan: string, conversationHistory: any[]) {
-  // Build context from conversation history
-  const context = conversationHistory.map(msg => `${msg.type}: ${msg.content}`).join('\n');
+  try {
+    // Build context from conversation history
+    const context = conversationHistory?.map(msg => `${msg.type}: ${msg.content}`).join('\n') || '';
 
-  // Free comprehensive guidance system prompt
-  const systemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive free guidance.
+    // Free comprehensive guidance system prompt
+    const systemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive free guidance.
 
     You provide detailed, helpful analysis including:
     - Comprehensive building consent guidance and requirements
@@ -1741,37 +1760,63 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
 
     If the user needs a comprehensive written report, suggest they use the "Generate Report" feature which creates a detailed PDF document.`;
 
-  // Enhanced query for RAG system
-  const enhancedQuery = `${systemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide a helpful, comprehensive response.`;
+    // Enhanced query for RAG system
+    const enhancedQuery = `${systemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide a helpful, comprehensive response.`;
 
-  try {
-    // Use RAG system for informed responses
-    const response = await generateRAGResponse(enhancedQuery);
+    try {
+      // Use RAG system for informed responses
+      const { generateRAGResponse } = await import('./rag');
+      const response = await generateRAGResponse(enhancedQuery);
 
-    // Comprehensive cleanup of all markdown formatting symbols
-    let cleanResponse = response
-      // First pass: Convert headers to bullet points
-      .replace(/^###\s+/gm, '• ')
-      .replace(/^####\s+/gm, '  - ')
-      .replace(/\n###\s+/g, '\n• ')
-      .replace(/\n####\s+/g, '\n  - ')
-      // Second pass: Remove all remaining # symbols
-      .replace(/#{1,6}\s*/g, '')
-      // Third pass: Handle bold formatting
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
-      // Fourth pass: Convert any remaining ** at line starts
-      .replace(/^\*\*(.+)/gm, '• $1')
-      .replace(/\n\*\*(.+)/g, '\n• $1')
-      // Final cleanup: Remove any orphaned symbols
-      .replace(/\*{1,2}/g, '')
-      .replace(/#{1,6}/g, '')
-      .trim();
+      if (!response || typeof response !== 'string') {
+        throw new Error('Invalid response from RAG system');
+      }
 
-    // Return comprehensive free guidance
-    return cleanResponse;
+      // Comprehensive cleanup of all markdown formatting symbols
+      let cleanResponse = response
+        // First pass: Convert headers to bullet points
+        .replace(/^###\s+/gm, '• ')
+        .replace(/^####\s+/gm, '  - ')
+        .replace(/\n###\s+/g, '\n• ')
+        .replace(/\n####\s+/g, '\n  - ')
+        // Second pass: Remove all remaining # symbols
+        .replace(/#{1,6}\s*/g, '')
+        // Third pass: Handle bold formatting
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        // Fourth pass: Convert any remaining ** at line starts
+        .replace(/^\*\*(.+)/gm, '• $1')
+        .replace(/\n\*\*(.+)/g, '\n• $1')
+        // Final cleanup: Remove any orphaned symbols
+        .replace(/\*{1,2}/g, '')
+        .replace(/#{1,6}/g, '')
+        .trim();
+
+      // Return comprehensive free guidance
+      return cleanResponse || getBasicFallbackResponse(message);
+    } catch (ragError) {
+      console.error('RAG system error:', ragError);
+      return getBasicFallbackResponse(message);
+    }
   } catch (error) {
-    console.error('Error generating response:', error);
-    return "I'm here to help with your property development questions. Could you tell me more about what specific aspect of your property development you'd like guidance on?";
+    console.error('Error in generatePlanBasedResponse:', error);
+    return getBasicFallbackResponse(message);
   }
+}
+
+// Fallback response function
+function getBasicFallbackResponse(message: string): string {
+  if (message.toLowerCase().includes('consent')) {
+    return "For building consent information in New Zealand, you'll typically need to submit plans to your local council. The process usually takes 20-30 working days and costs vary by council and project size. Would you like me to explain more about the specific requirements for your type of project?";
+  }
+  
+  if (message.toLowerCase().includes('zoning') || message.toLowerCase().includes('zone')) {
+    return "Zoning rules in New Zealand vary by district and council. Each zone has specific rules about what you can build, height limits, and setback requirements. To get accurate zoning information for your property, you'll need to check with your local council's district plan. What type of development are you considering?";
+  }
+  
+  if (message.toLowerCase().includes('building code')) {
+    return "The New Zealand Building Code sets minimum standards for building work. Key areas include structural requirements, weathertightness, fire safety, and accessibility. Each clause has specific requirements that must be met. What particular aspect of the Building Code are you asking about?";
+  }
+  
+  return "I'm here to help with your New Zealand property development questions. I can provide guidance on building consents, zoning rules, building code requirements, and development processes. What specific aspect would you like to know more about?";
 }
