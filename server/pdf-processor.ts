@@ -19,12 +19,16 @@ async function initializePDFParser() {
     try {
       const pdfParseModule = await import('pdf-parse');
       pdfParse = pdfParseModule.default || pdfParseModule;
+      console.log('✅ PDF parser initialized successfully');
     } catch (error) {
-      console.warn('Failed to initialize PDF parser:', error);
+      console.warn('❌ Failed to initialize PDF parser:', error);
     }
   }
   return pdfParse;
 }
+
+// Initialize immediately
+initializePDFParser();
 
 interface ExtractedContent {
   buildingCodeSections: InsertBuildingCodeSection[];
@@ -616,6 +620,9 @@ ${content}`
         return null;
       }
 
+      // Ensure PDF parser is initialized
+      await initializePDFParser();
+      
       if (!pdfParse) {
         console.log(`❌ pdf-parse not available for ${filename}`);
         return null;

@@ -855,39 +855,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let sources: string[] = [];
 
       try {
-        // First, search through uploaded PDF documents
+        // Initialize PDF processor first
         const { pdfProcessor } = await import('./pdf-processor');
-        const pdfSearchResults = await pdfProcessor.searchBuildingCodes(message);
         
-        console.log('PDF search results:', pdfSearchResults.results.length, 'found');
+        // Search through uploaded PDF documents with better error handling
+        let pdfSearchResults = { results: [], sources: [] };
+        try {
+          pdfSearchResults = await pdfProcessor.searchBuildingCodes(message);
+          console.log('PDF search results:', pdfSearchResults.results.length, 'found');
+        } catch (pdfError) {
+          console.error('PDF search error:', pdfError);
+        }
 
-        // Check if we found specific building code information
+        // Use RAG system with definitive knowledge base for expert responses
+        response = await generateRAGResponse(message, { 
+          plan: plan || 'basic', 
+          conversationHistory: conversationHistory || [],
+          pdfResults: pdfSearchResults.results 
+        });
+
+        // Enhance with PDF content if found
         if (pdfSearchResults.results.length > 0) {
           const relevantContent = pdfSearchResults.results
-            .slice(0, 3) // Limit to top 3 results
+            .slice(0, 3)
             .map(result => {
               if (result.type === 'building_code_clause') {
-                return `**${result.clauseNumber}**\n\n${result.content}\n\n*Source: ${result.source}*`;
+                return `BUILDING CODE ${result.clauseNumber}: ${result.content}`;
               } else {
-                return `${result.content}\n\n*Source: ${result.source}*`;
+                return `${result.content}`;
               }
             })
-            .join('\n\n---\n\n');
+            .join('\n\n');
 
           sources = pdfSearchResults.sources;
-
-          // Use the PDF content as context for RAG system
-          const enhancedQuery = `User question: ${message}
-
-RELEVANT BUILDING CODE INFORMATION FROM UPLOADED DOCUMENTS:
-${relevantContent}
-
-Based on this specific building code information and your knowledge of New Zealand building regulations, provide a comprehensive answer to the user's question. Reference the specific documents and clauses found.`;
-
-          response = await generatePlanBasedResponse(enhancedQuery, plan || 'basic', conversationHistory || []);
-        } else {
-          // No specific PDF matches, use standard RAG response
-          response = await generatePlanBasedResponse(message, plan || 'basic', conversationHistory || []);
+          
+          // Append PDF evidence to support the definitive answer
+          response += `\n\nDOCUMENT EVIDENCE:\n${relevantContent}`;
         }
 
         console.log('Generated response length:', response ? response.length : 0);
