@@ -41,19 +41,26 @@ export default function Chat() {
   }, [conversation]);
 
   const initializeConversation = (plan: string) => {
+    // Only initialize if conversation is empty
+    if (conversation.length > 0) return;
+    
     // Check for project details from the property form
     const projectDetails = sessionStorage.getItem('projectDetails');
     let welcomeMessage = getWelcomeMessage();
 
     if (projectDetails) {
-      const details = JSON.parse(projectDetails);
-      welcomeMessage = `Hi! I see you're interested in developing the property at ${details.propertyAddress}. ${welcomeMessage.replace('Hi! ', '')} 
+      try {
+        const details = JSON.parse(projectDetails);
+        welcomeMessage = `Hi! I see you're interested in developing the property at ${details.propertyAddress}. ${welcomeMessage.replace('Hi! ', '')} 
 
 I understand you're planning: ${details.projectDescription}
 Budget range: ${details.budgetRange}
 Timeframe: ${details.timeframe}
 
 Let me help you understand the building regulations, consent requirements, and development opportunities for this specific project. What would you like to know first?`;
+      } catch (e) {
+        console.error('Error parsing project details:', e);
+      }
     }
 
     setConversation([{
@@ -70,6 +77,10 @@ Let me help you understand the building regulations, consent requirements, and d
   };
 
   const renderMessageWithUpgradeButtons = (content: string) => {
+    if (!content || typeof content !== 'string') {
+      return content;
+    }
+    
     // Parse upgrade buttons from the format: [UPGRADE_BUTTON:planId:buttonText]
     const buttonRegex = /\[UPGRADE_BUTTON:([^:]+):([^\]]+)\]/g;
     const parts = [];
@@ -207,7 +218,13 @@ Let me help you understand the building regulations, consent requirements, and d
         clauseReferences: []
       };
 
-      setConversation(prev => [...prev, agentMessage]);
+      console.log('Adding agent message to conversation:', agentMessage);
+      setConversation(prev => {
+        console.log('Previous conversation:', prev);
+        const newConversation = [...prev, agentMessage];
+        console.log('New conversation:', newConversation);
+        return newConversation;
+      });
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
@@ -306,7 +323,7 @@ Let me help you understand the building regulations, consent requirements, and d
                     {msg.type === 'agent' ? (
                       <div>
                         <div className="whitespace-pre-wrap text-xs md:text-sm">
-                          {msg.content}
+                          {renderMessageWithUpgradeButtons(msg.content)}
                         </div>
 
                          {/* Show clause references if available */}
