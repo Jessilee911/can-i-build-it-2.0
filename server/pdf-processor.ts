@@ -17,9 +17,9 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 async function initializePDFParser() {
   if (!pdfParse) {
     try {
-      // Import pdf-parse without triggering test file loading
+      // Dynamic import without triggering test files
       const pdfParseModule = await import('pdf-parse');
-      pdfParse = pdfParseModule.default || pdfParseModule;
+      pdfParse = pdfParseModule.default;
       console.log('✅ PDF parser initialized successfully');
       return true;
     } catch (error) {
@@ -631,11 +631,10 @@ ${content}`
         return null;
       }
 
-      // Ensure PDF parser is initialized
-      await initializePDFParser();
-      
-      if (!pdfParse) {
-        console.log(`❌ pdf-parse not available for ${filename}`);
+      // Initialize PDF parser with better error handling
+      const parserReady = await initializePDFParser();
+      if (!parserReady || !pdfParse) {
+        console.log(`❌ PDF parser not available for ${filename}`);
         return null;
       }
 
@@ -643,10 +642,10 @@ ${content}`
       const pdfData = await pdfParse(dataBuffer);
       const content = pdfData.text;
 
-      console.log(`✅ Read ${filename}: ${content.length} characters`);
+      console.log(`✅ Successfully parsed ${filename}: ${content.length} characters`);
       return content;
-    } catch (error) {
-      console.log(`❌ Could not read ${filename}: ${error}`);
+    } catch (error: any) {
+      console.log(`❌ Could not read ${filename}: ${error.message || error}`);
       return null;
     }
   }
@@ -728,10 +727,10 @@ ${content}`
         let matchScore = 0;
 
         // Score based on building-specific terms
-        buildingTerms.forEach(term => {
+        for (const term of buildingTerms) {
           const termMatches = (lowerContent.match(new RegExp(term.toLowerCase(), 'g')) || []).length;
           matchScore += termMatches * (term.length > 4 ? 3 : 1); // Weight longer terms higher
-        });
+        }
 
         if (matchScore > 2) { // Require minimum relevance
           // Extract most relevant sections

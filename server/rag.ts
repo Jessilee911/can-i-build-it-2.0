@@ -481,15 +481,14 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Reference exact source documents and sections
             - Explain consequences of non-compliance clearly
 
-            CRITICAL INFRASTRUCTURE CONSTRAINTS - PROVIDE EXACT DETAILS:
-            - For Hibiscus Coast area (Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay): ALWAYS provide the specific Watercare policy details:
+            LOCATION-SPECIFIC CONSTRAINTS:
+            - ONLY mention Hibiscus Coast constraints if the user specifically asks about: Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay, or Hibiscus Coast area
+            - When Hibiscus Coast is relevant, provide these exact Watercare policy details:
               * Building consents granted before 15 November 2024 can connect when ready
               * Resource consents issued before 15 November 2024 without building consent: contact Watercare for case-by-case assessment
               * NEW resource consent applications will have condition preventing wastewater connection until Army Bay Treatment Plant upgrade (scheduled 2031)
               * This applies to ALL new buildings including minor dwellings and granny flats
-              * Alternative wastewater solutions may be required during moratorium
-            - ALWAYS include this exact link: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
-            - Direct users to use Watercare's online tool to check if their project is impacted
+              * Include link: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
 
             RESPONSE STYLE REQUIREMENTS:
             - Provide DEFINITIVE, SPECIFIC answers with exact details from official sources
