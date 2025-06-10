@@ -9,19 +9,16 @@ export function FormattedText({ content }: FormattedTextProps) {
   }
 
   // Split content by markdown patterns including links
-  const parts = content.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\))/);
+  const parts = content.split(/(\*\*.*?\*\*|\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\))/);
 
   return (
     <div className="whitespace-pre-wrap">
       {parts.map((part, index) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-          // Bold text
           return <strong key={index}>{part.slice(2, -2)}</strong>;
         } else if (part.startsWith('*') && part.endsWith('*')) {
-          // Italic text
           return <em key={index}>{part.slice(1, -1)}</em>;
         } else if (part.startsWith('`') && part.endsWith('`')) {
-          // Code text
           return <code key={index} className="bg-gray-200 px-1 rounded">{part.slice(1, -1)}</code>;
         } else if (part.includes('](') && part.startsWith('[')) {
           // Links - handle RAG source links specially
@@ -38,7 +35,7 @@ export function FormattedText({ content }: FormattedTextProps) {
             } else {
               // Regular link
               return (
-                <a key={index} href={url} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                <a key={index} href={url} className="text-blue-600 hover:text-blue-800 underline font-medium" target="_blank" rel="noopener noreferrer">
                   {text}
                 </a>
               );

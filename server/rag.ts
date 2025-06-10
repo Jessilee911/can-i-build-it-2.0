@@ -15,35 +15,35 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
   {
     id: 'exempt_001',
     content: 'General repair, maintenance, and replacement of building parts does not require consent if using the same or similar materials and maintaining original function.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_002',
     content: 'Interior alterations to existing non-residential buildings do not require consent if they do not affect structural elements, fire safety systems, or accessibility provisions.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_003',
     content: 'Single-storey detached buildings less than 10 square metres do not require building consent regardless of use.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_004',
     content: 'Windows and exterior doorways in existing dwellings and outbuildings can be replaced without consent if same size and performance level maintained.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_005',
     content: 'Internal walls and doorways in existing buildings can be altered without consent provided they are not structural or affect fire safety systems.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
@@ -76,49 +76,49 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
   {
     id: 'exempt_006',
     content: 'Repair, maintenance, and replacement of sanitary plumbing and drainage does not require consent when maintaining existing function and capacity.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_007',
     content: 'Thermal insulation installation or replacement does not require consent provided it meets Building Code requirements and does not affect structural elements.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_008',
     content: 'Porches and verandas up to 20 square metres do not require consent if single-storey and meet specific height and structural requirements.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_009',
     content: 'Decks, platforms, and bridges up to 1.5m high and meeting specific structural requirements do not require consent.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_010',
     content: 'Carports not exceeding 20 square metres in floor area do not require consent if single-storey and meeting structural requirements.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_011',
     content: 'Fences and hoardings do not require building consent regardless of height, but must comply with district plan rules.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'exempt_012',
     content: 'Retaining walls up to 1.5 metres depth of ground without surcharge do not require consent if meeting specific design requirements.',
-    source: 'MBIE Exemptions Guidance - Schedule 1 Building Act 2004',
+    source: '[MBIE Exemptions Guidance - Schedule 1 Building Act 2004](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)',
     category: 'building_consent',
     lastUpdated: new Date()
   },
@@ -466,13 +466,14 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Prioritize actionable next steps over general explanations
 
             CITATION REQUIREMENTS:
-            - Always include specific source references for building regulations
-            - Cite official government websites like building.govt.nz
-            - Reference specific Building Act sections and Building Code clauses by their exact numbers
-            - Include links to relevant MBIE guidance documents
-            - Mention specific council planning documents when applicable
-            - When referencing websites, provide the URL for easy access
-            - Always mention consulting qualified professionals or a qualified professional
+            - Always include specific source references for all building regulations mentioned
+            - Create clickable links using markdown format [Link Text](URL) for official websites
+            - Reference specific Building Act 2004 sections and Building Code clauses
+            - Include properly formatted links to MBIE guidance documents, especially:
+              * [MBIE Building Consent Exemptions Guide](https://www.building.govt.nz/projects-and-consents/planning-a-successful-build/scope-and-design/check-if-you-need-consents/building-consent-exemptions-for-low-risk-work/schedule-1-guidance)
+              * [Building Code Requirements](https://www.building.govt.nz/building-code-compliance/)
+            - Mention specific council planning documents and zones when applicable
+            - Format citations with proper links within the text, not as a separate section
             - Consistently promote our personalized property reports for comprehensive analysis`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -523,11 +524,11 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
 
       console.log('Cleaned response length:', cleanResponse.length);
       console.log('Final response preview:', cleanResponse.substring(0, 200));
-      
+
       if (cleanResponse.length === 0) {
         throw new Error('Response became empty after cleaning');
       }
-      
+
       return cleanResponse;
     } else {
       throw new Error('Empty or invalid response from OpenAI');
