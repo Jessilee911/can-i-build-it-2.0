@@ -133,7 +133,7 @@ Let me help you understand the building regulations, consent requirements, and d
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -142,19 +142,22 @@ Let me help you understand the building regulations, consent requirements, and d
       timestamp: new Date()
     };
 
-    setConversation(prev => [...prev, userMessage]);
+    const currentMessage = message.trim();
     setMessage("");
     setIsLoading(true);
+    
+    // Add user message first
+    setConversation(prev => [...prev, userMessage]);
 
     try {
       // First try building code question endpoint for clause-specific queries
-      const clauseMatch = message.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
+      const clauseMatch = currentMessage.match(/([A-Z]\d+(?:\s+\d+(?:\.\d+)*)?)/i);
 
-      if (clauseMatch || message.toLowerCase().includes('building code') || message.toLowerCase().includes('clause')) {
+      if (clauseMatch || currentMessage.toLowerCase().includes('building code') || currentMessage.toLowerCase().includes('clause')) {
         const response = await fetch('/api/building-code-question', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: message }),
+          body: JSON.stringify({ question: currentMessage }),
         });
 
         if (response.ok) {
@@ -188,7 +191,7 @@ Let me help you understand the building regulations, consent requirements, and d
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: message.trim(),
+          message: currentMessage,
           plan: userPlan,
           conversationHistory: conversation
         }),
@@ -283,7 +286,7 @@ Let me help you understand the building regulations, consent requirements, and d
 
           {/* Messages */}
           <div className="h-80 md:h-96 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4">
-            {conversation.length === 0 && (
+            {conversation.length === 0 && !isLoading && (
               <div className="text-center py-4 md:py-8">
                 <Bot className="w-8 h-8 md:w-12 md:h-12 text-blue-600 mx-auto mb-3 md:mb-4" />
                 <div className="text-left max-w-md mx-auto">
@@ -301,6 +304,11 @@ Let me help you understand the building regulations, consent requirements, and d
                 </div>
               </div>
             )}
+
+            {/* Debug info */}
+            <div className="text-xs text-gray-500 mb-2">
+              Conversation length: {conversation.length}, Loading: {isLoading ? 'yes' : 'no'}
+            </div>
 
             {conversation.map((msg) => (
               <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
