@@ -191,11 +191,22 @@ Let me help you understand the building regulations, consent requirements, and d
       const data = await response.json();
       console.log('Chat API response:', data);
 
-      // Handle different response formats
-      const responseContent = data.response || data.message || data.content;
+      // Handle different response formats - ensure we extract the actual response content
+      let responseContent = data.response || data.message || data.content || data.answer;
       
-      if (!responseContent || typeof responseContent !== 'string' || responseContent.trim() === '') {
-        throw new Error('Invalid or empty response from server');
+      // Additional debugging to see what we're getting
+      console.log('Raw response content:', responseContent);
+      console.log('Response content type:', typeof responseContent);
+      console.log('Response content length:', responseContent?.length);
+      
+      if (!responseContent || typeof responseContent !== 'string') {
+        console.error('Invalid response format:', data);
+        throw new Error('Invalid response format from server');
+      }
+      
+      if (responseContent.trim() === '') {
+        console.error('Empty response content');
+        throw new Error('Empty response from server');
       }
 
       const agentMessage: Message = {

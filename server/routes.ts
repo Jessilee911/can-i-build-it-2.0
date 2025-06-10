@@ -1777,25 +1777,22 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
         throw new Error('Invalid response from RAG system');
       }
 
-      // Comprehensive cleanup of all markdown formatting symbols
+      // Gentle cleanup of markdown formatting while preserving content
       let cleanResponse = response
-        // First pass: Convert headers to bullet points
-        .replace(/^###\s+/gm, '• ')
-        .replace(/^####\s+/gm, '  - ')
-        .replace(/\n###\s+/g, '\n• ')
-        .replace(/\n####\s+/g, '\n  - ')
-        // Second pass: Remove all remaining # symbols
-        .replace(/#{1,6}\s*/g, '')
-        // Third pass: Handle bold formatting
+        // Convert headers to plain text with colons
+        .replace(/^###\s+(.+)/gm, '$1:')
+        .replace(/^####\s+(.+)/gm, '  $1:')
+        .replace(/\n###\s+(.+)/g, '\n$1:')
+        .replace(/\n####\s+(.+)/g, '\n  $1:')
+        // Remove remaining header symbols
+        .replace(/^#{1,6}\s+/gm, '')
+        // Convert bold to plain text
         .replace(/\*\*(.*?)\*\*/g, '$1')
         .replace(/\*(.*?)\*/g, '$1')
-        // Fourth pass: Convert any remaining ** at line starts
-        .replace(/^\*\*(.+)/gm, '• $1')
-        .replace(/\n\*\*(.+)/g, '\n• $1')
-        // Final cleanup: Remove any orphaned symbols
-        .replace(/\*{1,2}/g, '')
-        .replace(/#{1,6}/g, '')
         .trim();
+
+      console.log('Response after cleaning:', cleanResponse.length, 'characters');
+      console.log('Cleaned response preview:', cleanResponse.substring(0, 200));
 
       // Return comprehensive free guidance
       return cleanResponse || getBasicFallbackResponse(message);
