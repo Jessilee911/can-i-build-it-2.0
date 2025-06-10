@@ -35,19 +35,28 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
         setCurrentAddress(addressMatch[0]);
       }
       
-      // Call the backend API for property assessment using real NZ data
-      const response = await fetch('/api/assess-property', {
+      // Call the chat API for comprehensive responses
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({
+          message: query,
+          plan: 'basic',
+          conversationHistory: conversations.map(conv => ({
+            id: Date.now().toString(),
+            type: conv.type === 'query' ? 'user' : 'agent',
+            content: conv.content,
+            timestamp: new Date()
+          }))
+        }),
       });
       
       const data = await response.json();
       
-      // Use the RAG-enhanced response that includes actual NZ building knowledge
-      let responseText = data.message;
+      // Extract the response content
+      let responseText = data.response || data.message || data.content || data.answer;
       
       // Check if this is a property-specific question that would benefit from a personalized report
       const isPropertySpecific = query.toLowerCase().includes('address') || 
@@ -137,7 +146,7 @@ Would you like to create a personalized property report for your specific projec
                     : 'rgba(255, 255, 255, 0.5)'
                 }}
               >
-                <FormattedText>{item.content}</FormattedText>
+                <FormattedText content={item.content} />
                 {item.showReportCTA && item.type === 'response' && (
                   <div className="mt-4 pt-3 border-t border-gray-300">
                     <Button 
