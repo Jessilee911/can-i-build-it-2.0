@@ -884,12 +884,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           response = "I'm here to help with your property development questions. Could you tell me more about what specific aspect you'd like guidance on?";
         }
 
-        console.log('Chat response generated successfully');
-        res.json({ response });
+        console.log('Chat response generated successfully, length:', response.length);
+        console.log('Sending response:', response.substring(0, 100) + '...');
+        return res.json({ response });
       } catch (responseError) {
         console.error("Response generation error:", responseError);
         const fallbackResponse = "I'm experiencing some technical difficulties right now. Please try rephrasing your question, and I'll do my best to help you with your property development needs.";
-        res.json({ response: fallbackResponse });
+        return res.json({ response: fallbackResponse });
       }
     } catch (error: any) {
       console.error("Chat endpoint error:", error);

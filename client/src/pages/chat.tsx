@@ -184,12 +184,24 @@ Let me help you understand the building regulations, consent requirements, and d
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log('Chat API response:', data);
+
+      // Handle different response formats
+      const responseContent = data.response || data.message || data.content;
+      
+      if (!responseContent || typeof responseContent !== 'string' || responseContent.trim() === '') {
+        throw new Error('Invalid or empty response from server');
+      }
 
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'agent',
-        content: data.response,
+        content: responseContent,
         timestamp: new Date(),
         planLevel: userPlan || undefined,
         sources: [],

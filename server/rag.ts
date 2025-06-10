@@ -513,7 +513,7 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
 
     console.log('RAG response received:', content ? content.length : 0, 'characters');
 
-    if (content) {
+    if (content && content.trim().length > 0) {
       // Basic cleanup without removing all content
       let cleanResponse = content
         .replace(/^#{1,6}\s+/gm, '') // Remove heading markers at start of lines
@@ -521,8 +521,16 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
         .replace(/\*(.*?)\*/g, '$1') // Remove italic formatting
         .trim();
 
-        console.log('Cleaned response length:', cleanResponse.length);
+      console.log('Cleaned response length:', cleanResponse.length);
+      console.log('Final response preview:', cleanResponse.substring(0, 200));
+      
+      if (cleanResponse.length === 0) {
+        throw new Error('Response became empty after cleaning');
+      }
+      
       return cleanResponse;
+    } else {
+      throw new Error('Empty or invalid response from OpenAI');
     }
   } catch (error) {
     console.error('OpenAI API error:', error);
