@@ -639,9 +639,7 @@ export function analyzeQuery(query: string): {
   // Determine building type
   if (queryLower.includes('house') || queryLower.includes('home') || queryLower.includes('dwelling')) {
     buildingType = 'house';
-  } else if (queryLower.includes('granny flat') || queryLower.includesEnhanced agent to analyze documents, ask questions for precise building code information.
-```typescript
-('minor dwelling') || 
+  } else if (queryLower.includes('granny flat') || queryLower.includes('minor dwelling') || 
              queryLower.includes('secondary') || queryLower.includes('sleep-out')) {
     buildingType = 'minor_dwelling';
   } else if (queryLower.includes('commercial') || queryLower.includes('office') || queryLower.includes('retail')) {
