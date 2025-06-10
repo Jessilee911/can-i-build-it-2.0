@@ -13,6 +13,7 @@ import PaymentSuccess from "@/pages/payment-success";
 import ReportGenerator from "@/pages/report-generator";
 import Chat from "@/pages/chat";
 import PremiumChat from "@/pages/premium-chat";
+import SimpleChat from "@/pages/simple-chat";
 
 import { Link } from "wouter";
 import { Sidebar } from "@/components/sidebar";
@@ -47,6 +48,7 @@ function Router() {
         <PaymentSuccess />
       )} />
       <Route path="/chat" component={Chat} />
+      <Route path="/simple-chat" component={SimpleChat} />
       <Route path="/premium-chat" component={() => (
         <AppLayout>
           <PremiumChat />
