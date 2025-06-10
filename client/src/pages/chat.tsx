@@ -32,10 +32,9 @@ export default function Chat() {
       setUserPlan(plan);
       // Start conversation based on plan
       initializeConversation(plan);
-    } else if (!isAuthenticated) {
-      setLocation('/');
     }
-  }, [isAuthenticated, setLocation]);
+    // Allow unauthenticated users to use chat
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -194,23 +193,9 @@ Let me help you understand the building regulations, consent requirements, and d
       // Handle different response formats - ensure we extract the actual response content
       let responseContent = data.response || data.message || data.content || data.answer;
       
-      // Additional debugging to see what we're getting
-      console.log('Raw response content:', responseContent);
-      console.log('Response content type:', typeof responseContent);
-      console.log('Response content length:', responseContent?.length);
-      console.log('Full API response data:', JSON.stringify(data, null, 2));
-      
-      if (!responseContent || typeof responseContent !== 'string') {
-        console.error('Invalid response format:', data);
-        throw new Error('Invalid response format from server');
+      if (!responseContent || typeof responseContent !== 'string' || responseContent.trim() === '') {
+        throw new Error('Invalid or empty response from server');
       }
-      
-      if (responseContent.trim() === '') {
-        console.error('Empty response content');
-        throw new Error('Empty response from server');
-      }
-      
-      console.log('About to create agent message with content:', responseContent.substring(0, 100));
 
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -222,12 +207,7 @@ Let me help you understand the building regulations, consent requirements, and d
         clauseReferences: []
       };
 
-      console.log('Created agent message:', agentMessage);
-      setConversation(prev => {
-        const newConversation = [...prev, agentMessage];
-        console.log('New conversation state:', newConversation);
-        return newConversation;
-      });
+      setConversation(prev => [...prev, agentMessage]);
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
@@ -326,7 +306,7 @@ Let me help you understand the building regulations, consent requirements, and d
                     {msg.type === 'agent' ? (
                       <div>
                         <div className="whitespace-pre-wrap text-xs md:text-sm">
-                          {renderMessageWithUpgradeButtons(msg.content)}
+                          {msg.content}
                         </div>
 
                          {/* Show clause references if available */}
