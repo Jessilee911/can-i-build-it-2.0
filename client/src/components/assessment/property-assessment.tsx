@@ -130,7 +130,7 @@ Would you like to create a personalized property report for your specific projec
                 style={{
                   backgroundColor: item.type === 'query' 
                     ? 'rgba(239, 246, 255, 0.5)' 
-                    : 'rgba(255, 255, 255, 0.5)'
+                    : '#EDEAE5'
                 }}
               >
                 <FormattedText content={item.content} />
@@ -154,7 +154,7 @@ Would you like to create a personalized property report for your specific projec
             <div className="flex justify-start">
               <div 
                 className="backdrop-blur-sm rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+                style={{ backgroundColor: '#EDEAE5' }}
               >
                 <div className="flex space-x-2 items-center">
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></div>
@@ -169,7 +169,7 @@ Would you like to create a personalized property report for your specific projec
         {/* Input Form */}
         <div 
           className="backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+          style={{ backgroundColor: '#EDEAE5' }}
         >
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input 
@@ -193,7 +193,7 @@ Would you like to create a personalized property report for your specific projec
           <>
             <AnimatedSuggestions />
             
-            <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
+            <div className="mt-2 bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm" style={{ backgroundColor: '#EDEAE5' }}>
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
                   <div className="flex items-center gap-2 mb-2">
@@ -217,7 +217,7 @@ Would you like to create a personalized property report for your specific projec
             
             {/* Pricing Plans - Show when showPlans is true */}
             {showPlans && (
-              <div className="mt-4 bg-white bg-opacity-90 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg">
+              <div className="mt-4 bg-opacity-90 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg" style={{ backgroundColor: '#EDEAE5' }}>
                 <div className="text-center mb-6">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <h3 className="text-xl font-bold text-gray-900">Choose Your Plan</h3>
@@ -231,7 +231,7 @@ Would you like to create a personalized property report for your specific projec
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
                   {/* Comprehensive Plan */}
-                  <div className="bg-white p-4 rounded-lg border-2 border-blue-500 shadow-lg relative">
+                  <div className="p-4 rounded-lg border-2 border-blue-500 shadow-lg relative" style={{ backgroundColor: '#EDEAE5' }}>
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="bg-blue-500 text-white px-3 py-1 text-xs font-medium rounded-full">
                         Most Popular
@@ -264,7 +264,7 @@ Would you like to create a personalized property report for your specific projec
                   </div>
                   
                   {/* Expert Plan */}
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                  <div className="p-4 rounded-lg border border-gray-200" style={{ backgroundColor: '#EDEAE5' }}>
                     <h4 className="font-bold text-lg mb-2">Expert Review</h4>
                     <div className="text-2xl font-bold mb-2 text-blue-600">$199</div>
                     <p className="text-sm text-gray-600 mb-4">Human expert verification</p>
@@ -304,7 +304,7 @@ Would you like to create a personalized property report for your specific projec
         
         {/* AI Disclaimer */}
         <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500 bg-white bg-opacity-60 backdrop-blur-sm px-3 py-2 rounded-full inline-block">
+          <p className="text-xs text-gray-500 bg-opacity-60 backdrop-blur-sm px-3 py-2 rounded-full inline-block" style={{ backgroundColor: '#EDEAE5' }}>
             🤖 This site is powered by AI. Responses are for informational purposes only and should not replace professional advice.
           </p>
         </div>
