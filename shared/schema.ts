@@ -200,7 +200,7 @@ export const documentSources = pgTable("document_sources", {
   id: serial("id").primaryKey(),
   filename: text("filename").notNull(),
   title: text("title").notNull(),
-  documentType: varchar("document_type").notNull(), // building_code, planning_rules, guidance
+  documentType: varchar("document_type").notNull(), // building_code, planning_rules, guidance, amendment
   authority: varchar("authority").notNull(), // MBIE, Auckland Council, etc.
   region: varchar("region"), // if region-specific
   version: varchar("version"),

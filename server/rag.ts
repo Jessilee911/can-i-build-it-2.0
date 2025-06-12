@@ -727,4 +727,8 @@ export class BuildingCodeRAGService {
 
     return answer;
   }
+
+  async answerBuildingCodeQuestion(question: string): Promise<string> {
+    return this.answerQuestion(question);
+  }
 }
