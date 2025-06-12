@@ -139,8 +139,8 @@ Would you like to create a personalized property report for your specific projec
             <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
 
             {/* Input Form integrated into header */}
-            <form onSubmit={handleSubmit} className="flex flex-col items-center space-x-3 mt-4 justify-center">
-              <div className="flex items-end space-x-3">
+            <form onSubmit={handleSubmit} className="mt-4">
+              <div className="flex items-end space-x-3 justify-center">
                 <textarea 
                   className="w-[80%] p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[60px] max-h-[250px]"
                   placeholder="Ask about building regulations, zoning, or consent requirements..."
