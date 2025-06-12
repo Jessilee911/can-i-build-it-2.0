@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 
 const askingAboutQuestions = [
-  "What consultants do I need to subdivide my property?",
-  "I want to renovate my kitchen, do I need consent?", 
+  "How long does it take to get building consent?",
   "Can I build a minor dwelling in Auckland?",
-  "How long does it take to get building consent?"
+  "I want to renovate my kitchen, do I need consent?", 
+  "What consultants do I need to subdivide my property?"
 ];
 
 const buildingTips = [
-  "Paid Reports: Get detailed property-specific analysis and sketches",
-  "Free: Access comprehensive FAQ with expert guidance",
-  "Free: Search official New Zealand building regulations database", 
-  "Free: Check consent requirements for common building projects",
-  "Free: Understand district plan zoning for any NZ property",
+  "Free: Search official New Zealand building regulations database",
   "Free: Get instant answers about building codes and zoning rules",
+  "Free: Understand district plan zoning for any NZ property",
+  "Free: Access comprehensive FAQ with expert guidance",
+  "Free: Check consent requirements for common building projects",
+  "Paid Reports: Get detailed property-specific analysis and sketches",
   "Paid Reports: Receive professional review and email consultation",
   "Paid Reports: Upload plans for expert assessment within 48 hours"
 ];

@@ -103,8 +103,7 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
-
+    <div className="min-h-screen flex items-center justify-center relative bg-[#F5EFE6]">
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
@@ -125,10 +124,10 @@ Would you like to create a personalized property report for your specific projec
               className={`flex ${item.type === 'query' ? 'justify-end' : 'justify-start'}`}
             >
               <div 
-                className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm backdrop-blur-sm border ${
+                className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm backdrop-blur-sm ${
                   item.type === 'query' 
-                    ? 'text-blue-900 border-blue-200' 
-                    : 'text-gray-900 border-gray-200'
+                    ? 'text-blue-900' 
+                    : 'text-gray-900'
                 }`}
                 style={{
                   backgroundColor: item.type === 'query' 
@@ -156,7 +155,7 @@ Would you like to create a personalized property report for your specific projec
           {isLoading && (
             <div className="flex justify-start">
               <div 
-                className="backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm"
+                className="backdrop-blur-sm rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm"
                 style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
               >
                 <div className="flex space-x-2 items-center">
@@ -171,7 +170,7 @@ Would you like to create a personalized property report for your specific projec
         
         {/* Input Form */}
         <div 
-          className="backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm border border-gray-200"
+          className="backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm"
           style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
         >
           <form onSubmit={handleSubmit} className="flex space-x-2">

@@ -104,10 +104,8 @@ const PropertyData = () => {
   
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white shadow rounded-lg mb-6">
-        {/* Main search component */}
-          <PropertyAssessment showPricing={showPricing} />
-      </div>
+      {/* Main search component */}
+      <PropertyAssessment showPricing={showPricing} />
       {/* Simple Property Details Modal */}
       {showPropertyDetails && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
