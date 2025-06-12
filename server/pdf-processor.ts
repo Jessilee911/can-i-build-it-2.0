@@ -179,7 +179,7 @@ export class PDFProcessor {
     return content.match(this.contentPatterns.table) || [];
   }
 
-  private extractFigureReferences(content: string[]): string[] {
+  private extractFigureReferences(content: string): string[] {
     return content.match(this.contentPatterns.figure) || [];
   }
 
