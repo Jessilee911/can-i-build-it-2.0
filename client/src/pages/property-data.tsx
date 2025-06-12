@@ -104,12 +104,21 @@ const PropertyData = () => {
   
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Main search component */}
-      <PropertyAssessment showPricing={showPricing} />
+      <div className="bg-white shadow rounded-lg mb-6">
+        <div className="p-6">
+          {/* Main search component */}
+          <PropertyAssessment showPricing={showPricing} />
+          
+
+        </div>
+      </div>
+      
+
+      
       {/* Simple Property Details Modal */}
       {showPropertyDetails && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="rounded-lg w-full max-w-md mx-4 p-6" style={{ backgroundColor: '#EDEAE5' }}>
+          <div className="bg-white rounded-lg w-full max-w-md mx-4 p-6">
             <h2 className="text-xl font-bold mb-4">Create your {selectedPlan}</h2>
             <p className="text-sm text-gray-600 mb-4">
               Please provide the details below to help us generate an accurate property report.
@@ -210,6 +219,7 @@ const PropertyData = () => {
           </div>
         </div>
       )}
+      
       {/* Always visible blue disclaimer at bottom */}
       <div className="mt-6 text-center">
         <p className="text-sm text-blue-600">

@@ -2,14 +2,21 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircleIcon, FileTextIcon, DownloadIcon } from "lucide-react";
-
+import nzMapPath from "@assets/NZ.png";
 
 export default function ReportGenerator() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background with floating NZ map */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
-
+        <div className="absolute inset-0 opacity-5">
+          <img
+            src={nzMapPath}
+            alt=""
+            className="w-full h-full object-cover animate-float"
+            style={{ transform: 'scale(1.2)' }}
+          />
+        </div>
       </div>
 
       {/* Main Content */}

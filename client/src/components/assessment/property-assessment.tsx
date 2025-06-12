@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
-
+import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
@@ -103,16 +103,30 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-[#F9F5EF]">
+    <div className="min-h-screen flex items-center justify-center relative">
+      {/* NZ Map Watermark Background */}
+      <div 
+        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
+        style={{
+          backgroundImage: `url(${nzMapImage})`,
+          backgroundSize: '60%',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          animation: 'float 20s ease-in-out infinite',
+        }}
+      />
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
           {conversations.length === 0 && (
             <div 
-              className="text-center py-6"
+              className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
             >
               <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
-              <p className="text-gray-600 max-w-md mx-auto text-[12px]">Ask me about building, renovating, or developing property in New Zealand or specific building code related questions.</p>
+              <p className="text-gray-600 max-w-md mx-auto text-[12px]">
+                Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
+              </p>
             </div>
           )}
           
@@ -122,15 +136,15 @@ Would you like to create a personalized property report for your specific projec
               className={`flex ${item.type === 'query' ? 'justify-end' : 'justify-start'}`}
             >
               <div 
-                className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm backdrop-blur-sm ${
+                className={`max-w-[80%] rounded-lg p-4 shadow-lg drop-shadow-sm backdrop-blur-sm border ${
                   item.type === 'query' 
-                    ? 'text-blue-900' 
-                    : 'text-gray-900'
+                    ? 'text-blue-900 border-blue-200' 
+                    : 'text-gray-900 border-gray-200'
                 }`}
                 style={{
                   backgroundColor: item.type === 'query' 
                     ? 'rgba(239, 246, 255, 0.5)' 
-                    : '#EDEAE5'
+                    : 'rgba(255, 255, 255, 0.5)'
                 }}
               >
                 <FormattedText content={item.content} />
@@ -153,8 +167,8 @@ Would you like to create a personalized property report for your specific projec
           {isLoading && (
             <div className="flex justify-start">
               <div 
-                className="backdrop-blur-sm rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm"
-                style={{ backgroundColor: '#EDEAE5' }}
+                className="backdrop-blur-sm border border-gray-200 rounded-lg p-4 max-w-[80%] shadow-lg drop-shadow-sm"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
               >
                 <div className="flex space-x-2 items-center">
                   <div className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></div>
@@ -167,7 +181,10 @@ Would you like to create a personalized property report for your specific projec
         </div>
         
         {/* Input Form */}
-        <div className="p-4">
+        <div 
+          className="backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm border border-gray-200"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+        >
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input 
               type="text"
@@ -190,7 +207,7 @@ Would you like to create a personalized property report for your specific projec
           <>
             <AnimatedSuggestions />
             
-            <div className="mt-2 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm bg-[#f5f5e9]" style={{ backgroundColor: '#EDEAE5' }}>
+            <div className="mt-2 bg-white bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm">
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
                   <div className="flex items-center gap-2 mb-2">
@@ -214,7 +231,7 @@ Would you like to create a personalized property report for your specific projec
             
             {/* Pricing Plans - Show when showPlans is true */}
             {showPlans && (
-              <div className="mt-4 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg bg-[#ffffff]" style={{ backgroundColor: '#EDEAE5' }}>
+              <div className="mt-4 bg-white bg-opacity-90 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg">
                 <div className="text-center mb-6">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <h3 className="text-xl font-bold text-gray-900">Choose Your Plan</h3>
@@ -228,7 +245,7 @@ Would you like to create a personalized property report for your specific projec
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
                   {/* Comprehensive Plan */}
-                  <div className="p-4 rounded-lg border-2 border-blue-500 shadow-lg relative" style={{ backgroundColor: '#EDEAE5' }}>
+                  <div className="bg-white p-4 rounded-lg border-2 border-blue-500 shadow-lg relative">
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="bg-blue-500 text-white px-3 py-1 text-xs font-medium rounded-full">
                         Most Popular
@@ -251,17 +268,22 @@ Would you like to create a personalized property report for your specific projec
                         <span className="text-green-500 mr-2">✓</span>
                         Custom building consent requirements
                       </li>
-                      
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Upload your plans
+                      </li>
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
                         Site constraints analysis
                       </li>
                     </ul>
-                    
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      Get Comprehensive Report
+                    </Button>
                   </div>
                   
                   {/* Expert Plan */}
-                  <div className="p-4 rounded-lg border border-gray-200" style={{ backgroundColor: '#EDEAE5' }}>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
                     <h4 className="font-bold text-lg mb-2">Expert Review</h4>
                     <div className="text-2xl font-bold mb-2 text-blue-600">$199</div>
                     <p className="text-sm text-gray-600 mb-4">Human expert verification</p>
@@ -286,12 +308,10 @@ Would you like to create a personalized property report for your specific projec
                         <span className="text-green-500 mr-2">✓</span>
                         Email consultation
                       </li>
-                      <li className="text-sm flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
-                        Upload plans and sketches
-                      </li>
                     </ul>
-                    
+                    <Button variant="outline" className="w-full">
+                      Get Expert Review
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -301,7 +321,7 @@ Would you like to create a personalized property report for your specific projec
         
         {/* AI Disclaimer */}
         <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500 backdrop-blur-sm px-3 py-2 rounded-full inline-block bg-[#f7f5f5]" style={{ backgroundColor: '#EDEAE5' }}>
+          <p className="text-xs text-gray-500 bg-white bg-opacity-60 backdrop-blur-sm px-3 py-2 rounded-full inline-block">
             🤖 This site is powered by AI. Responses are for informational purposes only and should not replace professional advice.
           </p>
         </div>

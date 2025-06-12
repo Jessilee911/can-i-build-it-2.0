@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 
 const askingAboutQuestions = [
-  "I want to renovate my kitchen, do I need consent?",
-  "How long does it take to get building consent?",
   "Can I build a minor dwelling in Auckland?",
-  "What consultants do I need to subdivide my property?"
+  "I want to renovate my kitchen, do I need consent?", 
+  "What consultants do I need to subdivide my property?",
+  "How long does it take to get building consent?"
 ];
 
 const buildingTips = [
-  "Paid Reports: Get detailed property-specific analysis and sketches",
-  "Free: Search official New Zealand building regulations database",
   "Free: Get instant answers about building codes and zoning rules",
-  "Free: Understand district plan zoning for any NZ property",
   "Free: Access comprehensive FAQ with expert guidance",
+  "Free: Search official New Zealand building regulations database", 
   "Free: Check consent requirements for common building projects",
+  "Free: Understand district plan zoning for any NZ property",
+  "Paid Reports: Get detailed property-specific analysis and sketches",
   "Paid Reports: Receive professional review and email consultation",
   "Paid Reports: Upload plans for expert assessment within 48 hours"
 ];
@@ -50,7 +50,39 @@ export function AnimatedSuggestions() {
     return () => clearInterval(tipInterval);
   }, []);
 
-  return null;
+  return (
+    <div className="mt-2 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
+        <div 
+          className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+        >
+          <h3 className="font-medium text-gray-900 mb-2">Try asking about:</h3>
+          <div 
+            className={`text-gray-700 min-h-[24px] transition-opacity duration-300 ${
+              questionVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <span className="text-blue-700">• "{askingAboutQuestions[currentQuestionIndex]}"</span>
+          </div>
+        </div>
+        
+        <div 
+          className="backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm text-[14px]"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+        >
+          <h3 className="font-medium text-gray-900 mb-2">Site Features:</h3>
+          <div 
+            className={`text-gray-700 min-h-[24px] transition-opacity duration-300 ${
+              tipVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <span className="text-green-700">• {buildingTips[currentTipIndex]}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default AnimatedSuggestions;

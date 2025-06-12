@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 import { Send, Bot, User, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-
+import nzMapImage from "@assets/NZ.png";
 
 interface Message {
   id: string;
@@ -253,7 +253,14 @@ Let me help you understand the building regulations, consent requirements, and d
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
-
+      {/* Animated NZ Map Background */}
+      <div className="absolute inset-0 opacity-5">
+        <img 
+          src={nzMapImage} 
+          alt="New Zealand Map"
+          className="w-full h-full object-cover animate-pulse"
+        />
+      </div>
 
       <div className="relative z-10 max-w-4xl mx-auto p-2 md:p-4">
         {/* Header */}

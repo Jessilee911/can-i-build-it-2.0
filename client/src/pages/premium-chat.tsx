@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { Bot, User, Send, FileText, Download, MapPin, Calculator, Clock, AlertTriangle, Upload, Mic, MicOff, Star as StarIcon } from "lucide-react";
 import { AddressAutocomplete } from "@/components/address-autocomplete";
-
+import nzMapImage from "@assets/NZ.png";
 
 interface Message {
   id: string;
@@ -302,7 +302,14 @@ I'll provide comprehensive analysis including specific costs, timelines, and det
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-green-50">
-
+      {/* Premium Background */}
+      <div className="absolute inset-0 opacity-10">
+        <img 
+          src={nzMapImage} 
+          alt="New Zealand Map"
+          className="w-full h-full object-cover animate-pulse"
+        />
+      </div>
 
       <div className="relative z-10 max-w-6xl mx-auto p-4">
         {/* Premium Header */}
