@@ -301,7 +301,7 @@ Would you like to create a personalized property report for your specific projec
         
         {/* AI Disclaimer */}
         <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500 bg-opacity-60 backdrop-blur-sm px-3 py-2 rounded-full inline-block" style={{ backgroundColor: '#EDEAE5' }}>
+          <p className="text-xs text-gray-500 backdrop-blur-sm px-3 py-2 rounded-full inline-block bg-[#f7f5f5]" style={{ backgroundColor: '#EDEAE5' }}>
             🤖 This site is powered by AI. Responses are for informational purposes only and should not replace professional advice.
           </p>
         </div>
