@@ -122,11 +122,11 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     category: 'building_consent',
     lastUpdated: new Date()
   },
-  // Building Code B2 - Durability requirements with direct quotes
+  // Building Code B2 - Durability requirements
   {
     id: 'b2_001',
-    content: 'Building Code B2.3.1 states: "Building elements must have a durability of not less than 5 years if they are easily replaceable, 15 years if they are moderately difficult to replace, and 50 years if they are difficult to replace or have a structural function." This specifically applies to structural elements, primary weatherproofing systems, and building envelope components.',
-    source: 'Building Code B2 Durability - Clause B2.3.1',
+    content: 'Building elements must have minimum durability periods: 5 years for easily replaceable components, 15 years for moderately difficult to replace, 50 years for structural and primary weatherproofing elements.',
+    source: 'Building Code B2 Durability',
     category: 'building_code',
     lastUpdated: new Date()
   },
@@ -153,19 +153,19 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     category: 'building_code',
     lastUpdated: new Date()
   },
-  // Building Code G4 - Ventilation with specific requirements
+  // Building Code G4 - Ventilation
   {
     id: 'g4_001',
-    content: 'Building Code G4/AS1 clause 1.1.1 states: "Every space intended for human occupancy shall be provided with natural ventilation by openable windows, doors, or skylights with an openable area of not less than 5% of the floor area of the space." For kitchens, G4/AS1 clause 2.2.1 requires: "Mechanical ventilation at a rate of not less than 50 litres per second during cooking operations."',
-    source: 'Building Code G4/AS1 Ventilation - Clauses 1.1.1 and 2.2.1',
+    content: 'Habitable rooms require natural ventilation of 5% of floor area or mechanical ventilation. Kitchens need 50L/s extraction rate during cooking.',
+    source: 'Building Code G4 Ventilation',
     category: 'building_code',
     lastUpdated: new Date()
   },
-  // Building Code F9 - Pool Fencing with specific requirements
+  // Building Code F9 - Pool Fencing
   {
     id: 'f9_001',
-    content: 'Building Code F9/AS1 clause 2.1 states: "Barriers shall be not less than 1200mm in height measured vertically from the ground level." F9/AS1 clause 3.1 requires: "Gates and doors in barriers shall be fitted with latching devices that are self-latching from any position and positioned not less than 1500mm above ground level." Pool fencing applies to pools capable of being filled to a depth greater than 400mm.',
-    source: 'Building Code F9/AS1 Pool Access - Clauses 2.1 and 3.1',
+    content: 'Swimming pools must be fenced with 1.2m high barriers, self-closing and self-latching gates. Pool fencing is required for pools capable of holding 400mm+ depth.',
+    source: 'Building Code F9 Pool Access',
     category: 'building_code',
     lastUpdated: new Date()
   },
@@ -241,40 +241,6 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     source: 'Building Act 2004 - Part 3 Compliance and Enforcement',
     category: 'building_consent',
     lastUpdated: new Date()
-  },
-  // E2 External Moisture - Critical weatherproofing requirements
-  {
-    id: 'e2_001',
-    content: 'E2/AS1 clause 9.1.3.1 states: "Horizontal cladding joints shall have a minimum 6mm gap and be sealed with sealant or fitted with a proprietary jointing system." E2/AS1 clause 9.1.4.1 requires: "Vertical cladding joints shall be either sealed or drained and ventilated." Window head flashings must have minimum 50mm laps and be installed to AS1 Table 23 specifications.',
-    source: 'Building Code E2/AS1 External Moisture - Clauses 9.1.3.1 and 9.1.4.1',
-    category: 'building_code',
-    lastUpdated: new Date()
-  },
-  // NZS 3604 - Specific timber framing requirements
-  {
-    id: 'nzs3604_003',
-    content: 'NZS 3604:2011 clause 7.3.2 states: "Bottom plates shall be treated timber and shall be fixed to the foundation with anchor bolts at maximum 1.8m centres." Clause 8.2.1 requires: "Wall framing shall use minimum 90x45mm framing timber at maximum 600mm centres for external walls and load-bearing internal walls."',
-    source: 'NZS 3604:2011 Timber-framed buildings - Clauses 7.3.2 and 8.2.1',
-    category: 'building_code',
-    lastUpdated: new Date()
-  },
-  
-  // D1.3.3 - Landings specific knowledge
-  {
-    id: 'd1_3_3_landings',
-    content: 'D1.3.3 Landings: Building Code D1.3.3 specifies requirements for landings on access routes. Landings shall be provided at the top and bottom of ramps and at intermediate points where required. Landing dimensions must be sufficient for wheelchair maneuvering. The minimum landing length parallel to the direction of travel shall be 1200mm. For doorways, landings must extend at least 300mm beyond the latch side of the door.',
-    source: 'Building Code D1 Access Routes - Clause D1.3.3',
-    category: 'building_code',
-    lastUpdated: new Date()
-  },
-  
-  // Enhanced D1 Access Routes knowledge
-  {
-    id: 'd1_access_general',
-    content: 'D1 Access Routes provides requirements for accessible paths of travel to and within buildings. Key areas include: D1.3.1 (Accessible routes), D1.3.2 (Ramps), D1.3.3 (Landings), D1.3.4 (Doorways and doors), D1.3.5 (Corridors and passages). These ensure buildings are accessible to people with disabilities.',
-    source: 'Building Code D1 Access Routes - Overview',
-    category: 'building_code',
-    lastUpdated: new Date()
   }
 ];
 
@@ -283,46 +249,27 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
  */
 export function extractBuildingCodeClauses(query: string): string[] {
   const clausePatterns = [
-    // Primary patterns for common formats
-    /\b([A-Z]\d+)\s+(\d+(?:\.\d+)*)\b/g, // D1 3.3, B1 2.1.4, E2 3.1
-    /\b([A-Z]\d+)\.(\d+(?:\.\d+)*)\b/g,  // D1.3.3, B1.2.1.4, E2.3.1
-    /\b([A-Z]\d+(?:\.\d+)*(?:\.\d+)*)\b/g, // B1, E2.3.1, G4.2 (existing format)
-    // Secondary patterns
+    /\b([A-Z]\d+(?:\.\d+)*(?:\.\d+)*)\b/g, // B1, E2.3.1, G4.2
+    /\b([A-Z]\d+\s+\d+(?:\.\d+)*)\b/g, // B1 3.1, E2 3.1.2
     /Building Code\s+([A-Z]\d+(?:\.\d+)*)/gi,
     /NZBC\s+([A-Z]\d+(?:\.\d+)*)/gi,
-    /clause\s+([A-Z]\d+(?:\s*\d+(?:\.\d+)*)?)/gi
+    /clause\s+([A-Z]\d+(?:\.\d+)*)/gi
   ];
 
   const clauses = new Set<string>();
 
-  // Handle spaced format specifically (D1 3.3 -> D1.3.3)
-  const spacedPattern = /\b([A-Z]\d+)\s+(\d+(?:\.\d+)*)\b/g;
-  let match;
-  while ((match = spacedPattern.exec(query)) !== null) {
-    const normalized = `${match[1]}.${match[2]}`;
-    clauses.add(normalized);
-    console.log(`Found spaced clause: ${match[1]} ${match[2]} -> ${normalized}`);
-  }
-
-  // Handle other patterns
-  clausePatterns.slice(1).forEach(pattern => {
+  clausePatterns.forEach(pattern => {
     const matches = query.matchAll(pattern);
     for (const match of matches) {
       if (match[1]) {
-        let normalized = match[1].replace(/\s+/g, '.').toUpperCase();
-        // Add second capture group if exists (for clause patterns)
-        if (match[2]) {
-          normalized = `${match[1]}.${match[2]}`;
-        }
+        // Normalize clause format (remove spaces, ensure consistent format)
+        const normalized = match[1].replace(/\s+/g, '.').toUpperCase();
         clauses.add(normalized);
-        console.log(`Found clause pattern: ${match[0]} -> ${normalized}`);
       }
     }
   });
 
-  const result = Array.from(clauses);
-  console.log(`Final extracted clauses: ${result.join(', ')}`);
-  return result;
+  return Array.from(clauses);
 }
 
 /**
@@ -460,8 +407,6 @@ SOURCE: MBIE Building Consent Exemptions Guide - Schedule 1 Building Act 2004`;
 
   // Build comprehensive context with specific clause information
   let clauseContext = '';
-  let pdfClauseContext = '';
-  
   if (requestedClauses.length > 0) {
     clauseContext = `\n\nSPECIFIC BUILDING CODE CLAUSES REQUESTED: ${requestedClauses.join(', ')}\n`;
 
@@ -477,18 +422,6 @@ SOURCE: MBIE Building Consent Exemptions Guide - Schedule 1 Building Act 2004`;
       clauseContext += '\nEXACT CLAUSE INFORMATION FROM BUILDING CODE:\n';
       clauseMatches.forEach(match => {
         clauseContext += `${match.source}: ${match.content}\n\n`;
-      });
-    }
-  }
-
-  // Check if we have PDF results for specific clauses
-  if (userContext?.pdfResults && userContext.pdfResults.length > 0) {
-    const clauseResults = userContext.pdfResults.filter(result => result.type === 'building_code_clause');
-    if (clauseResults.length > 0) {
-      pdfClauseContext = '\n\nFROM BUILDING CODE DOCUMENTS:\n';
-      clauseResults.forEach(result => {
-        pdfClauseContext += `${result.clauseNumber}: ${result.content}\n`;
-        pdfClauseContext += `Source: ${result.source}\n\n`;
       });
     }
   }
@@ -523,61 +456,30 @@ Would you like to set up AI assistance so I can provide detailed property and bu
   }
 
   try {
-    // Enhanced system prompt with detailed code-specific response format
-    const systemPrompt = `You are an expert New Zealand Building Code advisor with access to comprehensive building code documentation. When answering questions about building requirements, follow this exact structure:
+    // Enhanced system prompt with clause-specific instructions
+    const systemPrompt = `You are an expert New Zealand building regulatory authority with definitive knowledge of Building Code requirements. You provide AUTHORITATIVE, SPECIFIC answers based on official legislation and MBIE guidance.
 
-            CRITICAL: When specific Building Code clause content is provided in the context below, use it as the PRIMARY source and quote it directly.
+            EXPERT RESPONSE REQUIREMENTS:
+            - Give definitive YES/NO answers where legislation provides clear guidance
+            - State exact Building Act 2004 and Building Code requirements
+            - Quote specific exemption conditions from Schedule 1
+            - Provide exact cost estimates and timeframes based on standard council processes
+            - Reference specific clause numbers and their exact requirements
+            - State consequences of non-compliance definitively
 
-            RESPONSE FORMAT REQUIREMENTS:
-            1. Direct Answer: Start with a clear YES/NO or definitive statement in bold formatting
-            2. Code References: Cite specific clauses, standards, and sections
-            3. Direct Quotes: Include relevant quotes from the building code using quotation marks
-            4. Requirements List: Use bullet points for specific requirements
-            5. Exceptions: Note any exceptions or alternative compliance paths
-            6. Offer Help: End by offering additional assistance
+            CRITICAL KNOWLEDGE BASE:
+            - Building Act 2004 sections and specific exemption criteria
+            - MBIE Schedule 1 exemptions with exact conditions
+            - Building Code clauses with precise requirements  
+            - Standard council fees and processing times
+            - Legal consequences of unauthorized work
 
-            SEARCH STRATEGY:
-            - Always search for relevant Building Code clauses (B1, B2, D1, E1, E2, E3, F2, F4, F5, F7, F9, G1, G3, G4, G6, G7, G8, G10, G11, G12, G13, H1, etc.)
-            - Look for specific standards (NZS 3604, NZS 4229, E2/AS1, E2/AS2, etc.)
-            - Find exact requirements, dimensions, and specifications
-            - Identify any exceptions or alternative methods
-
-            EXAMPLE RESPONSE STRUCTURE:
-            **[Direct Answer]**
-            
-            According to [Specific Code Reference]:
-            "[Direct quote from building code]"
-            
-            [Component/requirement name] are required to:
-            • [Specific requirement 1]
-            • [Specific requirement 2] 
-            • [Specific requirement 3]
-            
-            There are some exceptions [describe exceptions if any].
-            
-            Let me know if you need [specific additional help offered].
-
-            KEY REQUIREMENTS:
-            - Be authoritative and definitive
-            - Always cite specific clauses and standards
-            - Include direct quotes when available
-            - Use bullet points for lists of requirements
-            - Mention exceptions where they exist
-            - Keep responses concise but comprehensive
-            - Offer specific follow-up help
-
-            FOR BUILDING CODE QUESTIONS:
-            - Search E2/AS1 for moisture and weatherproofing requirements
-            - Check NZS 3604 for timber framing requirements
-            - Look for specific dimensional requirements (overlaps, clearances, etc.)
-            - Identify compliance pathways and alternatives
-            - Reference BRANZ guidelines where relevant
-
-            RESPONSE TONE:
-            - Professional and authoritative
-            - Clear and direct
-            - Helpful and practical
-            - Code-focused with specific references
+            RESPONSE STYLE:
+            - Lead with definitive answers (YES/NO, REQUIRED/NOT REQUIRED)
+            - State exact legal requirements, not general advice
+            - Provide specific costs, timeframes, and documentation requirements
+            - Reference exact source documents and sections
+            - Explain consequences of non-compliance clearly
 
             LOCATION-SPECIFIC CONSTRAINTS:
             - ONLY mention Hibiscus Coast constraints if the user specifically asks about: Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay, or Hibiscus Coast area
@@ -630,11 +532,11 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             role: 'user',
             content: `${query}
 
-${clauseContext}${pdfClauseContext}${knowledgeContext}
+${clauseContext}${knowledgeContext}
 
 Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. If specific Building Code clauses were mentioned, quote them directly and explain their practical application.
 
-IMPORTANT: When clause content is provided above from Building Code documents, use that as your primary source and quote it directly. Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
+IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
           }
         ],
         max_tokens: 2000,
@@ -652,10 +554,11 @@ IMPORTANT: When clause content is provided above from Building Code documents, u
     console.log('RAG response received:', content ? content.length : 0, 'characters');
 
     if (content && content.trim().length > 0) {
-      // Preserve bold formatting for direct answers but clean other markdown
+      // Basic cleanup without removing all content
       let cleanResponse = content
         .replace(/^#{1,6}\s+/gm, '') // Remove heading markers at start of lines
-        .replace(/\*((?!\*)[^*]+)\*/g, '$1') // Remove single asterisk italic formatting but preserve double asterisk bold
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold formatting
+        .replace(/\*(.*?)\*/g, '$1') // Remove italic formatting
         .trim();
 
       console.log('Cleaned response length:', cleanResponse.length);

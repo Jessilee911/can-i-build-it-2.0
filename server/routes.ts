@@ -859,7 +859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { pdfProcessor } = await import('./pdf-processor');
         
         // Search through uploaded PDF documents with better error handling
-        let pdfSearchResults: { results: any[], sources: string[] } = { results: [], sources: [] };
+        let pdfSearchResults = { results: [], sources: [] };
         try {
           // First ensure PDF parser is properly initialized
           await pdfProcessor.getAvailablePDFs(); // This will show available files
@@ -881,9 +881,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           pdfResults: pdfSearchResults.results 
         });
 
-        // PDF content is used internally for response generation but not appended to final response
+        // Enhance with PDF content if found
         if (pdfSearchResults.results.length > 0) {
+          const relevantContent = pdfSearchResults.results
+            .slice(0, 3)
+            .map(result => {
+              if (result.type === 'building_code_clause') {
+                return `BUILDING CODE ${result.clauseNumber}: ${result.content}`;
+              } else {
+                return `${result.content}`;
+              }
+            })
+            .join('\n\n');
+
           sources = pdfSearchResults.sources;
+          
+          // Append PDF evidence to support the definitive answer
+          response += `\n\nDOCUMENT EVIDENCE:\n${relevantContent}`;
         }
 
         console.log('Generated response length:', response ? response.length : 0);
@@ -892,6 +906,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!response || typeof response !== 'string' || response.trim().length === 0) {
           console.log('Empty or invalid response, using fallback');
           response = "I'm here to help with your property development questions. Could you tell me more about what specific aspect you'd like guidance on?";
+        }
+
+        // Add source information if PDFs were used
+        if (sources.length > 0) {
+          response += `\n\n**Sources consulted:** ${sources.join(', ')}`;
         }
 
         console.log('Chat response generated successfully, length:', response.length);
@@ -1038,9 +1057,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Question is required" });
       }
 
-      const { generateRAGResponse } = await import("./rag");
+      const { BuildingCodeRAGService } = await import("./rag");
+      const ragService = new BuildingCodeRAGService();
 
-      const result = await generateRAGResponse(question);
+      const result = await ragService.answerBuildingCodeQuestion(question);
 
       res.json(result);
     } catch (error) {
@@ -1350,11 +1370,11 @@ function performLocalAddressSearch(query: string) {
         activities.find(a => a.id === parseInt(id))
       );
 
-      if (!activity || !activity.metadata || typeof activity.metadata !== 'object' || !('reportData' in activity.metadata)) {
+      if (!activity || !activity.metadata.reportData) {
         return res.status(404).json({ message: "Report not found" });
       }
 
-      const reportData = (activity.metadata as any).reportData;
+      const reportData = activity.metadata.reportData;
       const pdfBuffer = await generatePDF(reportData);
 
       res.setHeader('Content-Type', 'application/pdf');
@@ -1844,4 +1864,3 @@ function getBasicFallbackResponse(message: string): string {
   
   return "I'm here to help with your New Zealand property development questions. I can provide guidance on building consents, zoning rules, building code requirements, and development processes. What specific aspect would you like to know more about?";
 }
-

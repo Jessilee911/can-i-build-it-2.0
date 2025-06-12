@@ -12,7 +12,7 @@ interface MBIEDocument {
   url: string;
   lastModified: string;
   checksum: string;
-  documentType: 'building_code' | 'guidance' | 'planning_rules';
+  documentType: 'building_code' | 'guidance' | 'amendment';
 }
 
 interface MonitorConfig {
@@ -213,7 +213,7 @@ export class MBIEUpdateMonitor {
             url: fullUrl,
             lastModified: new Date().toISOString(),
             checksum,
-            documentType: 'guidance'
+            documentType: 'amendment'
           };
 
           if (this.isDocumentUpdated(document)) {
@@ -295,7 +295,7 @@ export class MBIEUpdateMonitor {
         await pdfProcessor.processPDF(filepath, {
           title: document.title,
           authority: 'MBIE',
-          documentType: 'guidance',
+          documentType: document.documentType,
           version: 'Latest'
         });
 

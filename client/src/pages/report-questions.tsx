@@ -1,74 +1,141 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, ArrowRight, Home } from "lucide-react";
-import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
+import { ArrowRight, ArrowLeft, CheckCircle } from "lucide-react";
 
-const reportQuestionsSchema = z.object({
-  propertyAddress: z.string().min(1, "Property address is required"),
-  projectDescription: z.string().min(10, "Please provide at least 10 characters"),
-  budgetRange: z.string().min(1, "Please select a budget range"),
-  timeframe: z.string().min(1, "Please select a timeframe"),
-  contactName: z.string().min(2, "Name must be at least 2 characters"),
-  contactEmail: z.string().email("Please enter a valid email address"),
-  contactPhone: z.string().optional(),
-  specificQuestions: z.string().optional(),
-});
+interface QuestionData {
+  propertyAddress: string;
+  projectDescription: string;
+  budgetRange: string;
+  timeframe: string;
+}
 
-type ReportQuestionsForm = z.infer<typeof reportQuestionsSchema>;
+const steps = [
+  {
+    id: 'address',
+    title: 'Property Address',
+    description: 'Enter the full address of the property you want to assess',
+  },
+  {
+    id: 'project',
+    title: 'Project Description',
+    description: 'Describe what you want to build, renovate, or develop',
+  },
+  {
+    id: 'budget',
+    title: 'Budget Range',
+    description: 'Select your expected budget for this project',
+  },
+  {
+    id: 'timeframe',
+    title: 'Expected Timeframe',
+    description: 'When do you plan to start and complete this project?',
+  }
+];
+
+const budgetOptions = [
+  'Under $50,000',
+  '$50,000 - $100,000',
+  '$100,000 - $250,000',
+  '$250,000 - $500,000',
+  '$500,000 - $1,000,000',
+  'Over $1,000,000'
+];
+
+const timeframeOptions = [
+  'Within 3 months',
+  '3-6 months',
+  '6-12 months',
+  '1-2 years',
+  'More than 2 years',
+  'Just exploring options'
+];
 
 export default function ReportQuestions() {
-  const [, setLocation] = useLocation();
+  const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const form = useForm<ReportQuestionsForm>({
-    resolver: zodResolver(reportQuestionsSchema),
-    defaultValues: {
-      propertyAddress: "",
-      projectDescription: "",
-      budgetRange: "",
-      timeframe: "",
-      contactName: "",
-      contactEmail: "",
-      contactPhone: "",
-      specificQuestions: "",
-    },
+  const [questionData, setQuestionData] = useState<QuestionData>({
+    propertyAddress: '',
+    projectDescription: '',
+    budgetRange: '',
+    timeframe: ''
   });
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
-  const onSubmit = async (data: ReportQuestionsForm) => {
+  // Get plan from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const planId = urlParams.get('plan') || 'detailed';
+
+  const updateQuestionData = (field: keyof QuestionData, value: string) => {
+    setQuestionData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const canProceed = () => {
+    switch (currentStep) {
+      case 0: return questionData.propertyAddress.trim().length > 0;
+      case 1: return questionData.projectDescription.trim().length > 0;
+      case 2: return questionData.budgetRange.length > 0;
+      case 3: return questionData.timeframe.length > 0;
+      default: return false;
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/generate-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId: "premium_report",
-          ...data,
-        }),
+      const response = await apiRequest("POST", "/api/generate-report", {
+        planId,
+        ...questionData
       });
 
       if (response.ok) {
+        const result = await response.json();
+        
+        // Store project details for chat
+        sessionStorage.setItem('projectDetails', JSON.stringify({
+          propertyAddress: questionData.propertyAddress,
+          projectDescription: questionData.projectDescription,
+          budgetRange: questionData.budgetRange,
+          timeframe: questionData.timeframe,
+          planId: planId
+        }));
+        
+        // Store selected plan
+        sessionStorage.setItem('selectedPlan', planId);
+        
         toast({
-          title: "Report Request Submitted",
-          description: "Your premium report request has been submitted successfully.",
+          title: "Redirecting to Chat",
+          description: "Let's discuss your property development project!",
         });
-        setLocation("/report-success");
+        
+        // Redirect to chat interface
+        setLocation('/chat');
       } else {
-        throw new Error("Failed to submit report request");
+        throw new Error('Failed to process request');
       }
     } catch (error) {
+      console.error('Report generation failed:', error);
       toast({
-        title: "Submission Failed",
-        description: "Unable to submit your report request. Please try again.",
+        title: "Error",
+        description: "Failed to generate your report. Please try again or contact support.",
         variant: "destructive",
       });
     } finally {
@@ -76,216 +143,167 @@ export default function ReportQuestions() {
     }
   };
 
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div className="space-y-4">
+            <Input
+              placeholder="e.g., 123 Queen Street, Auckland 1010"
+              value={questionData.propertyAddress}
+              onChange={(e) => updateQuestionData('propertyAddress', e.target.value)}
+              className="text-lg p-4"
+              autoFocus
+            />
+            <p className="text-sm text-gray-500">
+              Please provide the complete address including street number, street name, suburb, and postcode
+            </p>
+          </div>
+        );
+      
+      case 1:
+        return (
+          <div className="space-y-4">
+            <Textarea
+              placeholder="e.g., I want to build a two-story extension with 3 bedrooms and 2 bathrooms. The extension will be at the rear of the existing house..."
+              value={questionData.projectDescription}
+              onChange={(e) => updateQuestionData('projectDescription', e.target.value)}
+              className="text-lg p-4 min-h-32"
+              autoFocus
+            />
+            <p className="text-sm text-gray-500">
+              Include details about the type of work, size, materials, and any specific requirements
+            </p>
+          </div>
+        );
+      
+      case 2:
+        return (
+          <div className="space-y-4">
+            <Select value={questionData.budgetRange} onValueChange={(value) => updateQuestionData('budgetRange', value)}>
+              <SelectTrigger className="text-lg p-4">
+                <SelectValue placeholder="Select your budget range" />
+              </SelectTrigger>
+              <SelectContent>
+                {budgetOptions.map(option => (
+                  <SelectItem key={option} value={option}>{option}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-gray-500">
+              This helps us provide cost estimates and suitable consultant recommendations
+            </p>
+          </div>
+        );
+      
+      case 3:
+        return (
+          <div className="space-y-4">
+            <Select value={questionData.timeframe} onValueChange={(value) => updateQuestionData('timeframe', value)}>
+              <SelectTrigger className="text-lg p-4">
+                <SelectValue placeholder="Select your expected timeframe" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeframeOptions.map(option => (
+                  <SelectItem key={option} value={option}>{option}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-gray-500">
+              This helps us prioritize urgent projects and provide realistic timelines
+            </p>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Premium Property Report
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Get a comprehensive analysis of your property development potential
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl w-full max-w-2xl border border-white/20">
+        
+        {/* Progress bar */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">Property Assessment Questions</h1>
+            <span className="text-sm text-gray-500">{currentStep + 1} of {steps.length}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+            ></div>
+          </div>
         </div>
 
-        {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Project Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Property Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Property Information</h3>
-                  
-                  <FormField
-                    control={form.control}
-                    name="propertyAddress"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Property Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="123 Queen Street, Auckland" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+        {/* Step content */}
+        <div className="p-8">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              {steps[currentStep].title}
+            </h2>
+            <p className="text-gray-600">
+              {steps[currentStep].description}
+            </p>
+          </div>
 
-                  <FormField
-                    control={form.control}
-                    name="projectDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Description</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe your development project, including building type, size, and intended use"
-                            rows={4}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+          {renderStepContent()}
+        </div>
 
-                {/* Project Scope */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Project Scope</h3>
-                  
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="budgetRange"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Budget Range</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select budget range" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="under-100k">Under $100,000</SelectItem>
-                              <SelectItem value="100k-500k">$100,000 - $500,000</SelectItem>
-                              <SelectItem value="500k-1m">$500,000 - $1,000,000</SelectItem>
-                              <SelectItem value="1m-2m">$1,000,000 - $2,000,000</SelectItem>
-                              <SelectItem value="over-2m">Over $2,000,000</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+        {/* Navigation buttons */}
+        <div className="p-6 border-t border-gray-200">
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentStep === 0}
+              className="opacity-80"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
 
-                    <FormField
-                      control={form.control}
-                      name="timeframe"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Timeframe</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select timeframe" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="immediate">Immediate (0-3 months)</SelectItem>
-                              <SelectItem value="short-term">Short term (3-12 months)</SelectItem>
-                              <SelectItem value="medium-term">Medium term (1-2 years)</SelectItem>
-                              <SelectItem value="long-term">Long term (2+ years)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+            {currentStep === steps.length - 1 ? (
+              <Button
+                onClick={handleSubmit}
+                disabled={!canProceed() || isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                    Generating Report...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Generate My Report
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Next
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </div>
+        </div>
 
-                {/* Contact Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Contact Information</h3>
-                  
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="contactName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Smith" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="contactEmail"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="john@example.com" type="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="contactPhone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone Number (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="+64 21 123 456" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Additional Questions */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Additional Questions</h3>
-                  
-                  <FormField
-                    control={form.control}
-                    name="specificQuestions"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Specific Questions or Concerns (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Any specific aspects you'd like us to focus on or questions you have about the development process"
-                            rows={3}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <div className="flex gap-4 pt-4">
-                  <Link href="/">
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Home className="w-4 h-4" />
-                      Back to Home
-                    </Button>
-                  </Link>
-                  <Button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 flex-1"
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Report Request"}
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+        {/* Trust indicators */}
+        <div className="px-6 pb-6">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-blue-800 text-center">
+              🔒 Your information is encrypted and secure • We respect your privacy
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

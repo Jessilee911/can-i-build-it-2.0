@@ -1,0 +1,83 @@
+import requests
+
+def fetch_property_data(address):
+    # Adjust the 'where' parameter for your specific search
+    base_url = "https://services.arcgis.com/6T5r5Gd2hAdqQdPt/arcgis/rest/services/Property_Parcels/FeatureServer/0/query"
+    params = {
+        "where": f"Address='{address}'",
+        "outFields": "*",
+        "f": "geojson"
+    }
+    
+    response = requests.get(base_url, params=params)
+    data = response.json()
+    return data
+⚙️ Step 2: Process & Clean the Data
+After fetching the data, you’ll want to extract and organize the key fields for your report:
+
+python
+Copy
+Edit
+def process_property_data(data):
+    if not data["features"]:
+        return None
+    
+    feature = data["features"][0]["properties"]
+    return {
+        "address": feature["Address"],
+        "lot_number": feature["LotNumber"],
+        "dp_number": feature["DPNumber"],
+        "zone": feature.get("Zone", "Unknown"),
+        # Add more fields as needed
+    }
+⚙️ Step 3: Create the Report Template (PDF)
+You can use a library like reportlab or pdfkit in Python to create the PDF report. Here’s an example with reportlab:
+
+python
+Copy
+Edit
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
+def create_pdf_report(property_data, filename):
+    c = canvas.Canvas(filename, pagesize=A4)
+    
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, 800, "Property Feasibility Report")
+    
+    c.setFont("Helvetica", 12)
+    c.drawString(50, 770, f"Address: {property_data['address']}")
+    c.drawString(50, 750, f"Lot Number: {property_data['lot_number']}")
+    c.drawString(50, 730, f"DP Number: {property_data['dp_number']}")
+    c.drawString(50, 710, f"Zone: {property_data['zone']}")
+    
+    # Add more fields or notes here
+    
+    c.showPage()
+    c.save()
+⚙️ Step 4: Connect it to Your Agent
+Depending on how your agent is set up:
+
+✅ If it’s a chatbot (like a custom GPT-4 bot) – You can call these Python functions in a backend server when the bot receives a property query.
+
+✅ If it’s a script or AI-powered tool – You can integrate this as a function that listens for user input.
+
+For example, you might have a web server (like Flask) that listens for the address and then runs these functions:
+
+python
+Copy
+Edit
+from flask import Flask, request, send_file
+
+app = Flask(__name__)
+
+@app.route('/generate-report', methods=['POST'])
+def generate_report():
+    address = request.json["address"]
+    data = fetch_property_data(address)
+    if data:
+        property_data = process_property_data(data)
+        create_pdf_report(property_data, "report.pdf")
+        return send_file("report.pdf", as_attachment=True)
+    else:
+        return {"error": "No data found"}, 404

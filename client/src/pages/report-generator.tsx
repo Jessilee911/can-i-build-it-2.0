@@ -1,234 +1,118 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { FileText, Download, Calendar, MapPin, DollarSign, Clock } from "lucide-react";
-import { Link } from "wouter";
-
-interface ReportActivity {
-  id: number;
-  type: string;
-  status: string;
-  data: any;
-  createdAt: string;
-  metadata?: {
-    reportData?: {
-      propertyAddress: string;
-      projectDescription: string;
-      budgetRange: string;
-      timeframe: string;
-    };
-  };
-}
+import { CheckCircleIcon, FileTextIcon, DownloadIcon } from "lucide-react";
+import nzMapPath from "@assets/NZ.png";
 
 export default function ReportGenerator() {
-  const [downloadingId, setDownloadingId] = useState<number | null>(null);
-
-  const { data: activities, isLoading } = useQuery({
-    queryKey: ["/api/activities"],
-    queryFn: async () => {
-      const response = await fetch("/api/activities");
-      if (!response.ok) throw new Error("Failed to fetch activities");
-      return response.json();
-    },
-  });
-
-  const downloadReport = async (reportId: number) => {
-    setDownloadingId(reportId);
-    try {
-      const response = await fetch(`/api/activities/${reportId}/pdf`);
-      if (!response.ok) throw new Error("Failed to download report");
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `property-report-${reportId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Download failed:", error);
-    } finally {
-      setDownloadingId(null);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <Badge variant="default" className="bg-green-500">Completed</Badge>;
-      case "in_progress":
-        return <Badge variant="secondary">In Progress</Badge>;
-      case "pending":
-        return <Badge variant="outline">Pending</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-NZ", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading your reports...</p>
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background with floating NZ map */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="absolute inset-0 opacity-5">
+          <img
+            src={nzMapPath}
+            alt=""
+            className="w-full h-full object-cover animate-float"
+            style={{ transform: 'scale(1.2)' }}
+          />
         </div>
       </div>
-    );
-  }
 
-  const reportActivities = activities?.filter((activity: ReportActivity) => 
-    activity.type === "premium_report" || activity.type === "property_report"
-  ) || [];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Your Property Reports
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            View and download your comprehensive property development reports
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4 justify-center">
-          <Link href="/report-questions">
-            <Button className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Request New Report
-            </Button>
-          </Link>
-          <Link href="/premium-chat">
-            <Button variant="outline" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Chat with Experts
-            </Button>
-          </Link>
-        </div>
-
-        {/* Reports List */}
-        {reportActivities.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reportActivities.map((activity: ReportActivity) => (
-              <Card key={activity.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg">
-                      Property Report #{activity.id}
-                    </CardTitle>
-                    {getStatusBadge(activity.status)}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {activity.metadata?.reportData && (
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Property Address</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {activity.metadata.reportData.propertyAddress}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
-                        <DollarSign className="w-4 h-4 text-gray-500 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Budget Range</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {activity.metadata.reportData.budgetRange}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2">
-                        <Clock className="w-4 h-4 text-gray-500 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium">Timeframe</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {activity.metadata.reportData.timeframe}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Calendar className="w-4 h-4" />
-                    Created {formatDate(activity.createdAt)}
-                  </div>
-
-                  {activity.status === "completed" && (
-                    <Button
-                      onClick={() => downloadReport(activity.id)}
-                      disabled={downloadingId === activity.id}
-                      className="w-full"
-                      size="sm"
-                    >
-                      {downloadingId === activity.id ? (
-                        "Downloading..."
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4 mr-2" />
-                          Download PDF
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {activity.status === "pending" && (
-                    <div className="text-sm text-gray-500 dark:text-gray-400 text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                      Report processing will begin shortly
-                    </div>
-                  )}
-
-                  {activity.status === "in_progress" && (
-                    <div className="text-sm text-blue-600 dark:text-blue-400 text-center p-2 bg-blue-50 dark:bg-blue-950 rounded">
-                      Our experts are analyzing your property
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+      {/* Main Content */}
+      <div className="relative z-10 container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* Hero Section */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
+              Free Property Development Report
+            </h1>
+            <p className="text-lg text-gray-700 mb-8">
+              Get comprehensive building consent and development guidance for your New Zealand property
+            </p>
           </div>
-        ) : (
-          <Card className="text-center py-12">
+
+          {/* Report Features */}
+          <Card className="mb-8 bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <FileTextIcon className="h-12 w-12 text-blue-600" />
+              </div>
+              <CardTitle className="text-2xl text-gray-800">
+                Comprehensive Property Analysis
+              </CardTitle>
+              <CardDescription className="text-lg text-gray-600">
+                Everything you need to know about building on your property
+              </CardDescription>
+            </CardHeader>
             <CardContent>
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                No Reports Yet
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                You haven't requested any property reports yet. Start by requesting a comprehensive analysis of your development project.
-              </p>
-              <Link href="/report-questions">
-                <Button className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Request Your First Report
-                </Button>
-              </Link>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-800">Building Consent Analysis</h3>
+                  <ul className="space-y-2">
+                    {[
+                      "Consent requirements for your project",
+                      "Application process and timeline",
+                      "Required documents and plans",
+                      "Estimated costs and fees"
+                    ].map((feature, i) => (
+                      <li key={i} className="flex items-start">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 shrink-0 mt-0.5" />
+                        <span className="text-sm text-gray-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-800">Resource Consent & Planning</h3>
+                  <ul className="space-y-2">
+                    {[
+                      "Zoning rules and restrictions",
+                      "Setback and height requirements",
+                      "Resource consent needs",
+                      "Development potential assessment"
+                    ].map((feature, i) => (
+                      <li key={i} className="flex items-start">
+                        <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 shrink-0 mt-0.5" />
+                        <span className="text-sm text-gray-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        )}
+
+          {/* CTA Section */}
+          <div className="text-center">
+            <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
+              <CardContent className="p-8">
+                <h3 className="text-2xl font-bold mb-4 text-gray-800">
+                  Ready to Start Your Property Assessment?
+                </h3>
+                <p className="text-lg text-gray-600 mb-6">
+                  Get your free comprehensive report in minutes
+                </p>
+                <div className="space-y-4">
+                  <Button 
+                    size="lg" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+                    onClick={() => window.location.assign('/premium-chat')}
+                  >
+                    <FileTextIcon className="mr-2 h-5 w-5" />
+                    Start Premium Analysis
+                  </Button>
+                  <p className="text-sm text-gray-500">
+                    No payment required • Get instant results
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+        </div>
       </div>
     </div>
   );

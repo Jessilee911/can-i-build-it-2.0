@@ -1,258 +1,233 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PropertyAssessment } from "@/components/assessment/property-assessment";
+import { AnimatedSuggestions } from "@/components/animated-suggestions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { MapPin, DollarSign, Home, Zap, AlertCircle, FileText } from "lucide-react";
+import { FileTextIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface PropertyInfo {
-  address: string;
-  suburb?: string;
-  zoning?: string;
-  landArea?: number;
-  capitalValue?: number;
-  ratesId?: string;
-  coordinates?: [number, number];
-}
-
-export default function PropertyData() {
-  const [searchAddress, setSearchAddress] = useState("");
-  const [propertyData, setPropertyData] = useState<PropertyInfo | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
+const PropertyData = () => {
+  const [showPricing, setShowPricing] = useState(false);
+  const [pricingType, setPricingType] = useState<"onetime" | "subscription">("onetime");
+  const [showPropertyDetails, setShowPropertyDetails] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
   const { toast } = useToast();
-
-  const searchProperty = async (address: string): Promise<PropertyInfo[]> => {
-    const response = await fetch("/api/property/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address })
-    });
+  const [propertyDetails, setPropertyDetails] = useState({
+    address: "",
+    projectDescription: "",
+    budget: "100,000 - 250,000",
+    timeframe: "3-6 months"
+  });
+  
+  const pricingPlans = [
+    {
+      title: "Basic Report",
+      price: "Free",
+      description: "Basic zoning and consent information",
+      features: [
+        "Basic zoning information",
+        "Building consent yes/no",
+        "General development guidelines"
+      ]
+    },
+    {
+      title: "Detailed Analysis",
+      price: "$0.99",
+      description: "Complete property assessment",
+      features: [
+        "Everything in Basic",
+        "Detailed zone analysis",
+        "Building consent requirements",
+        "Resource consent guidance"
+      ]
+    },
+    {
+      title: "Comprehensive",
+      price: "$1.00",
+      description: "Full assessment with AI sketching",
+      features: [
+        "Everything in Detailed",
+        "Upload existing plans",
+        "AI sketch concept generation",
+        "Site constraints analysis"
+      ],
+      highlight: true
+    },
+    {
+      title: "Expert Review",
+      price: "$1.01",
+      description: "Human expert verification",
+      features: [
+        "Everything in Comprehensive",
+        "Licensed designer review",
+        "Professional insights",
+        "Email consultation"
+      ]
+    }
+  ];
+  
+  const subscriptionPlans = [
+    {
+      title: "Pro Subscription",
+      price: "$99/mo",
+      description: "Annual billing (save 15%)",
+      features: [
+        "Unlimited property assessments",
+        "All Comprehensive features",
+        "Save and compare properties"
+      ]
+    },
+    {
+      title: "Unlimited",
+      price: "$195/mo",
+      description: "Ultimate access",
+      features: [
+        "Unlimited AI consultations",
+        "Priority support",
+        "Advanced property tools",
+        "Expert monthly check-in"
+      ],
+      highlight: true
+    }
+  ];
+  
+  const activePlans = pricingType === "onetime" ? pricingPlans : subscriptionPlans;
+  
+  // Listen for pricing toggle events
+  useEffect(() => {
+    const handleTogglePricing = () => {
+      setShowPricing(prev => !prev);
+    };
     
-    if (!response.ok) {
-      throw new Error("Failed to search property data");
-    }
-    
-    return response.json();
-  };
-
-  const handleSearch = async () => {
-    if (!searchAddress.trim()) {
-      toast({
-        title: "Address Required",
-        description: "Please enter a property address to search",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const results = await searchProperty(searchAddress);
-      if (results && results.length > 0) {
-        setPropertyData(results[0]);
-        toast({
-          title: "Property Found",
-          description: "Property data retrieved successfully"
-        });
-      } else {
-        toast({
-          title: "No Results",
-          description: "No property data found for this address",
-          variant: "destructive"
-        });
-        setPropertyData(null);
-      }
-    } catch (error) {
-      toast({
-        title: "Search Failed",
-        description: "Unable to retrieve property data. Please try again.",
-        variant: "destructive"
-      });
-      setPropertyData(null);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const formatCurrency = (value: number | undefined) => {
-    if (!value) return "Not available";
-    return new Intl.NumberFormat("en-NZ", {
-      style: "currency",
-      currency: "NZD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
-
-  const formatArea = (area: number | undefined) => {
-    if (!area) return "Not available";
-    return `${area.toLocaleString()} m²`;
-  };
-
+    window.addEventListener('togglePricing', handleTogglePricing);
+    return () => window.removeEventListener('togglePricing', handleTogglePricing);
+  }, []);
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Property Data Search
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Search for comprehensive property information including zoning, valuations, and development potential
-          </p>
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white shadow rounded-lg mb-6">
+        <div className="p-6">
+          {/* Main search component */}
+          <PropertyAssessment showPricing={showPricing} />
+          
+
         </div>
+      </div>
+      
 
-        {/* Search Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Property Search
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="address">Property Address</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="address"
-                  placeholder="Enter property address (e.g., 123 Queen Street, Auckland)"
-                  value={searchAddress}
-                  onChange={(e) => setSearchAddress(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleSearch} 
-                  disabled={isSearching}
-                  className="min-w-[100px]"
-                >
-                  {isSearching ? "Searching..." : "Search"}
-                </Button>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter a New Zealand property address to retrieve official council data, zoning information, and property valuations.
+      
+      {/* Simple Property Details Modal */}
+      {showPropertyDetails && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4 p-6">
+            <h2 className="text-xl font-bold mb-4">Create your {selectedPlan}</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Please provide the details below to help us generate an accurate property report.
             </p>
-          </CardContent>
-        </Card>
-
-        {/* Property Results */}
-        {propertyData && (
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Basic Property Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Home className="w-5 h-5" />
-                  Property Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Address
-                  </Label>
-                  <p className="text-lg font-medium">{propertyData.address}</p>
-                </div>
-                
-                {propertyData.suburb && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Suburb
-                    </Label>
-                    <p className="font-medium">{propertyData.suburb}</p>
-                  </div>
-                )}
-
-                {propertyData.ratesId && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Rates ID
-                    </Label>
-                    <p className="font-mono text-sm">{propertyData.ratesId}</p>
-                  </div>
-                )}
-
-                {propertyData.coordinates && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Coordinates
-                    </Label>
-                    <p className="font-mono text-sm">
-                      {propertyData.coordinates[1].toFixed(6)}, {propertyData.coordinates[0].toFixed(6)}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Financial Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  Valuation & Zoning
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Capital Value
-                  </Label>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {formatCurrency(propertyData.capitalValue)}
-                  </p>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Land Area
-                  </Label>
-                  <p className="text-lg font-medium">
-                    {formatArea(propertyData.landArea)}
-                  </p>
-                </div>
-
-                {propertyData.zoning && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Zoning
-                    </Label>
-                    <Badge variant="secondary" className="text-sm">
-                      {propertyData.zoning}
-                    </Badge>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Data Sources Notice */}
-        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-              <div className="space-y-2">
-                <h3 className="font-medium text-blue-900 dark:text-blue-100">
-                  Data Sources & Accuracy
-                </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-200">
-                  Property data is sourced from official Auckland Council databases and LINZ records. 
-                  Information is updated regularly but may not reflect the most recent changes. 
-                  Always verify critical details with the relevant council before making development decisions.
-                </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Property Address</label>
+                <input 
+                  type="text"
+                  className="w-full p-2 border rounded-md"
+                  placeholder="e.g. 123 Main Street, Auckland"
+                  value={propertyDetails.address}
+                  onChange={(e) => setPropertyDetails({...propertyDetails, address: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Project Description</label>
+                <textarea 
+                  className="w-full p-2 border rounded-md min-h-[100px]"
+                  placeholder="Describe what you want to build or develop on this property..."
+                  value={propertyDetails.projectDescription}
+                  onChange={(e) => setPropertyDetails({...propertyDetails, projectDescription: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Budget Range</label>
+                <select 
+                  className="w-full p-2 border rounded-md"
+                  value={propertyDetails.budget}
+                  onChange={(e) => setPropertyDetails({...propertyDetails, budget: e.target.value})}
+                >
+                  <option value="Under 100,000">Under $100,000</option>
+                  <option value="100,000 - 250,000">$100,000 - $250,000</option>
+                  <option value="250,000 - 500,000">$250,000 - $500,000</option>
+                  <option value="500,000 - 1,000,000">$500,000 - $1,000,000</option>
+                  <option value="Over 1,000,000">Over $1,000,000</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Expected Timeframe</label>
+                <select 
+                  className="w-full p-2 border rounded-md"
+                  value={propertyDetails.timeframe}
+                  onChange={(e) => setPropertyDetails({...propertyDetails, timeframe: e.target.value})}
+                >
+                  <option value="0-3 months">Within 3 months</option>
+                  <option value="3-6 months">3-6 months</option>
+                  <option value="6-12 months">6-12 months</option>
+                  <option value="1-2 years">1-2 years</option>
+                  <option value="Just planning">Just planning for now</option>
+                </select>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            
+            <div className="flex justify-end space-x-2 mt-6">
+              <button 
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                onClick={() => setShowPropertyDetails(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                onClick={async () => {
+                  try {
+                    setShowPropertyDetails(false);
+                    
+                    // Import payment helper dynamically to avoid issues
+                    const { processReportRequest } = await import("@/lib/payment");
+                    
+                    // Process the report request with payment if needed
+                    const result = await processReportRequest(propertyDetails, selectedPlan);
+                    
+                    // For free plans or after successful payment
+                    if (result.success && !(result as any).redirected) {
+                      toast({
+                        title: "Report request submitted",
+                        description: `We're generating your ${selectedPlan}. You'll receive a notification when it's ready.`,
+                      });
+                    }
+                  } catch (error) {
+                    console.error("Error processing report request:", error);
+                    toast({
+                      title: "Error",
+                      description: "There was a problem processing your request. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Generate Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Always visible blue disclaimer at bottom */}
+      <div className="mt-6 text-center">
+        <p className="text-sm text-blue-600">
+          This tool is connected to a database of New Zealand building regulations and property zoning requirements
+        </p>
       </div>
     </div>
   );
-}
+};
+
+export default PropertyData;
