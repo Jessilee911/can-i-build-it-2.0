@@ -214,7 +214,7 @@ Would you like to create a personalized property report for your specific projec
             
             {/* Pricing Plans - Show when showPlans is true */}
             {showPlans && (
-              <div className="mt-4 bg-opacity-90 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg" style={{ backgroundColor: '#EDEAE5' }}>
+              <div className="mt-4 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg bg-[#ffffff]" style={{ backgroundColor: '#EDEAE5' }}>
                 <div className="text-center mb-6">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <h3 className="text-xl font-bold text-gray-900">Choose Your Plan</h3>
