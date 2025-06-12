@@ -105,12 +105,8 @@ const PropertyData = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white shadow rounded-lg mb-6">
-        <div className="p-6 bg-[#f9fafb]">
-          {/* Main search component */}
+        {/* Main search component */}
           <PropertyAssessment showPricing={showPricing} />
-          
-
-        </div>
       </div>
       {/* Simple Property Details Modal */}
       {showPropertyDetails && (
