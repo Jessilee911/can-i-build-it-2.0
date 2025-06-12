@@ -154,7 +154,7 @@ export function Sidebar({ className }: SidebarProps) {
         },
         {
           question: "Do I need an architect?",
-          answer: "You don't always need an architect. Simple projects may only require building plans from a draughtsperson. Complex or large projects typically need architectural and engineering input."
+          answer: "Any projects that involves restricted building work (the design and construction of essential aspects of a building that directly impact its structural soundness, weathertightness, and certain fire safety features) will require a either a Licensed Building Practitioner or an Architect who can sign off the project. For more details, see: https://www.building.govt.nz/assets/Uploads/projects-and-consents/building-work-consent-not-required-guidance-3rd-edition.pdf"
         },
         {
           question: "What building work doesn't need consent?",
