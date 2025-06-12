@@ -26,52 +26,41 @@ export class AucklandCouncilAPI {
   
   async getPropertyDetails(address: string): Promise<PropertyDetails | null> {
     try {
-      // In a real implementation, this would call the actual Auckland Council API
-      // For now, return a structured response that matches the expected format
-      console.log(`Fetching property details for: ${address}`);
+      console.log(`Attempting to fetch property details for: ${address}`);
       
-      // This would be replaced with actual API calls
-      return {
-        address,
-        legalDescription: "Property details available through official channels",
-        zoning: "Mixed Housing Suburban",
-        landArea: 800,
-        ratesYear: "2024",
-        capitalValue: 1200000,
-        landValue: 800000,
-        improvementValue: 400000
-      };
+      // Only attempt real API calls - no mock data
+      // Since we don't have real Auckland Council API access yet, return null
+      // This prevents any synthetic data from being used
+      console.log("Auckland Council API access not configured - no property data available");
+      return null;
+      
+      // Real implementation would use actual Auckland Council API:
+      // const response = await fetch(`${this.baseUrl}/property/search?address=${encodeURIComponent(address)}`);
+      // if (!response.ok) return null;
+      // const data = await response.json();
+      // return data.property || null;
     } catch (error) {
       console.error("Error fetching property details:", error);
       return null;
     }
   }
 
-  async getPlanningConstraints(address: string): Promise<PlanningConstraints> {
+  async getPlanningConstraints(address: string): Promise<PlanningConstraints | null> {
     try {
-      console.log(`Fetching planning constraints for: ${address}`);
+      console.log(`Attempting to fetch planning constraints for: ${address}`);
       
-      // This would integrate with Auckland Council's planning maps API
-      return {
-        heritage: false,
-        flood: false,
-        geotechnical: false,
-        coastal: false,
-        transport: false,
-        infrastructure: false,
-        environmental: false
-      };
+      // Only attempt real API calls - no mock data
+      console.log("Auckland Council planning constraints API access not configured - no constraint data available");
+      return null;
+      
+      // Real implementation would use actual Auckland Council planning maps API:
+      // const response = await fetch(`${this.baseUrl}/planning/constraints?address=${encodeURIComponent(address)}`);
+      // if (!response.ok) return null;
+      // const data = await response.json();
+      // return data.constraints || null;
     } catch (error) {
       console.error("Error fetching planning constraints:", error);
-      return {
-        heritage: false,
-        flood: false,
-        geotechnical: false,
-        coastal: false,
-        transport: false,
-        infrastructure: false,
-        environmental: false
-      };
+      return null;
     }
   }
 

@@ -29,46 +29,23 @@ export interface PropertyResearchData {
 }
 
 export class PropertyResearchService {
-  async conductPropertyResearch(address: string): Promise<PropertyResearchData> {
+  async conductPropertyResearch(address: string): Promise<PropertyResearchData | null> {
     try {
-      console.log(`Conducting property research for: ${address}`);
+      console.log(`Attempting property research for: ${address}`);
       
-      // In production, this would integrate with multiple data sources:
-      // - CoreLogic/REINZ for market data
-      // - Stats NZ for demographic data
-      // - Auckland Transport for infrastructure
-      // - Council planning documents
+      // Only return real data from authentic sources
+      // Since we don't have access to real property research APIs yet, return null
+      console.log("Property research APIs not configured - no market data available");
+      return null;
       
-      return {
-        propertyAddress: address,
-        marketAnalysis: {
-          medianPrice: 1200000,
-          priceGrowth: 5.2,
-          salesVolume: 15,
-          daysOnMarket: 32
-        },
-        demographicData: {
-          population: 45000,
-          medianAge: 38,
-          medianIncome: 85000,
-          householdSize: 2.8
-        },
-        infrastructureAccess: {
-          publicTransport: ["Bus routes", "Train station within 2km"],
-          schools: ["Primary school nearby", "Secondary school in zone"],
-          healthcare: ["Medical centre", "Hospital 5km"],
-          shopping: ["Local shops", "Shopping centre 3km"]
-        },
-        developmentPotential: {
-          zoningFlexibility: "Mixed Housing Suburban allows intensification",
-          densityOpportunities: "Up to 3 units per site permitted",
-          subdivisionPotential: "Subject to minimum lot sizes",
-          futureGrowthAreas: true
-        }
-      };
+      // Real implementation would integrate with:
+      // - CoreLogic/REINZ API for market data
+      // - Stats NZ API for demographic data
+      // - Auckland Transport API for infrastructure
+      // - Council planning documents API
     } catch (error) {
       console.error("Error conducting property research:", error);
-      throw new Error("Failed to conduct property research");
+      return null;
     }
   }
 

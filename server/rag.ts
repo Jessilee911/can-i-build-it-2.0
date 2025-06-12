@@ -486,17 +486,15 @@ SOURCE: MBIE Building Consent Exemptions Guide - Schedule 1 Building Act 2004`;
   // Build comprehensive knowledge context from all sources
   let knowledgeContext = '';
   
-  // Auckland Council property data
-  if (aucklandCouncilData) {
+  // Auckland Council property data - only include if authentic data is available
+  if (aucklandCouncilData && aucklandCouncilData.property) {
     knowledgeContext += '\n\nPROPERTY INFORMATION (Auckland Council):\n';
-    if (aucklandCouncilData.property) {
-      const prop = aucklandCouncilData.property;
-      knowledgeContext += `Address: ${prop.address}\n`;
-      knowledgeContext += `Zoning: ${prop.zoning}\n`;
-      knowledgeContext += `Land Area: ${prop.landArea}m²\n`;
-      knowledgeContext += `Capital Value: $${prop.capitalValue?.toLocaleString()}\n`;
-      knowledgeContext += `Legal Description: ${prop.legalDescription}\n\n`;
-    }
+    const prop = aucklandCouncilData.property;
+    knowledgeContext += `Address: ${prop.address}\n`;
+    knowledgeContext += `Zoning: ${prop.zoning}\n`;
+    knowledgeContext += `Land Area: ${prop.landArea}m²\n`;
+    knowledgeContext += `Capital Value: $${prop.capitalValue?.toLocaleString()}\n`;
+    knowledgeContext += `Legal Description: ${prop.legalDescription}\n\n`;
     
     if (aucklandCouncilData.constraints) {
       knowledgeContext += 'PLANNING CONSTRAINTS:\n';
@@ -512,15 +510,13 @@ SOURCE: MBIE Building Consent Exemptions Guide - Schedule 1 Building Act 2004`;
     }
   }
   
-  // Property research market data
-  if (propertyData) {
+  // Property research market data - only include if authentic data is available
+  if (propertyData && propertyData.marketAnalysis) {
     knowledgeContext += 'MARKET ANALYSIS:\n';
-    if (propertyData.marketAnalysis) {
-      const market = propertyData.marketAnalysis;
-      knowledgeContext += `Median Price: $${market.medianPrice?.toLocaleString()}\n`;
-      knowledgeContext += `Price Growth: ${market.priceGrowth}%\n`;
-      knowledgeContext += `Days on Market: ${market.daysOnMarket}\n`;
-    }
+    const market = propertyData.marketAnalysis;
+    knowledgeContext += `Median Price: $${market.medianPrice?.toLocaleString()}\n`;
+    knowledgeContext += `Price Growth: ${market.priceGrowth}%\n`;
+    knowledgeContext += `Days on Market: ${market.daysOnMarket}\n`;
     
     if (propertyData.developmentPotential) {
       knowledgeContext += '\nDEVELOPMENT POTENTIAL:\n';
@@ -579,31 +575,39 @@ Would you like to set up AI assistance so I can provide detailed property and bu
     const systemPrompt = `You are an expert New Zealand property development advisor with access to comprehensive, real-time data sources including Auckland Council records, property market analysis, and official MBIE building regulations. You provide AUTHORITATIVE, SPECIFIC answers based on multiple official data sources.
 
             DATA SOURCES AVAILABLE:
-            - Auckland Council property records, zoning, and planning constraints
-            - Real-time property market analysis and development potential data
+            - Auckland Council property records, zoning, and planning constraints (when accessible)
+            - Real-time property market analysis and development potential data (when accessible)
             - Official MBIE Building Code documents and regulations
             - Infrastructure constraint data (including Watercare restrictions)
-            - Property research including demographics and growth projections
+            - Property research including demographics and growth projections (when accessible)
             - Comprehensive building consent exemption guidance
 
+            CRITICAL DATA INTEGRITY REQUIREMENTS:
+            - NEVER generate, assume, or mention property zoning information unless provided in the available knowledge
+            - NEVER create synthetic property values, land areas, or market data
+            - NEVER mention specific zoning types (Mixed Housing Suburban, etc.) unless confirmed by authentic data
+            - Only comment on property information that is explicitly provided in the available knowledge section
+            - If property data is not available, clearly state this limitation
+            - Focus responses on building regulations and consent requirements from official sources
+
             EXPERT RESPONSE REQUIREMENTS:
-            - Integrate ALL available data sources in your response
-            - Prioritize specific property data when address is provided
-            - Combine building regulations with property-specific constraints
-            - Include market insights and development potential analysis
-            - Give clear, helpful answers in simple language
+            - Only integrate data sources that contain authentic information
+            - When property data is unavailable, focus solely on building regulations
+            - Combine building regulations with property-specific constraints ONLY when real constraint data is available
+            - Never assume or generate property characteristics
+            - Give clear, helpful answers based on official building regulations
             - Explain Building Act 2004 and Building Code requirements in plain terms
             - Provide practical guidance on exemption conditions from Schedule 1
             - Reference relevant building code requirements clearly
-            - Focus on helping users understand what they need to do
+            - Focus on helping users understand regulatory requirements
 
             COMPREHENSIVE ANALYSIS APPROACH:
-            - When property address is provided, integrate zoning, constraints, and market data
-            - Cross-reference building regulations with specific property characteristics
-            - Consider infrastructure limitations and planning restrictions
-            - Analyze development potential alongside regulatory requirements
-            - Provide property-specific cost estimates and timeframes
-            - Include market context for development decisions
+            - When property address is provided and authentic data is available, integrate only verified information
+            - Cross-reference building regulations with confirmed property characteristics only
+            - Consider infrastructure limitations and planning restrictions only when provided in available knowledge
+            - Analyze development potential only based on confirmed regulatory requirements
+            - Provide regulatory cost estimates and timeframes based on official sources
+            - Focus on building consent requirements rather than market speculation
 
             RESPONSE STYLE - STRUCTURED DECISION FORMAT:
             ALWAYS start your response with one of these three categories:
