@@ -141,7 +141,7 @@ Would you like to create a personalized property report for your specific projec
             {/* Input Form integrated into header */}
             <form onSubmit={handleSubmit} className="flex space-x-2 mt-4">
               <textarea 
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[40px] max-h-[200px]"
+                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[60px] max-h-[250px] w-[90%]"
                 placeholder="Ask about building regulations, zoning, or consent requirements... (Shift+Enter for new line)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -151,15 +151,15 @@ Would you like to create a personalized property report for your specific projec
                     handleSubmit(e);
                   }
                 }}
-                rows={1}
+                rows={2}
                 style={{
                   height: 'auto',
-                  minHeight: '40px'
+                  minHeight: '60px'
                 }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
                   target.style.height = 'auto';
-                  target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+                  target.style.height = Math.min(target.scrollHeight, 250) + 'px';
                 }}
               />
               <Button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 self-end">
