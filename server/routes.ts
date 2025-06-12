@@ -1350,11 +1350,11 @@ function performLocalAddressSearch(query: string) {
         activities.find(a => a.id === parseInt(id))
       );
 
-      if (!activity || !activity.metadata.reportData) {
+      if (!activity || !activity.metadata || typeof activity.metadata !== 'object' || !('reportData' in activity.metadata)) {
         return res.status(404).json({ message: "Report not found" });
       }
 
-      const reportData = activity.metadata.reportData;
+      const reportData = (activity.metadata as any).reportData;
       const pdfBuffer = await generatePDF(reportData);
 
       res.setHeader('Content-Type', 'application/pdf');
