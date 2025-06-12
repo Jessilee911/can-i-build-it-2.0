@@ -372,6 +372,62 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
     address = null 
   } = userContext || {};
 
+  // Analyze query completeness to determine YES/NO/MAYBE response
+  function analyzeQueryCompleteness(query: string, availableData: any) {
+    const hasSpecificAddress = address && address.length > 5;
+    const hasPropertyData = aucklandCouncilData || propertyData;
+    const hasBuildingCodeData = pdfResults.length > 0 || relevantInfo.length > 0;
+    
+    // Check for essential missing information
+    const missingInfo = [];
+    
+    // Common building consent questions
+    const isBuildingConsentQuery = /building consent|consent required|need consent|exempt/i.test(query);
+    const isSpecificBuildingWork = /deck|carport|shed|extension|renovation|addition|fence|retaining wall/i.test(query);
+    
+    if (isBuildingConsentQuery || isSpecificBuildingWork) {
+      if (!hasSpecificAddress) missingInfo.push("property address");
+      
+      // Check for specific dimensions/details
+      if (!query.match(/\d+.*m[²2]?|\d+.*square|size|area|height|length|width/i)) {
+        missingInfo.push("project size/dimensions");
+      }
+      
+      // Check for existing building details
+      if (!query.match(/existing|current|replace|new|addition/i)) {
+        missingInfo.push("whether this is new construction or work on existing building");
+      }
+    }
+    
+    // Determine response certainty level
+    let certaintyLevel = "MAYBE"; // Default to requiring more info
+    
+    if (missingInfo.length === 0 && hasBuildingCodeData) {
+      // Can give definitive answer if we have complete info and regulations
+      const hasDefinitiveRegulation = relevantInfo.some(info => 
+        info.content.toLowerCase().includes('does not require') ||
+        info.content.toLowerCase().includes('requires building consent') ||
+        info.content.toLowerCase().includes('exempt')
+      );
+      
+      if (hasDefinitiveRegulation) {
+        certaintyLevel = hasDefinitiveRegulation ? "YES_OR_NO" : "MAYBE";
+      }
+    }
+    
+    return {
+      certaintyLevel,
+      missingInfo,
+      hasSpecificAddress,
+      hasPropertyData,
+      hasBuildingCodeData,
+      isBuildingConsentQuery,
+      isSpecificBuildingWork
+    };
+  }
+
+  const queryAnalysis = analyzeQueryCompleteness(query, { aucklandCouncilData, propertyData, pdfResults, relevantInfo });
+
   // For recladding and specific building work, provide definitive answers from knowledge base
   if (query.toLowerCase().includes('reclad') || query.toLowerCase().includes('cladding')) {
     const definitiveCladAnswer = `RECLADDING CONSENT REQUIREMENTS - DEFINITIVE ANSWER:
@@ -549,8 +605,27 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - Provide property-specific cost estimates and timeframes
             - Include market context for development decisions
 
-            RESPONSE STYLE:
-            - Lead with clear answers (YES/NO, REQUIRED/NOT REQUIRED)
+            RESPONSE STYLE - STRUCTURED DECISION FORMAT:
+            ALWAYS start your response with one of these three categories:
+
+            YES: When you can definitively confirm based on multiple authoritative sources
+            - Use when Building Act 2004, Building Code, or council regulations clearly require something
+            - Use when exemption conditions are clearly met or not met
+            - Include specific clause references and exact requirements
+
+            NO: When you can definitively rule out based on authoritative sources  
+            - Use when Building Act 2004 or Building Code clearly exempts something
+            - Use when specific exemption conditions in Schedule 1 are clearly satisfied
+            - Include specific exemption clause references
+
+            MAYBE: When sources conflict, information is incomplete, or more details needed
+            - Use when user hasn't provided enough specific details
+            - Use when property-specific factors could change the answer
+            - Use when multiple interpretations are possible
+            - ALWAYS follow with specific questions to gather missing information
+            - Ask for: property address, project details, existing building information, specific measurements
+
+            After the YES/NO/MAYBE declaration:
             - Integrate property-specific data throughout the response
             - Combine regulatory requirements with market insights
             - Provide comprehensive analysis using all available data
@@ -604,13 +679,31 @@ Would you like to set up AI assistance so I can provide detailed property and bu
           },
           {
             role: 'user',
-            content: `${query}
+            content: `USER QUERY: ${query}
 
+QUERY ANALYSIS:
+- Query completeness: ${queryAnalysis.certaintyLevel}
+- Missing information: ${queryAnalysis.missingInfo.length > 0 ? queryAnalysis.missingInfo.join(', ') : 'None identified'}
+- Has property address: ${queryAnalysis.hasSpecificAddress ? 'Yes' : 'No'}
+- Has property data: ${queryAnalysis.hasPropertyData ? 'Yes' : 'No'}
+- Has building code data: ${queryAnalysis.hasBuildingCodeData ? 'Yes' : 'No'}
+- Building consent question: ${queryAnalysis.isBuildingConsentQuery ? 'Yes' : 'No'}
+
+AVAILABLE KNOWLEDGE:
 ${clauseContext}${knowledgeContext}
 
-Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. If specific Building Code clauses were mentioned, quote them directly and explain their practical application.
+RESPONSE REQUIREMENTS:
+1. Start with YES, NO, or MAYBE based on the query analysis above
+2. If MAYBE: Ask specific questions about the missing information identified
+3. If YES/NO: Provide definitive answer with regulatory references
+4. Use the available property data and building code information to support your decision
+5. If specific Building Code clauses were mentioned, quote them directly
 
-IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
+IMPORTANT: 
+- Use YES only when regulations definitively require consent
+- Use NO only when regulations definitively exempt the work  
+- Use MAYBE when missing essential details listed above
+- Respond using only plain text without hashtag or asterisk formatting`
           }
         ],
         max_tokens: 2000,
@@ -655,17 +748,46 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
     console.error('OpenAI API error:', error);
   }
 
-  // Enhanced fallback to local knowledge base with clause-specific formatting
-  if (relevantInfo.length > 0) {
-    let response = `Based on New Zealand building regulations and the Building Code:\n\n`;
+  // Enhanced fallback to local knowledge base with YES/NO/MAYBE formatting
+  if (relevantInfo.length > 0 || queryAnalysis.missingInfo.length > 0) {
+    let response = '';
+
+    // Determine response type based on available information
+    if (queryAnalysis.missingInfo.length > 0) {
+      response = `MAYBE - I need more specific information to give you a definitive answer.\n\n`;
+      response += `Missing details: ${queryAnalysis.missingInfo.join(', ')}\n\n`;
+      response += `To provide a clear YES or NO answer about your building consent requirements, please provide:\n`;
+      queryAnalysis.missingInfo.forEach(info => {
+        response += `- ${info}\n`;
+      });
+      response += '\n';
+    } else if (relevantInfo.length > 0) {
+      // Check if we can give definitive answer
+      const hasExemption = relevantInfo.some(info => 
+        info.content.toLowerCase().includes('does not require') || 
+        info.content.toLowerCase().includes('exempt')
+      );
+      const requiresConsent = relevantInfo.some(info => 
+        info.content.toLowerCase().includes('requires building consent') || 
+        info.content.toLowerCase().includes('building consent is required')
+      );
+
+      if (hasExemption && !requiresConsent) {
+        response = `NO - Building consent is not required based on Schedule 1 exemptions.\n\n`;
+      } else if (requiresConsent && !hasExemption) {
+        response = `YES - Building consent is required under the Building Act 2004.\n\n`;
+      } else {
+        response = `MAYBE - The requirements depend on specific details of your project.\n\n`;
+      }
+    }
 
     if (requestedClauses.length > 0) {
-      response += `You asked about specific Building Code clauses: ${requestedClauses.join(', ')}\n\n`;
+      response += `Building Code clauses mentioned: ${requestedClauses.join(', ')}\n\n`;
     }
 
     response += clauseContext + knowledgeContext;
 
-    response += `This information is based on current New Zealand legislation. For the most current details and complete clause text, I recommend checking official government websites like building.govt.nz. Always consult qualified professionals for specific project guidance.`;
+    response += `This information is based on current New Zealand legislation. For the most current details and complete clause text, check building.govt.nz. Always consult qualified professionals for specific project guidance.`;
 
     if (needsClarification && suggestedQuestions.length > 0) {
       response += `\n\nTo help with more specific advice, could you clarify:\n- ${suggestedQuestions.join('\n- ')}`;
@@ -674,7 +796,20 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
     return response;
   }
 
-  let finalFallback = `I understand your question about "${query}". To provide you with the most accurate and current information from official New Zealand sources, I need access to web search capabilities. This would allow me to search building.govt.nz, council websites, and other official sources in real-time.`;
+  // Final fallback with YES/NO/MAYBE format
+  let finalFallback = '';
+  
+  if (queryAnalysis.missingInfo.length > 0) {
+    finalFallback = `MAYBE - I need more specific information to provide a definitive answer.\n\n`;
+    finalFallback += `To give you a clear YES or NO answer, please provide:\n`;
+    queryAnalysis.missingInfo.forEach(info => {
+      finalFallback += `- ${info}\n`;
+    });
+    finalFallback += `\nOnce I have these details, I can search through official New Zealand building regulations and provide you with a definitive answer based on the Building Act 2004 and Building Code requirements.`;
+  } else {
+    finalFallback = `MAYBE - I understand your question about "${query}". To provide you with a definitive YES or NO answer from official New Zealand sources, I would need access to search building.govt.nz, council websites, and other official sources in real-time.`;
+  }
+  
   if (needsClarification && suggestedQuestions.length > 0) {
     finalFallback += `\n\nTo help with more specific advice, could you clarify:\n- ${suggestedQuestions.join('\n- ')}`;
   }
