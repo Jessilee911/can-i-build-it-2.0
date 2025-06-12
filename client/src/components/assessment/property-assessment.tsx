@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { Link } from "wouter";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
