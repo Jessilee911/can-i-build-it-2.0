@@ -112,9 +112,7 @@ Would you like to create a personalized property report for your specific projec
               className="text-center py-6"
             >
               <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
-              <p className="text-gray-600 max-w-md mx-auto text-[12px]">
-                Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
-              </p>
+              <p className="text-gray-600 max-w-md mx-auto text-[12px]">Ask me about building, renovating, or developing property in New Zealand or specific building code related questions.</p>
             </div>
           )}
           
