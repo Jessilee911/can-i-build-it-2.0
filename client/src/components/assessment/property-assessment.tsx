@@ -104,18 +104,23 @@ Would you like to create a personalized property report for your specific projec
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Panel with NZ Map */}
-      <div className="w-1/3 bg-gray-50 flex items-center justify-center p-8">
-        <div 
-          className="w-full h-full max-w-md opacity-60"
-          style={{
-            backgroundImage: `url(${nzMapImage})`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            animation: 'float 20s ease-in-out infinite',
-          }}
-        />
+      {/* Left Panel with Title and NZ Map */}
+      <div className="w-1/3 bg-gray-50 flex flex-col p-8">
+        <div className="text-center mb-6">
+          <h1 className="font-bold text-gray-900 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div 
+            className="w-full h-full max-w-md opacity-60"
+            style={{
+              backgroundImage: `url(${nzMapImage})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              animation: 'float 20s ease-in-out infinite',
+            }}
+          />
+        </div>
       </div>
       
       {/* Right Panel with Chat Interface */}
@@ -123,12 +128,11 @@ Would you like to create a personalized property report for your specific projec
         <div className="max-w-2xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
-          {/* Welcome message that stays visible */}
+          {/* Input Form */}
           <div 
             className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm bg-[#ffffff61]"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
           >
-            <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
             
             
             {/* Input Form integrated into welcome message */}
