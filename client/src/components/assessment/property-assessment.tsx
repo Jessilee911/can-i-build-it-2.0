@@ -120,7 +120,7 @@ Would you like to create a personalized property report for your specific projec
         <div className="space-y-4 mb-4">
           {/* Welcome message that stays visible */}
           <div 
-            className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg bg-[#ffffff00]"
+            className="text-center py-6 backdrop-blur-sm rounded-lg shadow-lg bg-[#f9fafb]"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
           >
             <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
