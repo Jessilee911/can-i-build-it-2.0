@@ -252,7 +252,8 @@ Would you like to create a personalized property report for your specific projec
                       </span>
                     </div>
                     <h4 className="font-bold text-lg mb-2">Comprehensive</h4>
-                    <div className="text-2xl font-bold mb-2 text-blue-600">$29</div>
+                    <div className="text-2xl font-bold mb-2 text-blue-600">$69
+</div>
                     <p className="text-sm text-gray-600 mb-4">Full assessment with AI insights</p>
                     <ul className="space-y-2 mb-4">
                       <li className="text-sm flex items-start">
@@ -326,7 +327,6 @@ Would you like to create a personalized property report for your specific projec
         </div>
 
       </div>
-      
       {/* Premium Upgrade Modal */}
       <PremiumUpgradeModal 
         isOpen={showPremiumModal}
