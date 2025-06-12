@@ -241,6 +241,20 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     source: 'Building Act 2004 - Part 3 Compliance and Enforcement',
     category: 'building_consent',
     lastUpdated: new Date()
+  },
+  {
+    id: 'ba2004_001',
+    content: 'Section 40 of the Building Act 2004 makes it an offence to carry out building work without a consent unless it is exempt under Schedule 1.',
+    source: '[Building Act 2004 Section 40](https://www.legislation.govt.nz/act/public/2004/0072/latest/DLM306036.html)',
+    category: 'building_consent',
+    lastUpdated: new Date()
+  },
+  {
+    id: 'ba2004_002',
+    content: 'Schedule 1 of the Building Act 2004 lists work that does not require a building consent. Each exemption has specific conditions that must be met.',
+    source: '[Building Act 2004 Schedule 1](https://www.legislation.govt.nz/act/public/2004/0072/latest/DLM306036.html)',
+    category: 'building_consent',
+    lastUpdated: new Date()
   }
 ];
 
@@ -370,6 +384,7 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
   // Always search local knowledge base first for specific clause information
   const relevantInfo = searchKnowledgeBase(query);
   const requestedClauses = extractBuildingCodeClauses(query);
+  const { needsClarification, suggestedQuestions } = analyzeIfNeedsClarification(query);
 
   // For recladding and specific building work, provide definitive answers from knowledge base
   if (query.toLowerCase().includes('reclad') || query.toLowerCase().includes('cladding')) {
@@ -568,7 +583,12 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
         throw new Error('Response became empty after cleaning');
       }
 
-      return cleanResponse;
+      let finalResponse = cleanResponse;
+      if (needsClarification && suggestedQuestions.length > 0) {
+        finalResponse += `\n\nTo help with more specific advice, could you clarify:\n- ${suggestedQuestions.join('\n- ')}`;
+      }
+
+      return finalResponse;
     } else {
       throw new Error('Empty or invalid response from OpenAI');
     }
@@ -587,10 +607,19 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
     response += clauseContext + knowledgeContext;
 
     response += `This information is based on current New Zealand legislation. For the most current details and complete clause text, I recommend checking official government websites like building.govt.nz. Always consult qualified professionals for specific project guidance.`;
+
+    if (needsClarification && suggestedQuestions.length > 0) {
+      response += `\n\nTo help with more specific advice, could you clarify:\n- ${suggestedQuestions.join('\n- ')}`;
+    }
+
     return response;
   }
 
-  return `I understand your question about "${query}". To provide you with the most accurate and current information from official New Zealand sources, I need access to web search capabilities. This would allow me to search building.govt.nz, council websites, and other official sources in real-time.`;
+  let finalFallback = `I understand your question about "${query}". To provide you with the most accurate and current information from official New Zealand sources, I need access to web search capabilities. This would allow me to search building.govt.nz, council websites, and other official sources in real-time.`;
+  if (needsClarification && suggestedQuestions.length > 0) {
+    finalFallback += `\n\nTo help with more specific advice, could you clarify:\n- ${suggestedQuestions.join('\n- ')}`;
+  }
+  return finalFallback;
 }
 
 /**
