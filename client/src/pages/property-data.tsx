@@ -105,16 +105,13 @@ const PropertyData = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white shadow rounded-lg mb-6">
-        <div className="p-6">
+        <div className="p-6 bg-[#f9fafb]">
           {/* Main search component */}
           <PropertyAssessment showPricing={showPricing} />
           
 
         </div>
       </div>
-      
-
-      
       {/* Simple Property Details Modal */}
       {showPropertyDetails && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -219,7 +216,6 @@ const PropertyData = () => {
           </div>
         </div>
       )}
-      
       {/* Always visible blue disclaimer at bottom */}
       <div className="mt-6 text-center">
         <p className="text-sm text-blue-600">
