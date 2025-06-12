@@ -17,6 +17,7 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentAddress, setCurrentAddress] = useState("");
+  const [showPlans, setShowPlans] = useState(showPricing);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,18 +218,27 @@ Would you like to create a personalized property report for your specific projec
                   </div>
                   <p className="text-sm text-gray-600">Get comprehensive property reports with official Auckland Council data, detailed zoning analysis, and expert recommendations for your specific project.</p>
                 </div>
-                <Button 
-                  onClick={() => setShowPremiumModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-                >
-                  Get Premium Analysis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    onClick={() => setShowPlans(!showPlans)}
+                    variant="outline"
+                    className="px-6 py-2"
+                  >
+                    {showPlans ? "Hide Plans" : "Show Plans"}
+                  </Button>
+                  <Button 
+                    onClick={() => setShowPremiumModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                  >
+                    Get Premium Analysis
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
             
-            {/* Pricing Plans - Show when showPricing is true */}
-            {showPricing && (
+            {/* Pricing Plans - Show when showPlans is true */}
+            {showPlans && (
               <div className="mt-4 bg-white bg-opacity-90 backdrop-blur-sm p-6 rounded-lg border border-gray-200 shadow-lg">
                 <div className="text-center mb-6">
                   <div className="flex items-center justify-center gap-2 mb-2">
