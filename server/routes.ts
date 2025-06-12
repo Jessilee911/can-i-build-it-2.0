@@ -857,7 +857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Initialize PDF processor first
         const { pdfProcessor } = await import('./pdf-processor');
-        
+
         // Search through uploaded PDF documents with better error handling
         let pdfSearchResults = { results: [], sources: [] };
         try {
@@ -865,7 +865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await pdfProcessor.getAvailablePDFs(); // This will show available files
           pdfSearchResults = await pdfProcessor.searchBuildingCodes(message);
           console.log('PDF search results:', pdfSearchResults.results.length, 'found');
-          
+
           if (pdfSearchResults.results.length === 0) {
             console.log('No PDF results found. Available PDFs:', pdfProcessor.getAvailablePDFs().length);
           }
@@ -877,7 +877,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Use RAG system with definitive knowledge base for expert responses
         response = await generateRAGResponse(message, { 
           plan: plan || 'basic', 
-          conversationHistory: conversationHistory || [],
+          conversationHistory: conversationHistory```text
+ || [],
           pdfResults: pdfSearchResults.results 
         });
 
@@ -1775,7 +1776,11 @@ async function generatePlanBasedResponse(message: string, plan: string, conversa
     - NZS 3604 Timber-framed buildings, NZS 4229 Concrete Masonry
     - BRANZ guides for flashing, cladding, plumbing and drainage
 
-    When specific building code clauses or standards are mentioned, reference the exact requirements from these documents.
+    IMPORTANT: Do not discuss zoning rules or planning restrictions. Focus only on building consent requirements and building code compliance.
+
+    Use friendly, helpful language as if speaking to someone who may not be familiar with building regulations. Explain things clearly and avoid overly technical jargon.
+
+    When specific building code clauses or standards are mentioned, reference the exact building code documents where applicable.
 
     You provide detailed, helpful analysis including:
     - Specific building code clause requirements with exact text
@@ -1845,14 +1850,14 @@ function getBasicFallbackResponse(message: string): string {
   if (message.toLowerCase().includes('consent')) {
     return "For building consent information in New Zealand, you'll typically need to submit plans to your local council. The process usually takes 20-30 working days and costs vary by council and project size. Would you like me to explain more about the specific requirements for your type of project?";
   }
-  
+
   if (message.toLowerCase().includes('zoning') || message.toLowerCase().includes('zone')) {
     return "Zoning rules in New Zealand vary by district and council. Each zone has specific rules about what you can build, height limits, and setback requirements. To get accurate zoning information for your property, you'll need to check with your local council's district plan. What type of development are you considering?";
   }
-  
+
   if (message.toLowerCase().includes('building code')) {
     return "The New Zealand Building Code sets minimum standards for building work. Key areas include structural requirements, weathertightness, fire safety, and accessibility. Each clause has specific requirements that must be met. What particular aspect of the Building Code are you asking about?";
   }
-  
+
   return "I'm here to help with your New Zealand property development questions. I can provide guidance on building consents, zoning rules, building code requirements, and development processes. What specific aspect would you like to know more about?";
 }

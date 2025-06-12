@@ -199,46 +199,24 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     category: 'building_consent',
     lastUpdated: new Date()
   },
-  // Zoning information
-  {
-    id: 'zone_001',
-    content: 'Residential - Single House Zone allows one dwelling per site with specific height, boundary setback, and site coverage rules.',
-    source: 'National Planning Standards',
-    category: 'zoning',
-    lastUpdated: new Date()
-  },
-  {
-    id: 'zone_002',
-    content: 'Mixed Housing Urban Zone allows multiple dwellings per site up to 3 storeys, with higher density development permitted.',
-    source: 'National Planning Standards', 
-    category: 'zoning',
-    lastUpdated: new Date()
-  },
   {
     id: 'rc_001',
-    content: 'Resource consent is required for activities that breach zone rules. Subdivision always requires resource consent.',
+    content: 'Resource consent may be required for some building projects. It\'s best to check with your local council early in the planning process.',
     source: 'Resource Management Act 1991',
     category: 'resource_consent',
     lastUpdated: new Date()
   },
   {
     id: 'legal_001',
-    content: 'Starting building work that requires consent without obtaining it first is illegal under the Building Act 2004. Penalties include stop-work notices, fines up to $200,000, and potential prosecution. Unauthorized work must be brought into compliance or removed at the owner\'s expense.',
-    source: 'Building Act 2004 - Sections 40, 229-238',
+    content: 'It\'s important to get the right consents before starting building work. This helps ensure your project meets safety standards and protects your investment.',
+    source: 'Building Act 2004 - Section 40',
     category: 'building_consent',
     lastUpdated: new Date()
   },
   {
     id: 'legal_002',
-    content: 'Building work performed without required consent can affect property sales, insurance claims, and mortgage approvals. Banks and insurers may refuse to cover properties with unauthorized building work.',
+    content: 'Having proper building consents helps when selling your property and can make insurance claims smoother.',
     source: 'Building Act 2004 - Compliance Schedules',
-    category: 'building_consent',
-    lastUpdated: new Date()
-  },
-  {
-    id: 'legal_003',
-    content: 'Councils have enforcement powers including stop-work notices, compliance orders, and prosecution for building work done without consent. Owners are responsible for ensuring all work complies with consent requirements.',
-    source: 'Building Act 2004 - Part 3 Compliance and Enforcement',
     category: 'building_consent',
     lastUpdated: new Date()
   },
@@ -475,26 +453,26 @@ Would you like to set up AI assistance so I can provide detailed property and bu
     const systemPrompt = `You are an expert New Zealand building regulatory authority with definitive knowledge of Building Code requirements. You provide AUTHORITATIVE, SPECIFIC answers based on official legislation and MBIE guidance.
 
             EXPERT RESPONSE REQUIREMENTS:
-            - Give definitive YES/NO answers where legislation provides clear guidance
-            - State exact Building Act 2004 and Building Code requirements
-            - Quote specific exemption conditions from Schedule 1
-            - Provide exact cost estimates and timeframes based on standard council processes
-            - Reference specific clause numbers and their exact requirements
-            - State consequences of non-compliance definitively
+            - Give clear, helpful answers in simple language
+            - Explain Building Act 2004 and Building Code requirements in plain terms
+            - Provide practical guidance on exemption conditions from Schedule 1
+            - Give realistic cost estimates and timeframes based on standard council processes
+            - Reference relevant building code requirements clearly
+            - Focus on helping users understand what they need to do
 
             CRITICAL KNOWLEDGE BASE:
-            - Building Act 2004 sections and specific exemption criteria
-            - MBIE Schedule 1 exemptions with exact conditions
-            - Building Code clauses with precise requirements  
-            - Standard council fees and processing times
-            - Legal consequences of unauthorized work
+            - Building Act 2004 sections and exemption criteria
+            - MBIE Schedule 1 exemptions with conditions
+            - Building Code clauses and their practical requirements
+            - Typical council fees and processing times
+            - Practical guidance for compliance
 
             RESPONSE STYLE:
-            - Lead with definitive answers (YES/NO, REQUIRED/NOT REQUIRED)
-            - State exact legal requirements, not general advice
-            - Provide specific costs, timeframes, and documentation requirements
-            - Reference exact source documents and sections
-            - Explain consequences of non-compliance clearly
+            - Lead with clear answers (YES/NO, REQUIRED/NOT REQUIRED)
+            - Explain requirements in friendly, accessible language
+            - Provide helpful cost estimates, timeframes, and documentation lists
+            - Reference source documents for verification
+            - Focus on helping users succeed with their projects
 
             LOCATION-SPECIFIC CONSTRAINTS:
             - ONLY mention Hibiscus Coast constraints if the user specifically asks about: Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay, or Hibiscus Coast area
@@ -626,7 +604,7 @@ IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###
  * Analyze query and determine what type of building/planning question it is
  */
 export function analyzeQuery(query: string): {
-  type: 'new_build' | 'renovation' | 'subdivision' | 'zoning' | 'consent' | 'general';
+  type: 'new_build' | 'renovation' | 'subdivision' | 'consent' | 'general';
   buildingType?: 'house' | 'minor_dwelling' | 'commercial' | 'multi_unit';
   location?: string;
   urgency?: 'immediate' | 'planning' | 'future';
@@ -658,8 +636,6 @@ export function analyzeQuery(query: string): {
     type = 'renovation'; 
   } else if (queryLower.includes('subdivide') || queryLower.includes('split') || queryLower.includes('divide')) {
     type = 'subdivision';
-  } else if (queryLower.includes('zone') || queryLower.includes('zoning')) {
-    type = 'zoning';
   } else if (queryLower.includes('consent')) {
     type = 'consent';
   }
@@ -699,21 +675,21 @@ export function analyzeIfNeedsClarification(query: string): {
 
   if (!queryLower.includes('location') && !queryLower.includes('address') &&
       !queryLower.includes('site') && !queryLower.includes('property')) {
-    suggestedQuestions.push('Could you please provide the location or address of the property?');
+    suggestedQuestions.push('What area or council district is your property in?');
     needsClarification = true;
   }
 
   if (!queryLower.includes('building type') && !queryLower.includes('house') &&
       !queryLower.includes('dwelling') && !queryLower.includes('commercial') &&
       !queryLower.includes('apartment')) {
-    suggestedQuestions.push('What type of building are you referring to (e.g., house, commercial building, apartment)?');
+    suggestedQuestions.push('What type of building project are you considering?');
     needsClarification = true;
   }
 
   if (!queryLower.includes('work type') && !queryLower.includes('new build') &&
       !queryLower.includes('renovation') && !queryLower.includes('alteration') &&
       !queryLower.includes('addition')) {
-    suggestedQuestions.push('What type of work are you planning (e.g., new build, renovation, alteration)?');
+    suggestedQuestions.push('Are you planning new construction, renovations, or additions?');
     needsClarification = true;
   }
 
