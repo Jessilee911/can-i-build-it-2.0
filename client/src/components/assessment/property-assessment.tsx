@@ -258,10 +258,7 @@ Would you like to create a personalized property report for your specific projec
                         <span className="text-green-500 mr-2">✓</span>
                         Custom building consent requirements
                       </li>
-                      <li className="text-sm flex items-start">
-                        <span className="text-green-500 mr-2">✓</span>
-                        Upload your plans
-                      </li>
+                      
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
                         Site constraints analysis
@@ -295,6 +292,10 @@ Would you like to create a personalized property report for your specific projec
                       <li className="text-sm flex items-start">
                         <span className="text-green-500 mr-2">✓</span>
                         Email consultation
+                      </li>
+                      <li className="text-sm flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        Upload plans and sketches
                       </li>
                     </ul>
                     
