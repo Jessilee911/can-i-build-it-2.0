@@ -167,10 +167,7 @@ Would you like to create a personalized property report for your specific projec
         </div>
         
         {/* Input Form */}
-        <div 
-          className="backdrop-blur-sm p-4 rounded-lg shadow-lg drop-shadow-sm"
-          style={{ backgroundColor: '#EDEAE5' }}
-        >
+        <div className="p-4">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input 
               type="text"
