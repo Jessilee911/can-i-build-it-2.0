@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
-import nzMapImage from "@assets/NZ.png";
+
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
 import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
@@ -104,17 +104,7 @@ Would you like to create a personalized property report for your specific projec
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">
-      {/* NZ Map Watermark Background */}
-      <div 
-        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: `url(${nzMapImage})`,
-          backgroundSize: '60%',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          animation: 'float 20s ease-in-out infinite',
-        }}
-      />
+
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
@@ -277,9 +267,7 @@ Would you like to create a personalized property report for your specific projec
                         Site constraints analysis
                       </li>
                     </ul>
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                      Get Comprehensive Report
-                    </Button>
+                    
                   </div>
                   
                   {/* Expert Plan */}
@@ -309,9 +297,7 @@ Would you like to create a personalized property report for your specific projec
                         Email consultation
                       </li>
                     </ul>
-                    <Button variant="outline" className="w-full">
-                      Get Expert Review
-                    </Button>
+                    
                   </div>
                 </div>
               </div>
