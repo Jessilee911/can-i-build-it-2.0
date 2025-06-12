@@ -7,13 +7,13 @@ export async function processBuildingCodeDocuments() {
   try {
     // Process B1 Structure - most fundamental building code
     await processB1Structure();
-    
+
     // Process E2 External Moisture - critical for weathertightness
     await processE2ExternalMoisture();
-    
+
     // Process F4 Safety from Falling - essential for residential buildings
     await processF4SafetyFromFalling();
-    
+
     // Process C/AS Protection from Fire - fire safety requirements
     await processCASProtectionFromFire();
 
@@ -69,7 +69,7 @@ export async function processBuildingCodeDocuments() {
     await processMetalRoofingCode();
 
     console.log('All Building Code documents processed successfully!');
-    
+
   } catch (error) {
     console.error('Error processing Building Code documents:', error);
     throw error;
@@ -78,7 +78,7 @@ export async function processBuildingCodeDocuments() {
 
 async function processB1Structure() {
   console.log('Processing B1 Structure...');
-  
+
   const b1Content = `
 B1 Structure - First Edition Amendment 15
 
@@ -144,7 +144,7 @@ PROFESSIONAL REQUIREMENTS:
 
 async function processE2ExternalMoisture() {
   console.log('Processing E2 External Moisture...');
-  
+
   const e2Content = `
 E2 External Moisture - Third Edition Amendment 10
 
@@ -218,7 +218,7 @@ MAINTENANCE REQUIREMENTS:
 
 async function processF4SafetyFromFalling() {
   console.log('Processing F4 Safety from Falling...');
-  
+
   const f4Content = `
 F4 Safety from Falling - Third Edition Amendment 2
 
@@ -294,7 +294,7 @@ BUILDING CONSENT REQUIREMENTS:
 
 async function processCASProtectionFromFire() {
   console.log('Processing C/AS Protection from Fire...');
-  
+
   const casContent = `
 C/AS Protection from Fire - Second Edition
 
@@ -370,7 +370,7 @@ OUTBUILDING REQUIREMENTS:
 
 async function processG6AirborneAndImpactSound() {
   console.log('Processing G6 Airborne and Impact Sound...');
-  
+
   await pdfProcessor.processPDF('attached_assets/g6-airborne-and-impact-sound-1st-edition-amendment-2.pdf', {
     title: 'G6 Airborne and Impact Sound - 1st Edition Amendment 2',
     authority: 'Department of Building and Housing',
@@ -381,7 +381,7 @@ async function processG6AirborneAndImpactSound() {
 
 async function processG7NaturalLight() {
   console.log('Processing G7 Natural Light...');
-  
+
   await pdfProcessor.processPDF('attached_assets/g7-natural-light-as1-2nd-edition.pdf', {
     title: 'G7 Natural Light Acceptable Solution G7/AS1 - 2nd Edition',
     authority: 'MBIE',
@@ -392,7 +392,7 @@ async function processG7NaturalLight() {
 
 async function processG8ArtificialLight() {
   console.log('Processing G8 Artificial Light...');
-  
+
   await pdfProcessor.processPDF('attached_assets/G8-artificial-light-1st-edition-amendment-2.pdf', {
     title: 'G8 Artificial Light - 1st Edition Amendment 2',
     authority: 'MBIE',
@@ -403,7 +403,7 @@ async function processG8ArtificialLight() {
 
 async function processG10PipedServices() {
   console.log('Processing G10 Piped Services...');
-  
+
   await pdfProcessor.processPDF('attached_assets/g10-piped-services-1st-edition-amendment8.pdf', {
     title: 'G10 Piped Services - 1st Edition Amendment 8',
     authority: 'MBIE',
@@ -414,7 +414,7 @@ async function processG10PipedServices() {
 
 async function processG11GasEnergySource() {
   console.log('Processing G11 Gas as Energy Source...');
-  
+
   await pdfProcessor.processPDF('attached_assets/G11 Gas- Energy Source 1st Edition Amendment 6.pdf', {
     title: 'G11 Gas as Energy Source - 1st Edition Amendment 6',
     authority: 'MBIE',
@@ -425,7 +425,7 @@ async function processG11GasEnergySource() {
 
 async function processG12WaterSupplies() {
   console.log('Processing G12 Water Supplies...');
-  
+
   await pdfProcessor.processPDF('attached_assets/g12-water-supplies-3rd-edition-amendment-14.pdf', {
     title: 'G12 Water Supplies - 3rd Edition Amendment 14',
     authority: 'MBIE',
@@ -436,7 +436,7 @@ async function processG12WaterSupplies() {
 
 async function processG13FoulWater() {
   console.log('Processing G13 Foul Water...');
-  
+
   await pdfProcessor.processPDF('attached_assets/G13 Foul Water 2nd Edition Amendment 9.pdf', {
     title: 'G13 Foul Water - 2nd Edition Amendment 9',
     authority: 'MBIE',
@@ -447,7 +447,7 @@ async function processG13FoulWater() {
 
 async function processH1EnergyEfficiency() {
   console.log('Processing H1 Energy Efficiency...');
-  
+
   await pdfProcessor.processPDF('attached_assets/H1_VM 1 Energy Efficiency 5th Edition.pdf', {
     title: 'H1 Energy Efficiency Verification Method H1/VM1 - 5th Edition',
     authority: 'MBIE',
@@ -458,7 +458,7 @@ async function processH1EnergyEfficiency() {
 
 async function processNZS3604TimberFramed() {
   console.log('Processing NZS 3604 Timber-framed buildings...');
-  
+
   await pdfProcessor.processPDF('attached_assets/NZS 3604-2011 New.pdf', {
     title: 'NZS 3604:2011 Timber-framed buildings',
     authority: 'Standards New Zealand',
@@ -469,7 +469,7 @@ async function processNZS3604TimberFramed() {
 
 async function processNZS4229ConcreteMasonry() {
   console.log('Processing NZS 4229 Concrete Masonry Buildings...');
-  
+
   await pdfProcessor.processPDF('attached_assets/NZS 4229 - 2013 Concrete Masonry Buildings.pdf', {
     title: 'NZS 4229:2013 Concrete masonry buildings not requiring specific engineering design',
     authority: 'Standards New Zealand',
@@ -480,7 +480,7 @@ async function processNZS4229ConcreteMasonry() {
 
 async function processBRANZPlumbingGuide() {
   console.log('Processing BRANZ Plumbing and Drainage Guide...');
-  
+
   await pdfProcessor.processPDF('attached_assets/Plumbing and Drainage Guide BRANZ 2024.pdf', {
     title: 'BRANZ Plumbing and Drainage Guide - 3rd Edition',
     authority: 'BRANZ',
@@ -491,7 +491,7 @@ async function processBRANZPlumbingGuide() {
 
 async function processB2Durability() {
   console.log('Processing B2 Durability...');
-  
+
   const b2Content = `
 B2 Durability - Second Edition Amendment 9
 
@@ -545,7 +545,7 @@ MAINTENANCE REQUIREMENTS:
 
 async function processD1AccessRoutes() {
   console.log('Processing D1 Access Routes...');
-  
+
   await pdfProcessor.processPDF('attached_assets/D1 Access Routes 2nd Edition Amendment 6.pdf', {
     title: 'D1 Access Routes - 2nd Edition Amendment 6',
     authority: 'MBIE',
@@ -556,7 +556,7 @@ async function processD1AccessRoutes() {
 
 async function processD2MechanicalInstallations() {
   console.log('Processing D2 Mechanical Installations for Access...');
-  
+
   await pdfProcessor.processPDF('attached_assets/D2-mechanical-installations-for-access-2nd-edition-amendment7.pdf', {
     title: 'D2 Mechanical installations for access - 2nd Edition Amendment 7',
     authority: 'MBIE',
@@ -567,7 +567,7 @@ async function processD2MechanicalInstallations() {
 
 async function processE1SurfaceWater() {
   console.log('Processing E1 Surface Water...');
-  
+
   await pdfProcessor.processPDF('attached_assets/E1 Surface Water 1st Edition Amendment 11.pdf', {
     title: 'E1 Surface Water - 1st Edition Amendment 11',
     authority: 'MBIE',
@@ -578,7 +578,7 @@ async function processE1SurfaceWater() {
 
 async function processE3InternalMoisture() {
   console.log('Processing E3 Internal Moisture...');
-  
+
   await pdfProcessor.processPDF('attached_assets/E3 Internal Moisture 2nd Edition Amendment 7.pdf', {
     title: 'E3 Internal Moisture - 2nd Edition Amendment 7',
     authority: 'MBIE',
@@ -589,7 +589,7 @@ async function processE3InternalMoisture() {
 
 async function processF2HazardousMaterials() {
   console.log('Processing F2 Hazardous Building Materials...');
-  
+
   await pdfProcessor.processPDF('attached_assets/F2 Hazardous Building Materials 1st Edition Amendment 3.pdf', {
     title: 'F2 Hazardous Building Materials - 1st Edition Amendment 3',
     authority: 'MBIE',
@@ -600,7 +600,7 @@ async function processF2HazardousMaterials() {
 
 async function processF5ConstructionDemolition() {
   console.log('Processing F5 Construction and Demolition Hazards...');
-  
+
   await pdfProcessor.processPDF('attached_assets/F5 Construction and Demolition Hazards.pdf', {
     title: 'F5 Construction and Demolition Hazards',
     authority: 'MBIE',
@@ -611,7 +611,7 @@ async function processF5ConstructionDemolition() {
 
 async function processF7WarningSystems() {
   console.log('Processing F7 Warning Systems...');
-  
+
   await pdfProcessor.processPDF('attached_assets/f7-as1-warning-systems-fifth-edition.pdf', {
     title: 'F7 Warning Systems Acceptable Solution F7/AS1 - Fifth Edition',
     authority: 'MBIE',
@@ -622,7 +622,7 @@ async function processF7WarningSystems() {
 
 async function processF9PoolAccess() {
   console.log('Processing F9 Restricting Access to Residential Pools...');
-  
+
   await pdfProcessor.processPDF('attached_assets/f9-restricting-access-to-residential-pools.pdf', {
     title: 'F9 Restricting access to residential pools',
     authority: 'MBIE',
@@ -633,7 +633,7 @@ async function processF9PoolAccess() {
 
 async function processG1PersonalHygiene() {
   console.log('Processing G1 Personal Hygiene...');
-  
+
   await pdfProcessor.processPDF('attached_assets/G1-personal-hygiene-2nd-edition-amendment-6.pdf', {
     title: 'G1 Personal Hygiene - 2nd Edition Amendment 6',
     authority: 'MBIE',
@@ -644,7 +644,7 @@ async function processG1PersonalHygiene() {
 
 async function processG3FoodPreparation() {
   console.log('Processing G3 Food Preparation and Prevention of Contamination...');
-  
+
   await pdfProcessor.processPDF('attached_assets/g3-food-preparation-prevention-contamination-1st-edition-amendment2.pdf', {
     title: 'G3 Food preparation and prevention of contamination - 1st Edition Amendment 2',
     authority: 'MBIE',
@@ -655,7 +655,7 @@ async function processG3FoodPreparation() {
 
 async function processG4Ventilation() {
   console.log('Processing G4 Ventilation...');
-  
+
   await pdfProcessor.processPDF('attached_assets/G4 Ventilation 4th Edition.pdf', {
     title: 'G4 Ventilation - 4th Edition',
     authority: 'MBIE',
@@ -666,7 +666,7 @@ async function processG4Ventilation() {
 
 async function processBRANZFlashingGuide() {
   console.log('Processing BRANZ Build Flashing and Cladding Guide...');
-  
+
   await pdfProcessor.processPDF('attached_assets/BRANZ Build Flashing and Cladding Guide.pdf', {
     title: 'BRANZ Build Flashing and Cladding Guide',
     authority: 'BRANZ',
@@ -677,11 +677,22 @@ async function processBRANZFlashingGuide() {
 
 async function processMetalRoofingCode() {
   console.log('Processing NZ Metal Roof and Wall Cladding Code...');
-  
+
   await pdfProcessor.processPDF('attached_assets/Roofing COP.pdf', {
     title: 'NZ Metal Roof and Wall Cladding Code of Practice',
     authority: 'Industry',
     documentType: 'code_of_practice',
     version: 'Version 3.0 May 2019'
+  });
+}
+
+async function processBuildingWorkConsentGuidance() {
+  console.log('Processing Building Work Consent Guidance...');
+
+  await pdfProcessor.processPDF('attached_assets/Building work that does not require a building consent.pdf', {
+    title: 'Building work that does not require a building consent',
+    authority: 'MBIE',
+    documentType: 'guidance',
+    version: 'Latest'
   });
 }
