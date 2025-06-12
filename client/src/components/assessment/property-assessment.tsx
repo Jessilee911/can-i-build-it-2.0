@@ -103,7 +103,7 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-[#F5EFE6]">
+    <div className="min-h-screen flex items-center justify-center relative bg-[#F9F5EF]">
       <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
