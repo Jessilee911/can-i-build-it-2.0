@@ -195,14 +195,25 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <img 
-              src={logoImage} 
-              alt="Can I Build It Logo" 
-              className="w-8 h-8"
-            />
-            <h2 className="font-semibold text-lg">Can I Build It?</h2>
-          </div>
+          <Link href="/">
+            <div 
+              className="flex items-center space-x-2 cursor-pointer hover:opacity-80"
+              onClick={() => {
+                setIsOpen(false);
+                // Restart chat when clicking "Can I Build It?" header
+                if (typeof window !== 'undefined' && (window as any).restartChat) {
+                  (window as any).restartChat();
+                }
+              }}
+            >
+              <img 
+                src={logoImage} 
+                alt="Can I Build It Logo" 
+                className="w-8 h-8"
+              />
+              <h2 className="font-semibold text-lg">Can I Build It?</h2>
+            </div>
+          </Link>
           <Button
             variant="ghost"
             size="sm"
@@ -223,7 +234,13 @@ export function Sidebar({ className }: SidebarProps) {
               <Button
                 variant={location === item.href ? "secondary" : "ghost"}
                 className="w-full justify-start"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  // Restart chat when clicking Home
+                  if (item.href === "/" && typeof window !== 'undefined' && (window as any).restartChat) {
+                    (window as any).restartChat();
+                  }
+                }}
               >
                 {item.icon}
                 <span className="ml-2">{item.title}</span>

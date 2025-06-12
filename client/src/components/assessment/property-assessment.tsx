@@ -19,6 +19,20 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
   const [currentAddress, setCurrentAddress] = useState("");
   const [showPlans, setShowPlans] = useState(showPricing);
 
+  // Function to restart the chat
+  const restartChat = () => {
+    setConversations([]);
+    setQuery("");
+    setCurrentAddress("");
+    setShowPremiumModal(false);
+    setShowPlans(showPricing);
+  };
+
+  // Make restartChat available globally for sidebar
+  if (typeof window !== 'undefined') {
+    (window as any).restartChat = restartChat;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
