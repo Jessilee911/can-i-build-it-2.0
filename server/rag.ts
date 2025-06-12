@@ -399,20 +399,41 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
       }
     }
     
-    // Determine response certainty level
+    // Determine response certainty level based on question type
     let certaintyLevel = "MAYBE"; // Default to requiring more info
     
-    if (missingInfo.length === 0 && hasBuildingCodeData) {
+    // For general building consent questions, we can provide Schedule 1 guidance regardless of specific details
+    const isGeneralBuildingConsentQuery = isBuildingConsentQuery || isSpecificBuildingWork;
+    const hasDefinitiveRegulation = relevantInfo.some(info => 
+      info.content.toLowerCase().includes('does not require') ||
+      info.content.toLowerCase().includes('requires building consent') ||
+      info.content.toLowerCase().includes('exempt')
+    );
+    
+    if (isGeneralBuildingConsentQuery && (hasBuildingCodeData || hasDefinitiveRegulation)) {
+      // Can provide general building consent guidance even without specific property details
+      certaintyLevel = "YES_OR_NO";
+    } else if (missingInfo.length === 0 && hasBuildingCodeData) {
       // Can give definitive answer if we have complete info and regulations
-      const hasDefinitiveRegulation = relevantInfo.some(info => 
-        info.content.toLowerCase().includes('does not require') ||
-        info.content.toLowerCase().includes('requires building consent') ||
-        info.content.toLowerCase().includes('exempt')
+      certaintyLevel = hasDefinitiveRegulation ? "YES_OR_NO" : "MAYBE";
+    }
+    
+    // Adjust missing info for building consent vs planning questions
+    if (isGeneralBuildingConsentQuery) {
+      // For building consent, only require essential project details, not property specifics
+      const essentialMissingInfo = missingInfo.filter(info => 
+        info.includes('size') || info.includes('dimensions') || info.includes('existing building')
       );
-      
-      if (hasDefinitiveRegulation) {
-        certaintyLevel = hasDefinitiveRegulation ? "YES_OR_NO" : "MAYBE";
-      }
+      return {
+        certaintyLevel: essentialMissingInfo.length === 0 ? "YES_OR_NO" : "MAYBE",
+        missingInfo: essentialMissingInfo,
+        hasSpecificAddress,
+        hasPropertyData,
+        hasBuildingCodeData,
+        isBuildingConsentQuery,
+        isSpecificBuildingWork,
+        canProvideGeneralGuidance: true
+      };
     }
     
     return {
@@ -588,7 +609,14 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             - NEVER mention specific zoning types (Mixed Housing Suburban, etc.) unless confirmed by authentic data
             - Only comment on property information that is explicitly provided in the available knowledge section
             - If property data is not available, clearly state this limitation
-            - Focus responses on building regulations and consent requirements from official sources
+            
+            BUILDING CONSENT vs PLANNING CONSENT DISTINCTION:
+            - ALWAYS provide general Building Code and Schedule 1 exemption guidance regardless of specific property details
+            - Building consent requirements are universal across New Zealand under the Building Act 2004
+            - Schedule 1 exemptions apply everywhere and don't depend on zoning or property-specific factors
+            - Explain general building consent thresholds (e.g., carports under 20m², single-storey buildings under 10m²)
+            - Resource consent and planning rules are property-specific and require zoning information
+            - Focus on building regulations first, then mention planning considerations if relevant
 
             EXPERT RESPONSE REQUIREMENTS:
             - Only integrate data sources that contain authentic information
@@ -698,15 +726,25 @@ ${clauseContext}${knowledgeContext}
 
 RESPONSE REQUIREMENTS:
 1. Start with YES, NO, or MAYBE based on the query analysis above
-2. If MAYBE: Ask specific questions about the missing information identified
-3. If YES/NO: Provide definitive answer with regulatory references
-4. Use the available property data and building code information to support your decision
-5. If specific Building Code clauses were mentioned, quote them directly
+2. For building consent questions: ALWAYS provide general Schedule 1 exemption guidance first
+3. Explain universal building consent thresholds (e.g., carports under 20m², buildings under 10m²)
+4. If MAYBE: Ask specific questions about missing technical details, not property information
+5. If YES/NO: Provide definitive answer with regulatory references
+6. Distinguish between building consent (universal rules) and planning consent (property-specific)
+7. If specific Building Code clauses were mentioned, quote them directly
+
+BUILDING CONSENT GUIDANCE APPROACH:
+- Always explain relevant Schedule 1 exemptions first
+- Provide general consent thresholds regardless of specific project details
+- Only ask for technical details needed to determine exemption applicability
+- Mention that planning consent may be separate requirement
+- Focus on Building Act 2004 requirements which apply universally
 
 IMPORTANT: 
 - Use YES only when regulations definitively require consent
-- Use NO only when regulations definitively exempt the work  
-- Use MAYBE when missing essential details listed above
+- Use NO only when regulations definitively exempt the work under Schedule 1
+- Use MAYBE when missing essential technical details only
+- Always provide general building consent guidance before asking for details
 - Respond using only plain text without hashtag or asterisk formatting`
           }
         ],
