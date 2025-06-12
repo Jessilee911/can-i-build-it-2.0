@@ -193,7 +193,7 @@ Would you like to create a personalized property report for your specific projec
           <>
             <AnimatedSuggestions />
             
-            <div className="mt-2 bg-opacity-80 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm" style={{ backgroundColor: '#EDEAE5' }}>
+            <div className="mt-2 backdrop-blur-sm p-4 rounded-lg border border-gray-200 shadow-lg drop-shadow-sm bg-[#f5f5e9]" style={{ backgroundColor: '#EDEAE5' }}>
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="mb-4 sm:mb-0">
                   <div className="flex items-center gap-2 mb-2">
