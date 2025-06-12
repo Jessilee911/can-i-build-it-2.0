@@ -881,23 +881,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           pdfResults: pdfSearchResults.results 
         });
 
-        // Enhance with PDF content if found
+        // PDF content is used internally for response generation but not appended to final response
         if (pdfSearchResults.results.length > 0) {
-          const relevantContent = pdfSearchResults.results
-            .slice(0, 3)
-            .map(result => {
-              if (result.type === 'building_code_clause') {
-                return `BUILDING CODE ${result.clauseNumber}: ${result.content}`;
-              } else {
-                return `${result.content}`;
-              }
-            })
-            .join('\n\n');
-
           sources = pdfSearchResults.sources;
-          
-          // Append PDF evidence to support the definitive answer
-          response += `\n\nDOCUMENT EVIDENCE:\n${relevantContent}`;
         }
 
         console.log('Generated response length:', response ? response.length : 0);
@@ -906,11 +892,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!response || typeof response !== 'string' || response.trim().length === 0) {
           console.log('Empty or invalid response, using fallback');
           response = "I'm here to help with your property development questions. Could you tell me more about what specific aspect you'd like guidance on?";
-        }
-
-        // Add source information if PDFs were used
-        if (sources.length > 0) {
-          response += `\n\n**Sources consulted:** ${sources.join(', ')}`;
         }
 
         console.log('Chat response generated successfully, length:', response.length);
