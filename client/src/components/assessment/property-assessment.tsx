@@ -190,42 +190,40 @@ Would you like to create a personalized property report for your specific projec
         </div>
 
         {/* Input Form - moved below conversation history */}
-        <div className="mb-4">
-          <div 
-            className="backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm bg-[#ffffff61] p-4"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
-          >
-            <form onSubmit={handleSubmit} className="flex space-x-2">
-              <textarea 
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[40px] max-h-[200px]"
-                placeholder="Ask about building regulations, zoning, or consent requirements... (Shift+Enter for new line)"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
-                rows={1}
-                style={{
-                  height: 'auto',
-                  minHeight: '40px'
-                }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = Math.min(target.scrollHeight, 200) + 'px';
-                }}
-              />
-              <Button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 self-end">
-                {isLoading ? 
-                  <span className="animate-spin">⟳</span> : 
-                  <span>Send</span>
+        <div 
+          className="mb-4 backdrop-blur-sm rounded-lg shadow-lg drop-shadow-sm bg-[#ffffff61] p-4"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+        >
+          <form onSubmit={handleSubmit} className="flex space-x-2">
+            <textarea 
+              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[40px] max-h-[200px]"
+              placeholder="Ask about building regulations, zoning, or consent requirements... (Shift+Enter for new line)"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
                 }
-              </Button>
-            </form>
-          </div>
+              }}
+              rows={1}
+              style={{
+                height: 'auto',
+                minHeight: '40px'
+              }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+              }}
+            />
+            <Button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 self-end">
+              {isLoading ? 
+                <span className="animate-spin">⟳</span> : 
+                <span>Send</span>
+              }
+            </Button>
+          </form>
         </div>
         
         {/* Show suggestion boxes and unlock features only when no conversations */}
