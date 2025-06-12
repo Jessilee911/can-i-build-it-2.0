@@ -141,7 +141,7 @@ Would you like to create a personalized property report for your specific projec
             {/* Input Form integrated into header */}
             <form onSubmit={handleSubmit} className="flex space-x-2 mt-4">
               <textarea 
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[60px] max-h-[250px] w-[90%]"
+                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[60px] max-h-[250px] w-[85%]"
                 placeholder="Ask about building regulations, zoning, or consent requirements... (Shift+Enter for new line)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
