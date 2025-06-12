@@ -221,17 +221,9 @@ Would you like to create a personalized property report for your specific projec
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button 
                     onClick={() => setShowPlans(!showPlans)}
-                    variant="outline"
-                    className="px-6 py-2"
-                  >
-                    {showPlans ? "Hide Plans" : "Show Plans"}
-                  </Button>
-                  <Button 
-                    onClick={() => setShowPremiumModal(true)}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
                   >
-                    Get Premium Analysis
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {showPlans ? "Hide Plans" : "Show Plans"}
                   </Button>
                 </div>
               </div>
