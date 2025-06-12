@@ -364,6 +364,14 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
   const requestedClauses = extractBuildingCodeClauses(query);
   const { needsClarification, suggestedQuestions } = analyzeIfNeedsClarification(query);
 
+  // Extract additional data sources from userContext
+  const { 
+    pdfResults = [], 
+    aucklandCouncilData = null, 
+    propertyData = null, 
+    address = null 
+  } = userContext || {};
+
   // For recladding and specific building work, provide definitive answers from knowledge base
   if (query.toLowerCase().includes('reclad') || query.toLowerCase().includes('cladding')) {
     const definitiveCladAnswer = `RECLADDING CONSENT REQUIREMENTS - DEFINITIVE ANSWER:
@@ -419,11 +427,73 @@ SOURCE: MBIE Building Consent Exemptions Guide - Schedule 1 Building Act 2004`;
     }
   }
 
-  // Build knowledge base context
+  // Build comprehensive knowledge context from all sources
   let knowledgeContext = '';
+  
+  // Auckland Council property data
+  if (aucklandCouncilData) {
+    knowledgeContext += '\n\nPROPERTY INFORMATION (Auckland Council):\n';
+    if (aucklandCouncilData.property) {
+      const prop = aucklandCouncilData.property;
+      knowledgeContext += `Address: ${prop.address}\n`;
+      knowledgeContext += `Zoning: ${prop.zoning}\n`;
+      knowledgeContext += `Land Area: ${prop.landArea}m²\n`;
+      knowledgeContext += `Capital Value: $${prop.capitalValue?.toLocaleString()}\n`;
+      knowledgeContext += `Legal Description: ${prop.legalDescription}\n\n`;
+    }
+    
+    if (aucklandCouncilData.constraints) {
+      knowledgeContext += 'PLANNING CONSTRAINTS:\n';
+      const constraints = aucklandCouncilData.constraints;
+      if (constraints.heritage) knowledgeContext += '- Heritage restrictions apply\n';
+      if (constraints.flood) knowledgeContext += '- Flood zone considerations\n';
+      if (constraints.geotechnical) knowledgeContext += '- Geotechnical requirements\n';
+      if (constraints.coastal) knowledgeContext += '- Coastal environment restrictions\n';
+      if (constraints.transport) knowledgeContext += '- Transport corridor restrictions\n';
+      if (constraints.infrastructure) knowledgeContext += '- Infrastructure constraints\n';
+      if (constraints.environmental) knowledgeContext += '- Environmental protection requirements\n';
+      knowledgeContext += '\n';
+    }
+  }
+  
+  // Property research market data
+  if (propertyData) {
+    knowledgeContext += 'MARKET ANALYSIS:\n';
+    if (propertyData.marketAnalysis) {
+      const market = propertyData.marketAnalysis;
+      knowledgeContext += `Median Price: $${market.medianPrice?.toLocaleString()}\n`;
+      knowledgeContext += `Price Growth: ${market.priceGrowth}%\n`;
+      knowledgeContext += `Days on Market: ${market.daysOnMarket}\n`;
+    }
+    
+    if (propertyData.developmentPotential) {
+      knowledgeContext += '\nDEVELOPMENT POTENTIAL:\n';
+      const dev = propertyData.developmentPotential;
+      knowledgeContext += `Zoning Flexibility: ${dev.zoningFlexibility}\n`;
+      knowledgeContext += `Density Opportunities: ${dev.densityOpportunities}\n`;
+      knowledgeContext += `Subdivision Potential: ${dev.subdivisionPotential}\n`;
+      if (dev.futureGrowthAreas) knowledgeContext += '- Located in future growth area\n';
+    }
+    knowledgeContext += '\n';
+  }
+  
+  // PDF Building Code results
+  if (pdfResults && pdfResults.length > 0) {
+    knowledgeContext += 'BUILDING CODE INFORMATION (from official MBIE documents):\n';
+    pdfResults.slice(0, 5).forEach((result, index) => {
+      if (result.type === 'building_code_clause') {
+        knowledgeContext += `${index + 1}. Building Code ${result.clauseNumber}: ${result.content.substring(0, 200)}...\n`;
+      } else {
+        knowledgeContext += `${index + 1}. ${result.content.substring(0, 200)}...\n`;
+      }
+      knowledgeContext += `   Source: ${result.source}\n\n`;
+    });
+  }
+  
+  // Static knowledge base regulations
   if (relevantInfo.length > 0) {
-    knowledgeContext = '\n\nRELEVANT NZ BUILDING REGULATIONS:\n';
-    relevantInfo.slice(0, 6).forEach((info, index) => {
+    knowledgeContext += '\nRELEVANT NZ BUILDING REGULATIONS:\n';
+    relevantInfo.slice(0, 4).forEach((info, index) => {
       knowledgeContext += `${index + 1}. ${info.content}\n   Source: ${info.source}\n\n`;
     });
   }
@@ -449,48 +519,59 @@ Would you like to set up AI assistance so I can provide detailed property and bu
   }
 
   try {
-    // Enhanced system prompt with clause-specific instructions
-    const systemPrompt = `You are an expert New Zealand building regulatory authority with definitive knowledge of Building Code requirements. You provide AUTHORITATIVE, SPECIFIC answers based on official legislation and MBIE guidance.
+    // Enhanced system prompt with comprehensive data integration
+    const systemPrompt = `You are an expert New Zealand property development advisor with access to comprehensive, real-time data sources including Auckland Council records, property market analysis, and official MBIE building regulations. You provide AUTHORITATIVE, SPECIFIC answers based on multiple official data sources.
+
+            DATA SOURCES AVAILABLE:
+            - Auckland Council property records, zoning, and planning constraints
+            - Real-time property market analysis and development potential data
+            - Official MBIE Building Code documents and regulations
+            - Infrastructure constraint data (including Watercare restrictions)
+            - Property research including demographics and growth projections
+            - Comprehensive building consent exemption guidance
 
             EXPERT RESPONSE REQUIREMENTS:
+            - Integrate ALL available data sources in your response
+            - Prioritize specific property data when address is provided
+            - Combine building regulations with property-specific constraints
+            - Include market insights and development potential analysis
             - Give clear, helpful answers in simple language
             - Explain Building Act 2004 and Building Code requirements in plain terms
             - Provide practical guidance on exemption conditions from Schedule 1
-            - Give realistic cost estimates and timeframes based on standard council processes
             - Reference relevant building code requirements clearly
             - Focus on helping users understand what they need to do
 
-            CRITICAL KNOWLEDGE BASE:
-            - Building Act 2004 sections and exemption criteria
-            - MBIE Schedule 1 exemptions with conditions
-            - Building Code clauses and their practical requirements
-            - Typical council fees and processing times
-            - Practical guidance for compliance
+            COMPREHENSIVE ANALYSIS APPROACH:
+            - When property address is provided, integrate zoning, constraints, and market data
+            - Cross-reference building regulations with specific property characteristics
+            - Consider infrastructure limitations and planning restrictions
+            - Analyze development potential alongside regulatory requirements
+            - Provide property-specific cost estimates and timeframes
+            - Include market context for development decisions
 
             RESPONSE STYLE:
             - Lead with clear answers (YES/NO, REQUIRED/NOT REQUIRED)
-            - Explain requirements in friendly, accessible language
-            - Provide helpful cost estimates, timeframes, and documentation lists
-            - Reference source documents for verification
-            - Focus on helping users succeed with their projects
+            - Integrate property-specific data throughout the response
+            - Combine regulatory requirements with market insights
+            - Provide comprehensive analysis using all available data
+            - Reference multiple official sources for verification
+            - Focus on helping users make informed property decisions
 
             LOCATION-SPECIFIC CONSTRAINTS:
+            - Always check and mention relevant planning constraints
+            - Include zoning restrictions and their implications
             - ONLY mention Hibiscus Coast constraints if the user specifically asks about: Orewa, Silverdale, Whangaparaoa, Red Beach, Stanmore Bay, Army Bay, or Hibiscus Coast area
-            - When Hibiscus Coast is relevant, provide these exact Watercare policy details:
-              * Building consents granted before 15 November 2024 can connect when ready
-              * Resource consents issued before 15 November 2024 without building consent: contact Watercare for case-by-case assessment
-              * NEW resource consent applications will have condition preventing wastewater connection until Army Bay Treatment Plant upgrade (scheduled 2031)
-              * This applies to ALL new buildings including minor dwellings and granny flats
-              * Include link: https://www.watercare.co.nz/builders-and-developers/consultation/growth-constraints-in-hibiscus-coast
+            - When Hibiscus Coast is relevant, provide exact Watercare policy details
+            - Consider infrastructure limitations in development advice
 
             RESPONSE STYLE REQUIREMENTS:
             - Provide DEFINITIVE, SPECIFIC answers with exact details from official sources
+            - Integrate data from multiple sources seamlessly
             - When specific clauses are mentioned, quote them directly and prominently
             - Lead with the most critical information first (especially infrastructure constraints)
             - Include specific dates, deadlines, and policy details when available
             - Always provide exact website links for verification
             - State clear YES/NO answers where possible rather than general advice
-            - Quote specific policy text when relevant
             - Write responses in plain text only without any markdown formatting
             - Do NOT use hashtag symbols (#, ##, ###, ####) for headings
             - Do NOT use asterisk symbols (**, *) for bold or italic text

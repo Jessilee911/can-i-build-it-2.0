@@ -874,11 +874,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log('Continuing without PDF search results');
         }
 
-        // Use RAG system with definitive knowledge base for expert responses
+        // Gather comprehensive knowledge from all available sources
+        let aucklandCouncilData = null;
+        let propertyData = null;
+        let infrastructureData = null;
+
+        // Extract property address if mentioned in the query
+        const addressPattern = /(?:address|property|at|on|for)\s+([^,.\n]+(?:,\s*[^,.\n]+)*)/i;
+        const addressMatch = message.match(addressPattern);
+        const potentialAddress = addressMatch ? addressMatch[1].trim() : null;
+
+        // Search Auckland Council API if address mentioned
+        if (potentialAddress && potentialAddress.length > 5) {
+          try {
+            const { aucklandCouncilAPI } = await import('./auckland-council-api');
+            console.log('Searching Auckland Council data for:', potentialAddress);
+            
+            // Get property details
+            const propertyDetails = await aucklandCouncilAPI.getPropertyDetails(potentialAddress);
+            if (propertyDetails) {
+              aucklandCouncilData = {
+                property: propertyDetails,
+                constraints: await aucklandCouncilAPI.getPlanningConstraints(potentialAddress)
+              };
+              console.log('Found Auckland Council property data');
+            }
+          } catch (error) {
+            console.log('Auckland Council API search failed:', error.message);
+          }
+        }
+
+        // Search property research data for market insights
+        if (potentialAddress && potentialAddress.length > 5) {
+          try {
+            const { propertyResearchService } = await import('./property-research');
+            console.log('Gathering property research data for:', potentialAddress);
+            
+            propertyData = await propertyResearchService.conductPropertyResearch(potentialAddress);
+            console.log('Found property research data');
+          } catch (error) {
+            console.log('Property research failed:', error.message);
+          }
+        }
+
+        // Use enhanced RAG system with all knowledge sources
         response = await generateRAGResponse(message, { 
           plan: plan || 'basic', 
           conversationHistory: conversationHistory || [],
-          pdfResults: pdfSearchResults.results 
+          pdfResults: pdfSearchResults.results,
+          aucklandCouncilData,
+          propertyData,
+          address: potentialAddress
         });
 
         // Enhance with PDF content if found
