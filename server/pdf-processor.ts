@@ -649,35 +649,63 @@ ${content}`
   }
 
   /**
-   * Find specific building code clause in text
+   * Find specific building code clause in text with enhanced pattern matching
    */
   findClause(text: string, clauseNumber: string): { clauseNumber: string; content?: string; found: boolean; source?: string } {
     // Handle both "D1 3.3" and "D1.3.3" formats
     const normalized = clauseNumber.replace(/\s+/g, '.');
+    const spaced = clauseNumber.replace(/\./g, ' ');
 
-    // Look for the clause in the text - more flexible pattern
+    // Enhanced patterns for better clause matching
     const patterns = [
-      new RegExp(`${normalized}[^\\n]*([\\s\\S]*?)(?=\\n[A-Z]\\d+|$)`, 'i'),
-      new RegExp(`${clauseNumber}[^\\n]*([\\s\\S]*?)(?=\\n[A-Z]\\d+|$)`, 'i'),
-      new RegExp(`${normalized}[\\s\\S]*?(?=\\n\\d+\\.|\\n[A-Z]\\d+|$)`, 'i')
+      // Exact clause with content until next clause
+      new RegExp(`^\\s*${normalized}\\s+([^\\n]+(?:\\n(?!\\s*[A-Z]\\d+)[^\\n]*)*?)(?=\\n\\s*[A-Z]\\d+|\\n\\s*\\d+\\.|$)`, 'gim'),
+      new RegExp(`^\\s*${spaced}\\s+([^\\n]+(?:\\n(?!\\s*[A-Z]\\d+)[^\\n]*)*?)(?=\\n\\s*[A-Z]\\d+|\\n\\s*\\d+\\.|$)`, 'gim'),
+      
+      // Clause in handbook format with section headers
+      new RegExp(`${normalized}\\s+([^\\n]*(?:\\n(?!\\s*(?:[A-Z]\\d+|\\d+\\.))[^\\n]*){0,20})`, 'gim'),
+      new RegExp(`${spaced}\\s+([^\\n]*(?:\\n(?!\\s*(?:[A-Z]\\d+|\\d+\\.))[^\\n]*){0,20})`, 'gim'),
+      
+      // Clause with description in parentheses or after dash
+      new RegExp(`${normalized}\\s*[\\-–]?\\s*([^\\n]+(?:\\([^)]*\\))?[^\\n]*)`, 'gi'),
+      new RegExp(`${spaced}\\s*[\\-–]?\\s*([^\\n]+(?:\\([^)]*\\))?[^\\n]*)`, 'gi'),
+      
+      // More flexible pattern for handbook structure
+      new RegExp(`${normalized}[\\s\\S]{0,50}?([^\\n]+(?:\\n[^\\n]*){0,10})`, 'gi')
     ];
 
     for (const pattern of patterns) {
-      const match = text.match(pattern);
-      if (match) {
-        return {
-          clauseNumber: normalized,
-          content: match[0].trim(),
-          found: true
-        };
+      pattern.lastIndex = 0; // Reset regex state
+      const match = pattern.exec(text);
+      if (match && match[1]) {
+        const content = match[1].trim();
+        if (content.length > 10) { // Ensure we have substantial content
+          return {
+            clauseNumber: normalized,
+            content: this.cleanClauseContent(content),
+            found: true
+          };
+        }
       }
+    }
+
+    // Fallback: search for any mention of the clause
+    const fallbackPattern = new RegExp(`(${normalized}|${spaced})[\\s\\S]{0,200}`, 'gi');
+    const fallbackMatch = fallbackPattern.exec(text);
+    
+    if (fallbackMatch) {
+      return {
+        clauseNumber: normalized,
+        content: this.cleanClauseContent(fallbackMatch[0]),
+        found: true
+      };
     }
 
     return { clauseNumber: normalized, found: false };
   }
 
   /**
-   * Search for building code information across all PDFs with enhanced matching
+   * Search for building code information across all PDFs with enhanced clause matching
    */
   async searchBuildingCodes(query: string): Promise<{ results: any[], sources: string[] }> {
     const availablePDFs = this.getAvailablePDFs();
@@ -686,28 +714,62 @@ ${content}`
 
     console.log(`Searching ${availablePDFs.length} PDFs for: "${query}"`);
 
-    // Check for specific clause request (e.g., B1, D1.3.3, E2/AS1)
-    const clauseMatch = query.match(/([A-Z]\d+(?:[\/\.]\w*\d*)*(?:\s+\d+(?:\.\d+)*)?)/i);
+    // Enhanced clause detection patterns
+    const clausePatterns = [
+      /([A-Z]\d+)\s+(\d+(?:\.\d+)*)/g, // D1 3.3, B1 2.1
+      /([A-Z]\d+)\.(\d+(?:\.\d+)*)/g,  // D1.3.3, B1.2.1
+      /([A-Z]\d+\/[A-Z]+\d+)/g,        // E2/AS1, B1/VM1
+      /([A-Z]\d+)/g                    // D1, B1, E2
+    ];
 
-    if (clauseMatch) {
-      const clauseNumber = clauseMatch[1];
-      console.log(`Looking for specific clause: ${clauseNumber}`);
+    let clauseNumbers: string[] = [];
+    
+    // Extract all potential clause numbers from query
+    for (const pattern of clausePatterns) {
+      let match;
+      while ((match = pattern.exec(query)) !== null) {
+        if (match[2]) {
+          // Has sub-clause number
+          clauseNumbers.push(`${match[1]} ${match[2]}`);
+          clauseNumbers.push(`${match[1]}.${match[2]}`);
+        } else {
+          clauseNumbers.push(match[1]);
+        }
+      }
+    }
 
-      // Search through uploaded files for specific clauses
-      for (const filename of availablePDFs) {
-        const content = await this.readUploadedPDF(filename);
-        if (content) {
-          const result = this.findClause(content, clauseNumber);
-          if (result.found) {
-            results.push({
-              clauseNumber: result.clauseNumber,
-              content: result.content,
-              source: filename,
-              type: 'building_code_clause',
-              relevance: 100
-            });
-            if (!sources.includes(filename)) {
-              sources.push(filename);
+    // Remove duplicates and prioritize most specific clauses
+    clauseNumbers = [...new Set(clauseNumbers)].sort((a, b) => b.length - a.length);
+
+    console.log(`Extracted clause numbers: ${clauseNumbers.join(', ')}`);
+
+    // Search for specific clauses with high priority
+    if (clauseNumbers.length > 0) {
+      for (const clauseNumber of clauseNumbers) {
+        console.log(`Searching for clause: ${clauseNumber}`);
+        
+        // Prioritize Building Code Handbook for clause definitions
+        const handbookFiles = availablePDFs.filter(f => f.toLowerCase().includes('handbook'));
+        const searchOrder = [...handbookFiles, ...availablePDFs.filter(f => !f.toLowerCase().includes('handbook'))];
+
+        for (const filename of searchOrder) {
+          const content = await this.readUploadedPDF(filename);
+          if (content) {
+            const result = this.findClause(content, clauseNumber);
+            if (result.found && result.content) {
+              const priority = handbookFiles.includes(filename) ? 200 : 150;
+              results.push({
+                clauseNumber: result.clauseNumber,
+                content: result.content,
+                source: filename,
+                type: 'building_code_clause',
+                relevance: priority,
+                isHandbook: handbookFiles.includes(filename)
+              });
+              if (!sources.includes(filename)) {
+                sources.push(filename);
+              }
+              console.log(`Found clause ${clauseNumber} in ${filename}`);
             }
           }
         }

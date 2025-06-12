@@ -423,6 +423,8 @@ SOURCE: MBIE Building Consent Exemptions Guide - Schedule 1 Building Act 2004`;
 
   // Build comprehensive context with specific clause information
   let clauseContext = '';
+  let pdfClauseContext = '';
+  
   if (requestedClauses.length > 0) {
     clauseContext = `\n\nSPECIFIC BUILDING CODE CLAUSES REQUESTED: ${requestedClauses.join(', ')}\n`;
 
@@ -438,6 +440,18 @@ SOURCE: MBIE Building Consent Exemptions Guide - Schedule 1 Building Act 2004`;
       clauseContext += '\nEXACT CLAUSE INFORMATION FROM BUILDING CODE:\n';
       clauseMatches.forEach(match => {
         clauseContext += `${match.source}: ${match.content}\n\n`;
+      });
+    }
+  }
+
+  // Check if we have PDF results for specific clauses
+  if (userContext?.pdfResults && userContext.pdfResults.length > 0) {
+    const clauseResults = userContext.pdfResults.filter(result => result.type === 'building_code_clause');
+    if (clauseResults.length > 0) {
+      pdfClauseContext = '\n\nFROM BUILDING CODE DOCUMENTS:\n';
+      clauseResults.forEach(result => {
+        pdfClauseContext += `${result.clauseNumber}: ${result.content}\n`;
+        pdfClauseContext += `Source: ${result.source}\n\n`;
       });
     }
   }
@@ -474,6 +488,8 @@ Would you like to set up AI assistance so I can provide detailed property and bu
   try {
     // Enhanced system prompt with detailed code-specific response format
     const systemPrompt = `You are an expert New Zealand Building Code advisor with access to comprehensive building code documentation. When answering questions about building requirements, follow this exact structure:
+
+            CRITICAL: When specific Building Code clause content is provided in the context below, use it as the PRIMARY source and quote it directly.
 
             RESPONSE FORMAT REQUIREMENTS:
             1. Direct Answer: Start with a clear YES/NO or definitive statement in bold formatting
@@ -577,11 +593,11 @@ Would you like to set up AI assistance so I can provide detailed property and bu
             role: 'user',
             content: `${query}
 
-${clauseContext}${knowledgeContext}
+${clauseContext}${pdfClauseContext}${knowledgeContext}
 
 Please provide specific information about New Zealand building regulations, consent requirements, or zoning rules relevant to this query. If specific Building Code clauses were mentioned, quote them directly and explain their practical application.
 
-IMPORTANT: Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
+IMPORTANT: When clause content is provided above from Building Code documents, use that as your primary source and quote it directly. Respond using only plain text without any hashtag symbols (#, ##, ###, ####) or asterisk symbols (**, *) for formatting.`
           }
         ],
         max_tokens: 2000,
