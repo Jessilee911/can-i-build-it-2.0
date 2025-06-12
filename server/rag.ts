@@ -690,3 +690,41 @@ export function analyzeIfNeedsClarification(query: string): {
 
   return { needsClarification, suggestedQuestions };
 }
+
+/**
+ * Building Code RAG Service for document-based queries
+ */
+export class BuildingCodeRAGService {
+  private knowledgeBase: KnowledgeBase[] = nzBuildingKnowledge;
+
+  async searchDocuments(query: string): Promise<{ results: any[], sources: string[] }> {
+    const results = searchKnowledgeBase(query);
+    const sources = results.map(r => r.source);
+    
+    return {
+      results: results.map(r => ({
+        content: r.content,
+        source: r.source,
+        category: r.category,
+        region: r.region
+      })),
+      sources: [...new Set(sources)]
+    };
+  }
+
+  async answerQuestion(question: string): Promise<string> {
+    const results = searchKnowledgeBase(question);
+    if (results.length === 0) {
+      return "I don't have specific information about that topic in my knowledge base.";
+    }
+
+    const topResults = results.slice(0, 3);
+    let answer = "Based on New Zealand building regulations:\n\n";
+    
+    topResults.forEach((result, index) => {
+      answer += `${index + 1}. ${result.content}\n\nSource: ${result.source}\n\n`;
+    });
+
+    return answer;
+  }
+}
