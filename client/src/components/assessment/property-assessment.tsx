@@ -139,9 +139,9 @@ Would you like to create a personalized property report for your specific projec
             <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
             
             {/* Input Form integrated into header */}
-            <form onSubmit={handleSubmit} className="flex space-x-2 mt-4">
+            <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-3 mt-4">
               <textarea 
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[60px] max-h-[250px] w-[85%]"
+                className="w-[70%] p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[60px] max-h-[250px]"
                 placeholder="Ask about building regulations, zoning, or consent requirements... (Shift+Enter for new line)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -162,7 +162,7 @@ Would you like to create a personalized property report for your specific projec
                   target.style.height = Math.min(target.scrollHeight, 250) + 'px';
                 }}
               />
-              <Button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 self-end">
+              <Button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                 {isLoading ? 
                   <span className="animate-spin">⟳</span> : 
                   <span>Send</span>
