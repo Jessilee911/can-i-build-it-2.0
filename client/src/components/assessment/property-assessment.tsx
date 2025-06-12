@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import nzMapImage from "@assets/NZ.png";
 import AnimatedSuggestions from "@/components/animated-suggestions";
 import { FormattedText } from "@/components/ui/formatted-text";
-import { PremiumUpgradeModal } from "@/components/premium-upgrade-modal";
+
 
 interface PropertyAssessmentProps {
   showPricing?: boolean;
@@ -14,7 +14,6 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversations, setConversations] = useState<{type: 'query' | 'response', content: string, showReportCTA?: boolean}[]>([]);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentAddress, setCurrentAddress] = useState("");
   const [showPlans, setShowPlans] = useState(showPricing);
 
@@ -23,7 +22,6 @@ export function PropertyAssessment({ showPricing = false }: PropertyAssessmentPr
     setConversations([]);
     setQuery("");
     setCurrentAddress("");
-    setShowPremiumModal(false);
     setShowPlans(showPricing);
   };
 
@@ -192,18 +190,7 @@ Would you like to create a personalized property report for your specific projec
                 }}
               >
                 <FormattedText content={item.content} />
-                {item.showReportCTA && item.type === 'response' && (
-                  <div className="mt-4 pt-3 border-t border-gray-300">
-                    <Button 
-                      size="sm" 
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={() => setShowPremiumModal(true)}
-                    >
-                      Get Premium Analysis
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                )}
+
               </div>
             </div>
           ))}
@@ -350,12 +337,7 @@ Would you like to create a personalized property report for your specific projec
         </div>
 
       </div>
-      {/* Premium Upgrade Modal */}
-      <PremiumUpgradeModal 
-        isOpen={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        initialAddress={currentAddress}
-      />
+
     </div>
   );
 }

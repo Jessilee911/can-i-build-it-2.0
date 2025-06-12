@@ -99,10 +99,10 @@ export default function ReportGenerator() {
                   <Button 
                     size="lg" 
                     className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
-                    onClick={() => window.location.assign('/premium-chat')}
+                    onClick={() => window.location.assign('/')}
                   >
                     <FileTextIcon className="mr-2 h-5 w-5" />
-                    Start Premium Analysis
+                    Start Property Assessment
                   </Button>
                   <p className="text-sm text-gray-500">
                     No payment required • Get instant results
