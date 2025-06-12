@@ -103,19 +103,24 @@ Would you like to create a personalized property report for your specific projec
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
-      {/* NZ Map Watermark Background */}
-      <div 
-        className="fixed inset-0 z-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: `url(${nzMapImage})`,
-          backgroundSize: '60%',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          animation: 'float 20s ease-in-out infinite',
-        }}
-      />
-      <div className="max-w-3xl mx-auto relative z-10 w-full px-4">
+    <div className="min-h-screen flex">
+      {/* Left Panel with NZ Map */}
+      <div className="w-1/3 bg-gray-50 flex items-center justify-center p-8">
+        <div 
+          className="w-full h-full max-w-md opacity-60"
+          style={{
+            backgroundImage: `url(${nzMapImage})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            animation: 'float 20s ease-in-out infinite',
+          }}
+        />
+      </div>
+      
+      {/* Right Panel with Chat Interface */}
+      <div className="flex-1 flex items-center justify-center relative">
+        <div className="max-w-2xl mx-auto relative z-10 w-full px-4">
         {/* Conversation History */}
         <div className="space-y-4 mb-4">
           {/* Welcome message that stays visible */}
@@ -124,9 +129,7 @@ Would you like to create a personalized property report for your specific projec
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
           >
             <h1 className="font-bold text-gray-900 mb-4 text-[25px]" style={{fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif'}}>Can I Build It?</h1>
-            <p className="text-gray-600 max-w-md mx-auto text-[12px] mb-6">
-              Ask me about building, renovating, or developing property in New Zealand and I'll provide accurate information from official government sources.
-            </p>
+            
             
             {/* Input Form integrated into welcome message */}
             <div className="max-w-2xl mx-auto">
@@ -322,6 +325,7 @@ Would you like to create a personalized property report for your specific projec
           </p>
         </div>
 
+        </div>
       </div>
       {/* Premium Upgrade Modal */}
       <PremiumUpgradeModal 
