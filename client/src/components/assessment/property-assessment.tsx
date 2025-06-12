@@ -212,8 +212,8 @@ Would you like to create a personalized property report for your specific projec
                 <div className="mb-4 sm:mb-0">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="text-lg font-semibold text-gray-900">Premium Property Analysis</h3>
-                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                      Available Now
+                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                      Coming Soon
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">Get comprehensive property reports with official Auckland Council data, detailed zoning analysis, and expert recommendations for your specific project.</p>
