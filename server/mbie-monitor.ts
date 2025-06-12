@@ -295,7 +295,7 @@ export class MBIEUpdateMonitor {
         await pdfProcessor.processPDF(filepath, {
           title: document.title,
           authority: 'MBIE',
-          documentType: document.documentType === 'amendment' ? 'guidance' : document.documentType,
+          documentType: 'guidance',
           version: 'Latest'
         });
 
