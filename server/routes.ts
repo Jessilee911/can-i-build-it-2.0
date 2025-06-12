@@ -877,8 +877,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Use RAG system with definitive knowledge base for expert responses
         response = await generateRAGResponse(message, { 
           plan: plan || 'basic', 
-          conversationHistory: conversationHistory```text
- || [],
+          conversationHistory: conversationHistory || [],
           pdfResults: pdfSearchResults.results 
         });
 
