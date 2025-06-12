@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import { PropertyAssessment } from "@/components/assessment/property-assessment";
 import { AnimatedSuggestions } from "@/components/animated-suggestions";
 import { Button } from "@/components/ui/button";
 import { FileTextIcon } from "lucide-react";
@@ -107,20 +107,7 @@ const PropertyData = () => {
       <div className="bg-white shadow rounded-lg mb-6">
         <div className="p-6">
           {/* Main search component */}
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              New Zealand Building Code Assistant
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Get expert guidance on building consent requirements and building code compliance
-            </p>
-            <Button 
-              onClick={() => window.location.href = '/chat'}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
-            >
-              Start Building Code Chat
-            </Button>
-          </div>
+          <PropertyAssessment showPricing={showPricing} />
           
 
         </div>

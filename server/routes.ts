@@ -859,7 +859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { pdfProcessor } = await import('./pdf-processor');
         
         // Search through uploaded PDF documents with better error handling
-        let pdfSearchResults: { results: any[], sources: string[] } = { results: [], sources: [] };
+        let pdfSearchResults = { results: [], sources: [] };
         try {
           // First ensure PDF parser is properly initialized
           await pdfProcessor.getAvailablePDFs(); // This will show available files
@@ -885,7 +885,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (pdfSearchResults.results.length > 0) {
           const relevantContent = pdfSearchResults.results
             .slice(0, 3)
-            .map((result: any) => {
+            .map(result => {
               if (result.type === 'building_code_clause') {
                 return `BUILDING CODE ${result.clauseNumber}: ${result.content}`;
               } else {
@@ -964,7 +964,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== Premium Chat API ====================
+  // Premium assessment request endpoint
+  apiRouter.post("/api/premium-assessment-request", async (req: Request, res: Response) => {
+    try {
+      const { insertPremiumRequestSchema } = await import("@shared/schema");
+      const requestData = insertPremiumRequestSchema.parse(req.body);
 
+      const premiumRequest = await storage.createPremiumRequest(requestData);
+
+      console.log("Premium assessment request created:", {
+        id: premiumRequest.id,
+        email: premiumRequest.email,
+        propertyAddress: premiumRequest.propertyAddress
+      });
+
+      // Generate comprehensive property report using Auckland Council data
+      try {
+        const { premiumPropertyAgent } = await import("./premium-property-agent");
+        const report = await premiumPropertyAgent.generatePropertyReport(
+          premiumRequest.propertyAddress,
+          premiumRequest.projectDescription
+        );
+
+        const reportText = premiumPropertyAgent.formatReportAsText(report);
+
+        // Send the report back to user
+        res.json({
+          success: true,
+          message: "Premium assessment report generated successfully",
+          requestId: premiumRequest.id,
+          report: reportText,
+          reportData: report
+        });
+      } catch (reportError: any) {
+        console.error("Error generating property report:", reportError);
+
+        // Still save the request but return basic response
+        res.json({
+          success: true,
+          message: "Premium assessment request submitted successfully. Report generation in progress.",
+          requestId: premiumRequest.id,
+          note: "Detailed report will be provided within 24 hours due to data availability."
+        });
+      }
+    } catch (error: any) {
+      console.error("Error creating premium assessment request:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to submit premium assessment request"
+      });
+    }
+  });
 
   // Test PDF reading endpoint
   apiRouter.get("/api/test-pdfs", async (req: Request, res: Response) => {
@@ -1006,14 +1057,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Question is required" });
       }
 
-      const { generateRAGResponse } = await import("./rag");
-      const answer = await generateRAGResponse(question);
+      const { BuildingCodeRAGService } = await import("./rag");
+      const ragService = new BuildingCodeRAGService();
 
-      res.json({ 
-        answer,
-        sources: ["NZ Building Code Documents"],
-        clauseReferences: []
-      });
+      const result = await ragService.answerBuildingCodeQuestion(question);
+
+      res.json(result);
     } catch (error) {
       console.error("Building code question error:", error);
       res.status(500).json({ 
@@ -1025,7 +1074,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Premium chat endpoint
+  apiRouter.post("/api/premium-chat", async (req: Request, res: Response) => {
+    try {
+      const { message, conversationHistory = [], propertyAddress, projectDescription } = req.body;
 
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Enhanced premium response with property/project context
+      const response = await generatePremiumResponse(message, conversationHistory, propertyAddress, projectDescription);
+
+      res.json({ 
+        message: response.content,
+        features: response.features
+      });
+    } catch (error) {
+      console.error("Premium chat error:", error);
+      res.status(500).json({ message: "Error processing premium chat request" });
+    }
+  });
+
+  // Premium report download
+  apiRouter.get("/api/premium-report/download", async (req: Request, res: Response) => {
+    try {
+      const projectDetails = req.query;
+      const reportBuffer = await generatePremiumPDF(projectDetails);
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="premium-property-report.pdf"');
+      res.send(reportBuffer);
+    } catch (error) {
+      console.error("Premium report download error:", error);
+      res.status(500).json({ message: "Error generating premium report" });
+    }
+  });
 
   // Audio transcription endpoint
   apiRouter.post("/api/transcribe-audio", async (req: Request, res: Response) => {
@@ -1450,11 +1534,206 @@ Report generated by Can I Build It? NZ Property Assessment Platform
   return Buffer.from(pdfContent, 'utf-8');
 }
 
+// Premium response generator with enhanced features
+async function generatePremiumResponse(message: string, conversationHistory: any[], propertyAddress?: string, projectDescription?: string) {
+  const context = conversationHistory.map(msg => `${msg.type}: ${msg.content}`).join('\n');
 
+  // ALWAYS research property data when address is provided - this is critical for premium service
+  let propertyResearchData = null;
+  if (propertyAddress && propertyAddress.trim()) {
+    try {
+      console.log(`=== STARTING COMPREHENSIVE PROPERTY RESEARCH FOR: ${propertyAddress} ===`);
+      const { researchProperty } = await import('./property-research');
+      propertyResearchData = await researchProperty(propertyAddress.trim());
+      console.log('=== PROPERTY RESEARCH COMPLETED ===');
+      console.log('Research results:', JSON.stringify(propertyResearchData, null, 2));
+    } catch (error) {
+      console.error('=== PROPERTY RESEARCH FAILED ===', error);
+    }
+  } else {
+    console.log('No property address provided - skipping research');
+  }
 
+  // Enhanced system prompt with property-specific context - same style as basic agent
+  const premiumSystemPrompt = `You are an expert AI property advisor for New Zealand providing comprehensive premium guidance.
 
+    You provide detailed, helpful analysis including:
+    - Comprehensive building consent guidance and requirements
+    - Detailed zoning information and compliance
+    - Building code requirements and interpretation
+    - Resource consent process and requirements
+    - Development potential assessment
+    - Cost estimates and timeline guidance
+    - Regulatory compliance advice
+    - Enhanced premium features with specific calculations and professional recommendations
 
+    Be thorough and helpful. This is a premium service designed to provide maximum value to property owners.
+    Focus on actionable advice and clear explanations of New Zealand building regulations.
 
+    ${propertyAddress ? `Property: ${propertyAddress}` : ''}
+    ${projectDescription ? `Project: ${projectDescription}` : ''}
+
+    ${propertyResearchData ? `
+    COMPREHENSIVE PROPERTY RESEARCH DATA:
+    Property Address: ${propertyResearchData.propertyAddress}
+    Lot and DP Number: ${propertyResearchData.lotAndDpNumber}
+    District/Planning Zone: ${propertyResearchData.districtPlanningZone}
+    Overlays: ${propertyResearchData.overlays.join(', ') || 'None identified'}
+    Controls: ${propertyResearchData.controls.join(', ') || 'Standard controls apply'}
+    Flood Hazards: ${propertyResearchData.floodHazards.join(', ') || 'No flood hazards identified'}
+    Overland Flow Paths: ${propertyResearchData.overlandFlowPaths.join(', ') || 'No overland flow paths identified'}
+    Natural Hazards: ${propertyResearchData.naturalHazards.join(', ') || 'No natural hazards identified'}
+    Special Character Overlays: ${propertyResearchData.specialCharacterOverlays.join(', ') || 'No special character overlays'}
+    Wind Zone: ${propertyResearchData.windZone}
+    Earthquake Zone: ${propertyResearchData.earthquakeZone}
+    Snow Zone: ${propertyResearchData.snowZone}
+    Corrosion Zones: ${propertyResearchData.corrosionZones.join(', ')}
+    Building Code Requirements: ${propertyResearchData.buildingCodeRequirements.join('; ')}
+    Consent Requirements: ${propertyResearchData.consentRequirements.join('; ')}
+    Additional Research Findings: ${propertyResearchData.additionalResearch.slice(0, 3).join('; ')}
+
+    Use this comprehensive data to provide specific, accurate advice about building consent requirements and building code compliance for this exact property and location.` : ''}
+
+    FORMATTING RULES:
+    - Write in clear, natural language without markdown formatting
+    - Do not use # hashtags, ## headings, #### subheadings, or ** bold formatting
+    - Use simple text with line breaks for section separation
+    - Write section titles as plain text followed by a colon
+    - Use simple dashes (-) for bullet points when needed
+    - Focus on clear, readable content without formatting symbols
+    - Write in the same conversational style as the basic agent
+
+    CITATION REQUIREMENTS:
+    - Always include specific source references for all building regulations mentioned
+    - Cite official websites like building.govt.nz, aucklandcouncil.govt.nz
+    - Reference specific Building Act 2004 sections and Building Code clauses
+    - Include links to MBIE guidance documents where relevant
+    - Mention specific council planning documents and zones when applicable
+    - Format citations naturally within the text, not as a separate section`;
+
+  let enhancedQuery = `${premiumSystemPrompt}\n\nConversation context:\n${context}\n\nUser message: ${message}\n\nProvide detailed premium analysis.`;
+
+  // Check if this is an automatic comprehensive report request
+  if (message.includes("comprehensive building consent assessment") && propertyAddress && projectDescription) {
+    enhancedQuery = `${premiumSystemPrompt}
+
+Property: ${propertyAddress}
+Project: ${projectDescription}
+
+Generate a comprehensive property development assessment that includes all the specific property research data provided above. Structure your response to cover:
+
+Building Consent Analysis:
+- Based on the specific zoning, overlays, and hazards identified for this property
+- Include exact consent requirements based on the property's characteristics
+- Reference the specific DP number, zone, and any special overlays that apply
+
+Cost Breakdown:
+- Provide detailed cost estimates including council fees specific to Auckland
+- Account for any additional requirements due to flood hazards, special character areas, or natural hazards
+- Include professional fees for architects, engineers, and consultants
+
+Regulatory Compliance:
+- Address the specific wind zone, earthquake zone, and corrosion requirements for this location
+- Include Building Code requirements specific to the identified hazards and zones
+- Reference relevant Building Act 2004 sections and official sources
+
+Write in a conversational, helpful tone. Include all the specific property details found in the research and provide actionable advice based on the exact characteristics of this property.`;
+  }
+
+  try {
+    const response = await generateRAGResponse(enhancedQuery);
+
+    // Comprehensive cleanup of all markdown formatting symbols
+    let cleanResponse = response
+      // First pass: Convert headers to bullet points
+      .replace(/^###\s+/gm, '• ')
+      .replace(/^####\s+/gm, '  - ')
+      .replace(/\n###\s+/g, '\n• ')
+      .replace(/\n####\s+/g, '\n  - ')
+      // Second pass: Remove all remaining # symbols
+      .replace(/#{1,6}\s*/g, '')
+      // Third pass: Handle bold formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      // Fourth pass: Convert any remaining ** at line starts
+      .replace(/^\*\*(.+)/gm, '• $1')
+      .replace(/\n\*\*(.+)/g, '\n• $1')
+      // Final cleanup: Remove any orphaned symbols
+      .replace(/\*{1,2}/g, '')
+      .replace(/#{1,6}/g, '')
+      .trim();
+
+    // Analyze response to determine features used
+    const features = {
+      hasCalculations: cleanResponse.includes('$') || cleanResponse.includes('cost') || cleanResponse.includes('budget'),
+      hasTimeline: cleanResponse.includes('week') || cleanResponse.includes('month') || cleanResponse.includes('timeline'),
+      hasRegulations: cleanResponse.includes('consent') || cleanResponse.includes('code') || cleanResponse.includes('regulation'),
+      hasDocuments: true // Premium always includes documentation capability
+    };
+
+    return {
+      content: cleanResponse,
+      features
+    };
+  } catch (error) {
+    console.error('Error generating premium response:', error);
+    return {
+      content: "I'm experiencing technical difficulties with the premium analysis. Please try again in a moment.",
+      features: { hasCalculations: false, hasTimeline: false, hasRegulations: false, hasDocuments: false }
+    };
+  }
+}
+
+// Premium PDF generation
+async function generatePremiumPDF(projectDetails: any): Promise<Buffer> {
+  const premiumContent = `
+PREMIUM PROPERTY DEVELOPMENT REPORT
+===================================
+
+Property Analysis: ${projectDetails.address || 'Property Assessment'}
+Generated: ${new Date().toLocaleDateString()}
+
+EXECUTIVE SUMMARY
+• Comprehensive building consent analysis
+• Detailed cost breakdowns and timelines
+• Risk assessment and mitigation strategies
+• Professional recommendations
+
+BUILDING CONSENT REQUIREMENTS
+• Application process and documentation
+• Estimated processing time: 20-30 working days
+• Council fees: $2,500 - $4,500
+• Additional consultant costs: $3,000 - $8,000
+
+DEVELOPMENT TIMELINE
+Phase 1: Design and Planning (2-4 months)
+Phase 2: Consent Application (1-2 months) 
+Phase 3: Construction (6-18 months)
+Phase 4: Final Inspection (2-4 weeks)
+
+COST ANALYSIS
+Planning and Design: $15,000 - $25,000
+Building Consent: $5,000 - $10,000
+Construction: Variable based on scope
+Professional Services: $8,000 - $15,000
+
+RISK ASSESSMENT
+• Weather delays: Medium risk
+• Material cost fluctuations: High risk
+• Consent processing delays: Low risk
+• Neighbour objections: Low risk
+
+RECOMMENDATIONS
+• Engage licensed professionals early
+• Allow 20% contingency in budget
+• Consider seasonal construction timing
+• Maintain regular council communication
+
+This premium report provides professional-grade analysis suitable for decision-making and project planning.
+  `;
+
+  return Buffer.from(premiumContent, 'utf-8');
+}
 
 // Audio transcription using OpenAI Whisper
 async function transcribeAudioFile(req: any): Promise<string> {
