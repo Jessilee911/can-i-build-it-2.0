@@ -655,52 +655,67 @@ ${content}`
     // Handle both "D1 3.3" and "D1.3.3" formats
     const normalized = clauseNumber.replace(/\s+/g, '.');
     const spaced = clauseNumber.replace(/\./g, ' ');
+    
+    console.log(`Searching for clause: ${clauseNumber} (normalized: ${normalized}, spaced: ${spaced})`);
 
-    // Enhanced patterns for better clause matching
+    // Priority patterns - most specific first
     const patterns = [
-      // Exact clause with content until next clause
-      new RegExp(`^\\s*${normalized}\\s+([^\\n]+(?:\\n(?!\\s*[A-Z]\\d+)[^\\n]*)*?)(?=\\n\\s*[A-Z]\\d+|\\n\\s*\\d+\\.|$)`, 'gim'),
-      new RegExp(`^\\s*${spaced}\\s+([^\\n]+(?:\\n(?!\\s*[A-Z]\\d+)[^\\n]*)*?)(?=\\n\\s*[A-Z]\\d+|\\n\\s*\\d+\\.|$)`, 'gim'),
+      // Exact clause at start of line with title/content
+      new RegExp(`^\\s*${normalized}\\s+([A-Za-z][^\\n]*(?:\\n(?!\\s*[A-Z]\\d+)[^\\n]*){0,10})`, 'gim'),
+      new RegExp(`^\\s*${spaced}\\s+([A-Za-z][^\\n]*(?:\\n(?!\\s*[A-Z]\\d+)[^\\n]*){0,10})`, 'gim'),
       
-      // Clause in handbook format with section headers
-      new RegExp(`${normalized}\\s+([^\\n]*(?:\\n(?!\\s*(?:[A-Z]\\d+|\\d+\\.))[^\\n]*){0,20})`, 'gim'),
-      new RegExp(`${spaced}\\s+([^\\n]*(?:\\n(?!\\s*(?:[A-Z]\\d+|\\d+\\.))[^\\n]*){0,20})`, 'gim'),
+      // Clause with title after space or dash
+      new RegExp(`\\b${normalized}\\s*[\\-–]?\\s*([A-Za-z][^\\n]*(?:\\n[^\\n]*){0,5})`, 'gi'),
+      new RegExp(`\\b${spaced}\\s*[\\-–]?\\s*([A-Za-z][^\\n]*(?:\\n[^\\n]*){0,5})`, 'gi'),
       
-      // Clause with description in parentheses or after dash
-      new RegExp(`${normalized}\\s*[\\-–]?\\s*([^\\n]+(?:\\([^)]*\\))?[^\\n]*)`, 'gi'),
-      new RegExp(`${spaced}\\s*[\\-–]?\\s*([^\\n]+(?:\\([^)]*\\))?[^\\n]*)`, 'gi'),
+      // Handbook format: clause number followed by content
+      new RegExp(`${normalized}\\s+([^\\n]*(?:\\n(?!\\s*(?:[A-Z]\\d+|Table|Figure))[^\\n]*){0,15})`, 'gim'),
+      new RegExp(`${spaced}\\s+([^\\n]*(?:\\n(?!\\s*(?:[A-Z]\\d+|Table|Figure))[^\\n]*){0,15})`, 'gim'),
       
-      // More flexible pattern for handbook structure
-      new RegExp(`${normalized}[\\s\\S]{0,50}?([^\\n]+(?:\\n[^\\n]*){0,10})`, 'gi')
+      // More flexible search within paragraphs
+      new RegExp(`(${normalized}|${spaced})[\\s\\S]{0,300}?(?=\\n\\s*[A-Z]\\d+|$)`, 'gi')
     ];
 
-    for (const pattern of patterns) {
+    for (let i = 0; i < patterns.length; i++) {
+      const pattern = patterns[i];
       pattern.lastIndex = 0; // Reset regex state
       const match = pattern.exec(text);
-      if (match && match[1]) {
-        const content = match[1].trim();
-        if (content.length > 10) { // Ensure we have substantial content
+      if (match) {
+        const content = match[1] || match[0];
+        const cleanContent = this.cleanClauseContent(content);
+        
+        // Validate content quality
+        if (cleanContent.length > 20 && /[A-Za-z]/.test(cleanContent)) {
+          console.log(`Found clause with pattern ${i}: ${cleanContent.substring(0, 100)}...`);
           return {
             clauseNumber: normalized,
-            content: this.cleanClauseContent(content),
+            content: cleanContent,
             found: true
           };
         }
       }
     }
 
-    // Fallback: search for any mention of the clause
-    const fallbackPattern = new RegExp(`(${normalized}|${spaced})[\\s\\S]{0,200}`, 'gi');
-    const fallbackMatch = fallbackPattern.exec(text);
-    
-    if (fallbackMatch) {
-      return {
-        clauseNumber: normalized,
-        content: this.cleanClauseContent(fallbackMatch[0]),
-        found: true
-      };
+    // Final fallback: simple search for clause mention
+    const mentionPattern = new RegExp(`(${normalized}|${spaced})`, 'gi');
+    if (mentionPattern.test(text)) {
+      // Extract surrounding context
+      const index = text.search(mentionPattern);
+      if (index !== -1) {
+        const start = Math.max(0, index - 100);
+        const end = Math.min(text.length, index + 400);
+        const context = text.slice(start, end);
+        
+        console.log(`Found clause mention at index ${index}`);
+        return {
+          clauseNumber: normalized,
+          content: this.cleanClauseContent(context),
+          found: true
+        };
+      }
     }
 
+    console.log(`Clause ${clauseNumber} not found in text`);
     return { clauseNumber: normalized, found: false };
   }
 

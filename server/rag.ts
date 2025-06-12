@@ -257,6 +257,24 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
     source: 'NZS 3604:2011 Timber-framed buildings - Clauses 7.3.2 and 8.2.1',
     category: 'building_code',
     lastUpdated: new Date()
+  },
+  
+  // D1.3.3 - Landings specific knowledge
+  {
+    id: 'd1_3_3_landings',
+    content: 'D1.3.3 Landings: Building Code D1.3.3 specifies requirements for landings on access routes. Landings shall be provided at the top and bottom of ramps and at intermediate points where required. Landing dimensions must be sufficient for wheelchair maneuvering. The minimum landing length parallel to the direction of travel shall be 1200mm. For doorways, landings must extend at least 300mm beyond the latch side of the door.',
+    source: 'Building Code D1 Access Routes - Clause D1.3.3',
+    category: 'building_code',
+    lastUpdated: new Date()
+  },
+  
+  // Enhanced D1 Access Routes knowledge
+  {
+    id: 'd1_access_general',
+    content: 'D1 Access Routes provides requirements for accessible paths of travel to and within buildings. Key areas include: D1.3.1 (Accessible routes), D1.3.2 (Ramps), D1.3.3 (Landings), D1.3.4 (Doorways and doors), D1.3.5 (Corridors and passages). These ensure buildings are accessible to people with disabilities.',
+    source: 'Building Code D1 Access Routes - Overview',
+    category: 'building_code',
+    lastUpdated: new Date()
   }
 ];
 
@@ -265,27 +283,46 @@ const nzBuildingKnowledge: KnowledgeBase[] = [
  */
 export function extractBuildingCodeClauses(query: string): string[] {
   const clausePatterns = [
-    /\b([A-Z]\d+(?:\.\d+)*(?:\.\d+)*)\b/g, // B1, E2.3.1, G4.2
-    /\b([A-Z]\d+\s+\d+(?:\.\d+)*)\b/g, // B1 3.1, E2 3.1.2
+    // Primary patterns for common formats
+    /\b([A-Z]\d+)\s+(\d+(?:\.\d+)*)\b/g, // D1 3.3, B1 2.1.4, E2 3.1
+    /\b([A-Z]\d+)\.(\d+(?:\.\d+)*)\b/g,  // D1.3.3, B1.2.1.4, E2.3.1
+    /\b([A-Z]\d+(?:\.\d+)*(?:\.\d+)*)\b/g, // B1, E2.3.1, G4.2 (existing format)
+    // Secondary patterns
     /Building Code\s+([A-Z]\d+(?:\.\d+)*)/gi,
     /NZBC\s+([A-Z]\d+(?:\.\d+)*)/gi,
-    /clause\s+([A-Z]\d+(?:\.\d+)*)/gi
+    /clause\s+([A-Z]\d+(?:\s*\d+(?:\.\d+)*)?)/gi
   ];
 
   const clauses = new Set<string>();
 
-  clausePatterns.forEach(pattern => {
+  // Handle spaced format specifically (D1 3.3 -> D1.3.3)
+  const spacedPattern = /\b([A-Z]\d+)\s+(\d+(?:\.\d+)*)\b/g;
+  let match;
+  while ((match = spacedPattern.exec(query)) !== null) {
+    const normalized = `${match[1]}.${match[2]}`;
+    clauses.add(normalized);
+    console.log(`Found spaced clause: ${match[1]} ${match[2]} -> ${normalized}`);
+  }
+
+  // Handle other patterns
+  clausePatterns.slice(1).forEach(pattern => {
     const matches = query.matchAll(pattern);
     for (const match of matches) {
       if (match[1]) {
-        // Normalize clause format (remove spaces, ensure consistent format)
-        const normalized = match[1].replace(/\s+/g, '.').toUpperCase();
+        let normalized = match[1].replace(/\s+/g, '.').toUpperCase();
+        // Add second capture group if exists (for clause patterns)
+        if (match[2]) {
+          normalized = `${match[1]}.${match[2]}`;
+        }
         clauses.add(normalized);
+        console.log(`Found clause pattern: ${match[0]} -> ${normalized}`);
       }
     }
   });
 
-  return Array.from(clauses);
+  const result = Array.from(clauses);
+  console.log(`Final extracted clauses: ${result.join(', ')}`);
+  return result;
 }
 
 /**

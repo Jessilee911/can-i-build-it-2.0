@@ -1845,3 +1845,69 @@ function getBasicFallbackResponse(message: string): string {
   
   return "I'm here to help with your New Zealand property development questions. I can provide guidance on building consents, zoning rules, building code requirements, and development processes. What specific aspect would you like to know more about?";
 }
+
+
+  // ==================== Chat Agent Diagnostics ====================
+  // Diagnostic endpoint for troubleshooting chat agent
+  apiRouter.get("/api/chat/diagnostics", async (req: Request, res: Response) => {
+    try {
+      const { query } = req.query;
+      const testQuery = query as string || "D1 3.3";
+
+      // Test clause extraction
+      const { extractBuildingCodeClauses, searchKnowledgeBase } = await import('./rag');
+      const extractedClauses = extractBuildingCodeClauses(testQuery);
+      
+      // Test knowledge base search
+      const knowledgeResults = searchKnowledgeBase(testQuery);
+      
+      // Test PDF search
+      const { pdfProcessor } = await import('./pdf-processor');
+      const pdfResults = await pdfProcessor.searchBuildingCodes(testQuery);
+      
+      // Test available PDFs
+      const availablePDFs = pdfProcessor.getAvailablePDFs();
+
+      res.json({
+        testQuery,
+        diagnostics: {
+          clauseExtraction: {
+            input: testQuery,
+            extractedClauses,
+            success: extractedClauses.length > 0
+          },
+          knowledgeBase: {
+            resultsFound: knowledgeResults.length,
+            topResults: knowledgeResults.slice(0, 3).map(r => ({
+              id: r.id,
+              category: r.category,
+              contentPreview: r.content.substring(0, 100) + '...'
+            }))
+          },
+          pdfSearch: {
+            resultsFound: pdfResults.results.length,
+            sources: pdfResults.sources,
+            topResults: pdfResults.results.slice(0, 3).map(r => ({
+              type: r.type,
+              clauseNumber: r.clauseNumber,
+              source: r.source,
+              contentPreview: r.content?.substring(0, 100) + '...'
+            }))
+          },
+          pdfStatus: {
+            availablePDFs: availablePDFs.length,
+            fileNames: availablePDFs.slice(0, 5) // Show first 5
+          }
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Chat diagnostics error:", error);
+      res.status(500).json({ 
+        error: "Diagnostic failed",
+        message: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
