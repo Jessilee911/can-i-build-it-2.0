@@ -1,4 +1,5 @@
 import { db } from './db';
+import { UNITARY_PLAN_ASSISTANT_PROMPT } from './prompts';
 
 interface KnowledgeBase {
   id: string;
@@ -365,11 +366,12 @@ export async function generateRAGResponse(query: string, userContext?: any): Pro
   const { needsClarification, suggestedQuestions } = analyzeIfNeedsClarification(query);
 
   // Extract additional data sources from userContext
-  const { 
-    pdfResults = [], 
-    aucklandCouncilData = null, 
-    propertyData = null, 
-    address = null 
+  const {
+    pdfResults = [],
+    aucklandCouncilData = null,
+    propertyData = null,
+    address = null,
+    promptType = 'default'
   } = userContext || {};
 
   // Analyze query completeness to determine YES/NO/MAYBE response
@@ -592,8 +594,10 @@ Would you like to set up AI assistance so I can provide detailed property and bu
   }
 
   try {
-    // Enhanced system prompt with comprehensive data integration
-    const systemPrompt = `You are an expert New Zealand property development advisor with access to comprehensive, real-time data sources including Auckland Council records, property market analysis, and official MBIE building regulations. You provide AUTHORITATIVE, SPECIFIC answers based on multiple official data sources.
+    // Choose prompt based on context
+    const systemPrompt = promptType === 'planning'
+      ? UNITARY_PLAN_ASSISTANT_PROMPT
+      : `You are an expert New Zealand property development advisor with access to comprehensive, real-time data sources including Auckland Council records, property market analysis, and official MBIE building regulations. You provide AUTHORITATIVE, SPECIFIC answers based on multiple official data sources.
 
             DATA SOURCES AVAILABLE:
             - Auckland Council property records, zoning, and planning constraints (when accessible)
